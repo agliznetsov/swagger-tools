@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 import static com.squareup.javapoet.TypeName.*;
 import static org.swaggertools.core.consumer.NameUtils.pascalCase;
 import static org.swaggertools.core.consumer.NameUtils.sanitize;
+import static org.swaggertools.core.util.AssertUtils.notNull;
 
 
 @Getter
@@ -45,6 +46,8 @@ public class ModelWriter implements Consumer<OpenAPI> {
 
     @Override
     public void accept(OpenAPI openAPI) {
+        notNull(packageName, "packageName is not set");
+        notNull(writer, "writer is not set");
         this.refResolver = new RefResolver(openAPI);
         openAPI.getComponents().getSchemas().forEach(this::createModel);
         models.values().forEach(it -> {

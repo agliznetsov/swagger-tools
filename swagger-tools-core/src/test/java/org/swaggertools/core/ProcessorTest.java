@@ -1,10 +1,8 @@
-package org.swaggertools;
+package org.swaggertools.core;
 
 import com.squareup.javapoet.JavaFile;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
-import org.swaggertools.core.FileFormat;
-import org.swaggertools.core.Processor;
 import org.swaggertools.core.consumer.JavaFileWriter;
 import org.swaggertools.core.consumer.ModelWriter;
 import org.swaggertools.core.supplier.OpenAPIDefinition;
@@ -34,11 +32,11 @@ public class ProcessorTest {
         processor.process();
 
         assertEquals(8, memoryWriter.files.size());
-        memoryWriter.files.forEach((k,v) -> verifyFile(k,v));
+        memoryWriter.files.forEach((k,v) -> verifyJavaFile(k,v));
     }
 
     @SneakyThrows
-    private void verifyFile(String name, String java) {
+    private void verifyJavaFile(String name, String java) {
         String expected = StreamUtils.copyToString(getClass().getResourceAsStream("/petstore/" + name + ".java"));
         assertEquals(expected, java);
     }

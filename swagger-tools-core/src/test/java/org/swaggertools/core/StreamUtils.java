@@ -1,4 +1,4 @@
-package org.swaggertools;
+package org.swaggertools.core;
 
 import java.io.IOException;
 import java.io.InputStream;

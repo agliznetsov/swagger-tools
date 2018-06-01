@@ -9,6 +9,8 @@ import java.util.LinkedList;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.swaggertools.core.util.AssertUtils.notNull;
+
 @Getter
 @Setter
 public class Processor {
@@ -16,12 +18,8 @@ public class Processor {
     private final Collection<Consumer<OpenAPI>> apiConsumers = new LinkedList<>();
 
     public void process() {
-        if (apiSupplier == null) {
-            throw new IllegalArgumentException("apiSupplier is not set");
-        }
-        if (apiConsumers.isEmpty()) {
-            throw new IllegalArgumentException("apiConsumers is not set");
-        }
+        notNull(apiSupplier, "apiSupplier is not set");
+        notNull(apiConsumers, "apiConsumers is not set");
         OpenAPI api = apiSupplier.get();
         apiConsumers.forEach(it -> it.accept(api));
     }
