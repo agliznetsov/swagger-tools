@@ -5,7 +5,8 @@ import lombok.SneakyThrows;
 import org.junit.Test;
 import org.swaggertools.core.consumer.JavaFileWriter;
 import org.swaggertools.core.consumer.model.JacksonModelGenerator;
-import org.swaggertools.core.consumer.spring.mvc.server.MvcServerGenerator;
+import org.swaggertools.core.consumer.spring.web.ClientGenerator;
+import org.swaggertools.core.consumer.spring.web.ServerGenerator;
 import org.swaggertools.core.supplier.OpenAPIDefinition;
 
 import java.io.File;
@@ -29,7 +30,6 @@ public class PetstoreTest {
         JacksonModelGenerator generator = new JacksonModelGenerator();
         generator.setModelPackageName("com.example");
         generator.setWriter(memoryWriter);
-//        generator.setWriter(new JavaFileWriterImpl(new File("C:\\work\\misc\\swagger-tools\\swagger-tools-core\\src\\test\\java")));
         processor.getApiConsumers().add(generator);
         processor.process();
 
@@ -42,16 +42,31 @@ public class PetstoreTest {
         Processor processor = createProcessor();
 
         MemoryWriter memoryWriter = new MemoryWriter();
-        MvcServerGenerator generator = new MvcServerGenerator();
+        ServerGenerator generator = new ServerGenerator();
         generator.setModelPackageName("com.example.model");
         generator.setApiPackageName("com.example.web");
         generator.setWriter(memoryWriter);
-//        generator.setWriter(new JavaFileWriterImpl(new File("C:\\work\\misc\\swagger-tools\\swagger-tools-core\\src\\test\\java")));
         processor.getApiConsumers().add(generator);
         processor.process();
 
         assertEquals(1, memoryWriter.files.size());
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/server/" + k, v));
+    }
+
+    @Test
+    public void test_petstore_client() throws Exception {
+        Processor processor = createProcessor();
+
+        MemoryWriter memoryWriter = new MemoryWriter();
+        ClientGenerator generator = new ClientGenerator();
+        generator.setModelPackageName("com.example.model");
+        generator.setClientPackageName("com.example.client");
+        generator.setWriter(memoryWriter);
+        processor.getApiConsumers().add(generator);
+        processor.process();
+
+        assertEquals(1, memoryWriter.files.size());
+        memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/client/" + k, v));
     }
 
     private Processor createProcessor() throws FileNotFoundException, URISyntaxException {
@@ -69,7 +84,7 @@ public class PetstoreTest {
     }
 
     String normalize(String string) {
-        return string.replace("\r", "");
+        return string.replace("\r", "").trim();
     }
 
     class MemoryWriter implements JavaFileWriter {
@@ -80,7 +95,6 @@ public class PetstoreTest {
         public void write(JavaFile javaFile) {
             StringBuilder sb = new StringBuilder();
             javaFile.writeTo(sb);
-//            System.out.println(sb);
             files.put(javaFile.typeSpec.name, sb.toString());
         }
     }

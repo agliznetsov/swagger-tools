@@ -26,7 +26,7 @@ public interface PetsApi {
   Pet createPet(@RequestBody Pet requestBody);
 
   @GetMapping("/pets/{petId}")
-  Pet showPetById(@PathVariable(name = "petId", required = true) Long petId,
+  Pet getPetById(@PathVariable(name = "petId", required = true) Long petId,
       @RequestParam(name = "details", required = false, defaultValue = "false") Boolean details);
 
   @PutMapping("/pets/{petId}")

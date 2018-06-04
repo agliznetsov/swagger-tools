@@ -1,4 +1,4 @@
-package org.swaggertools.core.consumer.spring.mvc.server;
+package org.swaggertools.core.consumer.spring.web;
 
 public enum HttpStatus {
     CONTINUE(100, "Continue"),
