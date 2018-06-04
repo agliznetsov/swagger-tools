@@ -7,7 +7,7 @@ import lombok.SneakyThrows;
 import java.io.File;
 
 @AllArgsConstructor
-public class FileWriter implements JavaFileWriter {
+public class JavaFileWriterImpl implements JavaFileWriter {
     final File dir;
 
     @Override
