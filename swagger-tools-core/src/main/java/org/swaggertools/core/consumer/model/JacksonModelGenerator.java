@@ -134,6 +134,9 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Ope
     }
 
     private FieldSpec field(String name, TypeName type, Schema schema) {
+        if (name.equals("color")) {
+            System.out.println();
+        }
         FieldSpec.Builder builder = FieldSpec.builder(type, sanitize(name))
                 .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
                         .addMember("value", "$S", name)
@@ -141,7 +144,9 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Ope
                 );
 
         if (schema.getDefault() != null) {
-            if (type == STRING) {
+            if (schema.getEnum() != null) {
+                builder.initializer("$T.$L", type, schema.getDefault());
+            } else if (type == STRING) {
                 builder.initializer("$S", schema.getDefault());
             } else if (type == FLOAT || type == FLOAT.box()) {
                 builder.initializer("$LF", schema.getDefault());

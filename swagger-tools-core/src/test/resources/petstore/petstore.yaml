@@ -182,6 +182,7 @@ components:
         owner:
           $ref: "#/components/schemas/Owner"
         color:
+          default: Black
           $ref: "#/components/schemas/Color"
 
 
@@ -194,6 +195,7 @@ components:
           huntingSkill:
             type: string
             description: The measured skill for hunting
+            default: lazy
             enum:
             - clueless
             - lazy

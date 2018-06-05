@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Cat extends Pet {
   @JsonProperty("huntingSkill")
-  HuntingSkillEnum huntingSkill;
+  HuntingSkillEnum huntingSkill = HuntingSkillEnum.lazy;
 
   public HuntingSkillEnum getHuntingSkill() {
     return huntingSkill;
