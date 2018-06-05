@@ -134,9 +134,6 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Ope
     }
 
     private FieldSpec field(String name, TypeName type, Schema schema) {
-        if (name.equals("color")) {
-            System.out.println();
-        }
         FieldSpec.Builder builder = FieldSpec.builder(type, sanitize(name))
                 .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
                         .addMember("value", "$S", name)

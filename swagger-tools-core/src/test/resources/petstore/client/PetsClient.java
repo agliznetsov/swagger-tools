@@ -39,13 +39,13 @@ public class PetsClient extends RestTemplateClient {
 
   public void updatePet(Long petId, Pet requestBody) {
     MultiValueMap parameters = createQueryParameters("petId", petId);
-    ParameterizedTypeReference typeRef = ParameterizedTypeReference.forType(Void.class);
+    ParameterizedTypeReference typeRef = VOID;
     invokeAPI("/pets/{petId}", HttpMethod.PUT, parameters, requestBody, typeRef);
   }
 
   public void deletePetById(Long petId) {
     MultiValueMap parameters = createQueryParameters("petId", petId);
-    ParameterizedTypeReference typeRef = ParameterizedTypeReference.forType(Void.class);
+    ParameterizedTypeReference typeRef = VOID;
     invokeAPI("/pets/{petId}", HttpMethod.DELETE, parameters, null, typeRef);
   }
 }

@@ -88,7 +88,7 @@ public class ClientGenerator extends ApiGenerator implements Consumer<OpenAPI> {
             TypeName typeRef = ParameterizedTypeName.get(TYPE_REF, getType(operationInfo.responseSchema));
             builder.addStatement("$T typeRef = new $T(){}", typeRef, typeRef);
         } else {
-            builder.addStatement("$T typeRef = $T.forType(Void.class)", TYPE_REF, TYPE_REF);
+            builder.addStatement("$T typeRef = VOID", TYPE_REF);
         }
     }
 
