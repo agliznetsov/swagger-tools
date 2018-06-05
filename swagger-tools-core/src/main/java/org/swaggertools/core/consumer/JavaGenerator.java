@@ -36,6 +36,10 @@ public abstract class JavaGenerator implements Consumer<OpenAPI> {
 
     protected RefResolver refResolver;
 
+    @Getter
+    @Setter
+    protected String indent = "    ";
+
     public JavaGenerator() {
         stringFormats.put("date", LocalDate.class);
         stringFormats.put("date-time", OffsetDateTime.class);

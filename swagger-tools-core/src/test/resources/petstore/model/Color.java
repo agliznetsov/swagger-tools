@@ -1,9 +1,9 @@
 package com.example;
 
 enum Color {
-  Black,
+    Black,
 
-  White,
+    White,
 
-  Red
+    Red
 }

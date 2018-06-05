@@ -18,23 +18,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public interface PetsApi {
-  @GetMapping("/pets")
-  List<Pet> listPets(@RequestParam(name = "limit", required = false) Integer limit);
+    @GetMapping("/pets")
+    List<Pet> listPets(@RequestParam(name = "limit", required = false) Integer limit);
 
-  @PostMapping("/pets")
-  @ResponseStatus(HttpStatus.CREATED)
-  Pet createPet(@RequestBody Pet requestBody);
+    @PostMapping("/pets")
+    @ResponseStatus(HttpStatus.CREATED)
+    Pet createPet(@RequestBody Pet requestBody);
 
-  @GetMapping("/pets/{petId}")
-  Pet getPetById(@PathVariable(name = "petId", required = true) Long petId,
-      @RequestParam(name = "details", required = false, defaultValue = "false") Boolean details);
+    @GetMapping("/pets/{petId}")
+    Pet getPetById(@PathVariable(name = "petId", required = true) Long petId,
+            @RequestParam(name = "details", required = false, defaultValue = "false") Boolean details);
 
-  @PutMapping("/pets/{petId}")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  void updatePet(@PathVariable(name = "petId", required = true) Long petId,
-      @RequestBody Pet requestBody);
+    @PutMapping("/pets/{petId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void updatePet(@PathVariable(name = "petId", required = true) Long petId,
+            @RequestBody Pet requestBody);
 
-  @DeleteMapping("/pets/{petId}")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  void deletePetById(@PathVariable(name = "petId", required = true) Long petId);
+    @DeleteMapping("/pets/{petId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void deletePetById(@PathVariable(name = "petId", required = true) Long petId);
 }

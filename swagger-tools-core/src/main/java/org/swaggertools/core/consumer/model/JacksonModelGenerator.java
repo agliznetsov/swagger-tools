@@ -30,7 +30,7 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Ope
         openAPI.getComponents().getSchemas().forEach(this::createModel);
         models.values().forEach(it -> {
             addSubtypes(it);
-            writer.write(JavaFile.builder(modelPackageName, it.model.build()).build());
+            writer.write(JavaFile.builder(modelPackageName, it.model.build()).indent(indent).build());
         });
     }
 

@@ -11,111 +11,111 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    property = "_type",
-    visible = true
+        use = JsonTypeInfo.Id.NAME,
+        property = "_type",
+        visible = true
 )
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = Cat.class, name = "Cat"),
-    @JsonSubTypes.Type(value = Dog.class, name = "Dog")
+        @JsonSubTypes.Type(value = Cat.class, name = "Cat"),
+        @JsonSubTypes.Type(value = Dog.class, name = "Dog")
 })
 public class Pet {
-  @JsonProperty("_type")
-  String type = "Pet";
+    @JsonProperty("_type")
+    String type = "Pet";
 
-  @JsonProperty("id")
-  Long id = 0L;
+    @JsonProperty("id")
+    Long id = 0L;
 
-  @JsonProperty("name")
-  String name = "noname";
+    @JsonProperty("name")
+    String name = "noname";
 
-  @JsonProperty("available")
-  Boolean available = true;
+    @JsonProperty("available")
+    Boolean available = true;
 
-  @JsonProperty("price")
-  Double price = 1.0;
+    @JsonProperty("price")
+    Double price = 1.0;
 
-  @JsonProperty("uid")
-  UUID uid;
+    @JsonProperty("uid")
+    UUID uid;
 
-  @JsonProperty("createTime")
-  OffsetDateTime createTime;
+    @JsonProperty("createTime")
+    OffsetDateTime createTime;
 
-  @JsonProperty("owner")
-  Owner owner;
+    @JsonProperty("owner")
+    Owner owner;
 
-  @JsonProperty("color")
-  Color color;
+    @JsonProperty("color")
+    Color color;
 
-  public String getType() {
-    return type;
-  }
+    public String getType() {
+        return type;
+    }
 
-  public void setType(String type) {
-    this.type = type;
-  }
+    public void setType(String type) {
+        this.type = type;
+    }
 
-  public Long getId() {
-    return id;
-  }
+    public Long getId() {
+        return id;
+    }
 
-  public void setId(Long id) {
-    this.id = id;
-  }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public void setName(String name) {
-    this.name = name;
-  }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-  public Boolean isAvailable() {
-    return available;
-  }
+    public Boolean isAvailable() {
+        return available;
+    }
 
-  public void setAvailable(Boolean available) {
-    this.available = available;
-  }
+    public void setAvailable(Boolean available) {
+        this.available = available;
+    }
 
-  public Double getPrice() {
-    return price;
-  }
+    public Double getPrice() {
+        return price;
+    }
 
-  public void setPrice(Double price) {
-    this.price = price;
-  }
+    public void setPrice(Double price) {
+        this.price = price;
+    }
 
-  public UUID getUid() {
-    return uid;
-  }
+    public UUID getUid() {
+        return uid;
+    }
 
-  public void setUid(UUID uid) {
-    this.uid = uid;
-  }
+    public void setUid(UUID uid) {
+        this.uid = uid;
+    }
 
-  public OffsetDateTime getCreateTime() {
-    return createTime;
-  }
+    public OffsetDateTime getCreateTime() {
+        return createTime;
+    }
 
-  public void setCreateTime(OffsetDateTime createTime) {
-    this.createTime = createTime;
-  }
+    public void setCreateTime(OffsetDateTime createTime) {
+        this.createTime = createTime;
+    }
 
-  public Owner getOwner() {
-    return owner;
-  }
+    public Owner getOwner() {
+        return owner;
+    }
 
-  public void setOwner(Owner owner) {
-    this.owner = owner;
-  }
+    public void setOwner(Owner owner) {
+        this.owner = owner;
+    }
 
-  public Color getColor() {
-    return color;
-  }
+    public Color getColor() {
+        return color;
+    }
 
-  public void setColor(Color color) {
-    this.color = color;
-  }
+    public void setColor(Color color) {
+        this.color = color;
+    }
 }

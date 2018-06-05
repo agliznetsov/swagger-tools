@@ -4,6 +4,7 @@ import com.squareup.javapoet.JavaFile;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.swaggertools.core.consumer.JavaFileWriter;
+import org.swaggertools.core.consumer.JavaFileWriterImpl;
 import org.swaggertools.core.consumer.model.JacksonModelGenerator;
 import org.swaggertools.core.consumer.spring.web.ClientGenerator;
 import org.swaggertools.core.consumer.spring.web.ServerGenerator;

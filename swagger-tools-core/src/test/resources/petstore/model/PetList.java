@@ -5,36 +5,36 @@ import java.lang.Integer;
 import java.util.List;
 
 public class PetList {
-  @JsonProperty("_items")
-  List<Pet> items;
+    @JsonProperty("_items")
+    List<Pet> items;
 
-  @JsonProperty("_max")
-  Integer max;
+    @JsonProperty("_max")
+    Integer max;
 
-  @JsonProperty("_offset")
-  Integer offset;
+    @JsonProperty("_offset")
+    Integer offset;
 
-  public List<Pet> getItems() {
-    return items;
-  }
+    public List<Pet> getItems() {
+        return items;
+    }
 
-  public void setItems(List<Pet> items) {
-    this.items = items;
-  }
+    public void setItems(List<Pet> items) {
+        this.items = items;
+    }
 
-  public Integer getMax() {
-    return max;
-  }
+    public Integer getMax() {
+        return max;
+    }
 
-  public void setMax(Integer max) {
-    this.max = max;
-  }
+    public void setMax(Integer max) {
+        this.max = max;
+    }
 
-  public Integer getOffset() {
-    return offset;
-  }
+    public Integer getOffset() {
+        return offset;
+    }
 
-  public void setOffset(Integer offset) {
-    this.offset = offset;
-  }
+    public void setOffset(Integer offset) {
+        this.offset = offset;
+    }
 }

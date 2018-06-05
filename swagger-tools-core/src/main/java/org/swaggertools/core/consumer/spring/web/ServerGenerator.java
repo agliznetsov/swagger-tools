@@ -41,7 +41,7 @@ public class ServerGenerator extends ApiGenerator implements Consumer<OpenAPI> {
         notNull(modelPackageName, "modelPackageName is not set");
         notNull(apiPackageName, "apiPackageName is not set");
         openAPI.getPaths().forEach(this::processPath);
-        apis.forEach((k, v) -> writer.write(JavaFile.builder(apiPackageName, v.api.build()).build()));
+        apis.forEach((k, v) -> writer.write(JavaFile.builder(apiPackageName, v.api.build()).indent(indent).build()));
     }
 
     private void processPath(String path, PathItem pathItem) {
