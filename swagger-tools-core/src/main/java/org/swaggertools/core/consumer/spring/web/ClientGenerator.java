@@ -6,6 +6,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import lombok.Getter;
 import lombok.Setter;
+import org.swaggertools.core.consumer.ApiGenerator;
 
 import javax.lang.model.element.Modifier;
 import java.util.HashMap;
@@ -15,7 +16,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static org.swaggertools.core.consumer.NameUtils.*;
-import static org.swaggertools.core.util.AssertUtils.notEmpty;
 import static org.swaggertools.core.util.AssertUtils.notNull;
 
 public class ClientGenerator extends ApiGenerator implements Consumer<OpenAPI> {
@@ -49,25 +49,23 @@ public class ClientGenerator extends ApiGenerator implements Consumer<OpenAPI> {
     }
 
     private void processOperation(String path, PathItem.HttpMethod method, Operation operation) {
-        notNull(operation.getOperationId(), "operationId is not set");
-        notEmpty(operation.getTags(), "tag is not set");
-        String tag = operation.getTags().get(0);
-
         ApiGenerator.OperationInfo operationInfo = getOperationInfo(operation);
-        operationInfo.path = path;
-        operationInfo.method = method.name().toUpperCase();
+        if (operationInfo != null) {
+            operationInfo.path = path;
+            operationInfo.method = method.name().toUpperCase();
 
-        String methodName = camelCase(sanitize(operation.getOperationId()));
-        MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName).addModifiers(Modifier.PUBLIC);
+            String methodName = camelCase(sanitize(operation.getOperationId()));
+            MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName).addModifiers(Modifier.PUBLIC);
 
-        addMethodParameters(builder, operationInfo);
-        addMethodResponse(builder, operationInfo);
+            addMethodParameters(builder, operationInfo);
+            addMethodResponse(builder, operationInfo);
 
-        createQueryParameters(builder, operationInfo);
-        createTypeRef(builder, operationInfo);
-        invokeApi(builder, operationInfo);
+            createQueryParameters(builder, operationInfo);
+            createTypeRef(builder, operationInfo);
+            invokeApi(builder, operationInfo);
 
-        getClient(tag).client.addMethod(builder.build());
+            getClient(operationInfo.tag).client.addMethod(builder.build());
+        }
     }
 
     private void createQueryParameters(MethodSpec.Builder builder, OperationInfo operationInfo) {

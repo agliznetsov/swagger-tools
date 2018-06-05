@@ -9,6 +9,7 @@
     <version>0.1.0</version>
     <modules>
         <module>swagger-tools-core</module>
+        <module>swagger-tools-cli</module>
     </modules>
     <packaging>pom</packaging>
 

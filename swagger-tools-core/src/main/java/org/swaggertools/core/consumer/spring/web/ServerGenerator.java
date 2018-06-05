@@ -6,6 +6,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import lombok.Getter;
 import lombok.Setter;
+import org.swaggertools.core.consumer.ApiGenerator;
 
 import javax.lang.model.element.Modifier;
 import java.util.HashMap;
@@ -13,18 +14,16 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static org.swaggertools.core.consumer.NameUtils.*;
-import static org.swaggertools.core.util.AssertUtils.notEmpty;
 import static org.swaggertools.core.util.AssertUtils.notNull;
 
 public class ServerGenerator extends ApiGenerator implements Consumer<OpenAPI> {
     private static final String SPRING_ANNOTATIONS = "org.springframework.web.bind.annotation";
-    private static final String SPRING_HTTP = "org.springframework.http";
-    private static final String REST_CONTROLLER = "RestController";
-    private static final String REQUEST_BODY = "RequestBody";
-    private static final String REQUEST_PARAM = "RequestParam";
-    private static final String PATH_VARIABLE = "PathVariable";
-    private static final String RESPONSE_STATUS = "ResponseStatus";
-    private static final String HTTP_STATUS = "HttpStatus";
+    private static final ClassName REST_CONTROLLER = ClassName.get(SPRING_ANNOTATIONS, "RestController");
+    private static final ClassName REQUEST_BODY = ClassName.get(SPRING_ANNOTATIONS, "RequestBody");
+    private static final ClassName REQUEST_PARAM = ClassName.get(SPRING_ANNOTATIONS, "RequestParam");
+    private static final ClassName PATH_VARIABLE = ClassName.get(SPRING_ANNOTATIONS, "PathVariable");
+    private static final ClassName RESPONSE_STATUS = ClassName.get(SPRING_ANNOTATIONS, "ResponseStatus");
+    private static final ClassName HTTP_STATUS = ClassName.get("org.springframework.http", "HttpStatus");
 
     @Getter
     @Setter
@@ -50,21 +49,18 @@ public class ServerGenerator extends ApiGenerator implements Consumer<OpenAPI> {
     }
 
     private void processOperation(String path, PathItem.HttpMethod method, Operation operation) {
-        notNull(operation.getOperationId(), "operationId is not set");
-        notEmpty(operation.getTags(), "tag is not set");
-        String tag = operation.getTags().get(0);
-
         OperationInfo operationInfo = getOperationInfo(operation);
+        if (operationInfo != null) {
+            String methodName = camelCase(sanitize(operation.getOperationId()));
+            MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
+                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
 
-        String methodName = camelCase(sanitize(operation.getOperationId()));
-        MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
-                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
+            addMapping(path, method, builder);
+            addParameters(builder, operationInfo);
+            addResponse(builder, operationInfo);
 
-        addMapping(path, method, builder);
-        addParameters(builder, operationInfo);
-        addResponse(builder, operationInfo);
-
-        getApi(tag).api.addMethod(builder.build());
+            getApi(operationInfo.tag).api.addMethod(builder.build());
+        }
     }
 
     private void addMapping(String path, PathItem.HttpMethod method, MethodSpec.Builder builder) {
@@ -79,10 +75,10 @@ public class ServerGenerator extends ApiGenerator implements Consumer<OpenAPI> {
         operationInfo.parameters.forEach(p -> {
             AnnotationSpec.Builder anno;
             if (p.kind == ParameterKind.BODY) {
-                anno = AnnotationSpec.builder(ClassName.get(SPRING_ANNOTATIONS, REQUEST_BODY));
+                anno = AnnotationSpec.builder(REQUEST_BODY);
             } else {
-                String inType = p.kind == ParameterKind.PATH ? PATH_VARIABLE : REQUEST_PARAM;
-                anno = AnnotationSpec.builder(ClassName.get(SPRING_ANNOTATIONS, inType))
+                ClassName inType = p.kind == ParameterKind.PATH ? PATH_VARIABLE : REQUEST_PARAM;
+                anno = AnnotationSpec.builder(inType)
                         .addMember("name", "$S", p.name)
                         .addMember("required", "$L", p.required);
 
@@ -104,8 +100,8 @@ public class ServerGenerator extends ApiGenerator implements Consumer<OpenAPI> {
         if (operationInfo.responseStatus != HttpStatus.OK) {
             String statusName = operationInfo.responseStatus.name();
             builder.addAnnotation(
-                    AnnotationSpec.builder(ClassName.get(SPRING_ANNOTATIONS, RESPONSE_STATUS))
-                            .addMember("value", "$T." + statusName, ClassName.get(SPRING_HTTP, HTTP_STATUS))
+                    AnnotationSpec.builder(RESPONSE_STATUS)
+                            .addMember("value", "$T." + statusName, HTTP_STATUS)
                             .build()
             );
         }
@@ -121,7 +117,7 @@ public class ServerGenerator extends ApiGenerator implements Consumer<OpenAPI> {
         public ApiInfo(String name) {
             api = TypeSpec.interfaceBuilder(name)
                     .addModifiers(Modifier.PUBLIC)
-                    .addAnnotation(AnnotationSpec.builder(ClassName.get(SPRING_ANNOTATIONS, REST_CONTROLLER)).build());
+                    .addAnnotation(AnnotationSpec.builder(REST_CONTROLLER).build());
         }
     }
 

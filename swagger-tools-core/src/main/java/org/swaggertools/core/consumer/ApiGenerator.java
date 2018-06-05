@@ -1,4 +1,4 @@
-package org.swaggertools.core.consumer.spring.web;
+package org.swaggertools.core.consumer;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -8,19 +8,30 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
-import org.swaggertools.core.consumer.JavaGenerator;
+import org.swaggertools.core.consumer.spring.web.HttpStatus;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static org.swaggertools.core.util.AssertUtils.notEmpty;
+import static org.swaggertools.core.util.AssertUtils.notNull;
+
 
 public abstract class ApiGenerator extends JavaGenerator implements Consumer<OpenAPI> {
     private static final String JSON = "application/json";
+    private static final String X_IGNORE = "x-ignore";
 
     protected OperationInfo getOperationInfo(Operation operation) {
+        if (operation.getExtensions() != null && operation.getExtensions().get(X_IGNORE) != null) {
+            return null;
+        }
+
+        notNull(operation.getOperationId(), "operationId is not set");
+        notEmpty(operation.getTags(), "tag is not set");
         OperationInfo info = new OperationInfo();
+        info.tag = operation.getTags().get(0);
         if (operation.getParameters() != null) {
             operation.getParameters().forEach(it -> info.parameters.add(getParameterInfo(it)));
         }
@@ -77,6 +88,7 @@ public abstract class ApiGenerator extends JavaGenerator implements Consumer<Ope
     }
 
     protected static class OperationInfo {
+        public String tag;
         public String path;
         public String method;
         public String name;
