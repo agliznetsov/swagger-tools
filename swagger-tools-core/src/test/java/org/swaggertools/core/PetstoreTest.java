@@ -4,11 +4,11 @@ import com.squareup.javapoet.JavaFile;
 import lombok.SneakyThrows;
 import org.junit.Test;
 import org.swaggertools.core.consumer.JavaFileWriter;
-import org.swaggertools.core.consumer.JavaFileWriterImpl;
 import org.swaggertools.core.consumer.model.JacksonModelGenerator;
 import org.swaggertools.core.consumer.spring.web.ClientGenerator;
 import org.swaggertools.core.consumer.spring.web.ServerGenerator;
 import org.swaggertools.core.supplier.OpenAPIDefinition;
+import org.swaggertools.core.util.StreamUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -97,6 +97,11 @@ public class PetstoreTest {
             StringBuilder sb = new StringBuilder();
             javaFile.writeTo(sb);
             files.put(javaFile.typeSpec.name, sb.toString());
+        }
+
+        @Override
+        public void write(String packageName, String className, String body) {
+            //nop
         }
     }
 

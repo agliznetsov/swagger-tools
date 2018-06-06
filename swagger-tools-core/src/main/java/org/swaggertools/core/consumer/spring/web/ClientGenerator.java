@@ -6,7 +6,9 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.swaggertools.core.consumer.ApiGenerator;
+import org.swaggertools.core.util.StreamUtils;
 
 import javax.lang.model.element.Modifier;
 import java.util.HashMap;
@@ -41,7 +43,15 @@ public class ClientGenerator extends ApiGenerator implements Consumer<OpenAPI> {
         notNull(modelPackageName, "modelPackageName is not set");
         notNull(clientPackageName, "clientPackageName is not set");
         openAPI.getPaths().forEach(this::processPath);
+        writeBaseClient();
         apis.forEach((k, v) -> writer.write(JavaFile.builder(clientPackageName, v.client.build()).indent(indent).build()));
+    }
+
+    @SneakyThrows
+    private void writeBaseClient() {
+        String body = StreamUtils.copyToString(getClass().getResourceAsStream("/client/RestTemplateClient.java"));
+        body = body.replace("{{package}}", clientPackageName);
+        writer.write(clientPackageName, "RestTemplateClient", body);
     }
 
     private void processPath(String path, PathItem pathItem) {
