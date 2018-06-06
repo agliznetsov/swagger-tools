@@ -33,7 +33,7 @@ public class Pet {
     Boolean available = true;
 
     @JsonProperty("price")
-    Double price = 1.0;
+    Double price;
 
     @JsonProperty("uid")
     UUID uid;

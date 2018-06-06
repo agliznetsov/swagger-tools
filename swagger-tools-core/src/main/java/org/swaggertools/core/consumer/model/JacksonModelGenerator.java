@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.squareup.javapoet.*;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.media.*;
 import lombok.SneakyThrows;
 import org.swaggertools.core.consumer.JavaGenerator;
+import org.swaggertools.core.model.ApiDefinition;
+import org.swaggertools.core.model.Schema;
 
 import javax.lang.model.element.Modifier;
 import java.util.HashMap;
@@ -21,13 +21,13 @@ import static org.swaggertools.core.consumer.NameUtils.pascalCase;
 import static org.swaggertools.core.consumer.NameUtils.sanitize;
 
 
-public class JacksonModelGenerator extends JavaGenerator implements Consumer<OpenAPI> {
+public class JacksonModelGenerator extends JavaGenerator implements Consumer<ApiDefinition> {
     final Map<String, ModelInfo> models = new HashMap<>();
 
     @Override
-    public void accept(OpenAPI openAPI) {
-        super.accept(openAPI);
-        openAPI.getComponents().getSchemas().forEach(this::createModel);
+    public void accept(ApiDefinition apiDefinition) {
+        super.accept(apiDefinition);
+        apiDefinition.getSchemas().values().forEach(this::createModel);
         models.values().forEach(it -> {
             addSubtypes(it);
             writer.write(JavaFile.builder(modelPackageName, it.model.build()).indent(indent).build());
@@ -38,7 +38,7 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Ope
         if (!modelInfo.subTypes.isEmpty()) {
             AnnotationSpec typeInfo = AnnotationSpec.builder(JsonTypeInfo.class)
                     .addMember("use", "$L", "JsonTypeInfo.Id.NAME")
-                    .addMember("property", "$S", modelInfo.schema.getDiscriminator().getPropertyName())
+                    .addMember("property", "$S", modelInfo.schema.getDiscriminator())
                     .addMember("visible", "$L", "true")
                     .build();
 
@@ -56,30 +56,31 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Ope
     }
 
     @SneakyThrows
-    private void createModel(String name, Schema<?> schema) {
-        TypeSpec.Builder model = TypeSpec.classBuilder(name)
+    private void createModel(Schema schema) {
+        TypeSpec.Builder model = TypeSpec.classBuilder(schema.getName())
                 .addModifiers(Modifier.PUBLIC);
 
-        if (schema.getEnum() != null) {
-            model = createEnum(name, schema);
-        } else if (schema instanceof ObjectSchema) {
+        if (schema.getEnumValues() != null) {
+            model = createEnum(schema.getName(), schema);
+        } else if ("array".equals(schema.getType())) {
+            model.superclass(getArrayType(schema, LINKED_LIST));
+        } else {
+            if (schema.getSuperSchema() != null) {
+                extendSchema(model, schema);
+            }
+            if (schema.getAdditionalProperties() != null) {
+                extendMap(model, schema);
+            }
             addProperties(model, schema);
-        } else if (schema instanceof ArraySchema) {
-            model.superclass(getArrayType((ArraySchema) schema, LINKED_LIST));
-        } else if (schema instanceof MapSchema) {
-            extendMap(model, (MapSchema) schema);
-            addProperties(model, schema);
-        } else if (schema instanceof ComposedSchema) {
-            processComposedSchema(name, model, (ComposedSchema) schema);
         }
 
-        getModel(name).model = model;
-        getModel(name).schema = schema;
+        getModel(schema.getName()).model = model;
+        getModel(schema.getName()).schema = schema;
     }
 
     private TypeSpec.Builder createEnum(String name, Schema schema) {
         TypeSpec.Builder model = TypeSpec.enumBuilder(name);
-        schema.getEnum().forEach(it -> model.addEnumConstant(it.toString()));
+        schema.getEnumValues().forEach(model::addEnumConstant);
         return model;
     }
 
@@ -87,40 +88,31 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Ope
         return models.computeIfAbsent(name, it -> new ModelInfo());
     }
 
-    private void processComposedSchema(String name, TypeSpec.Builder model, ComposedSchema schema) {
-        if (schema.getAllOf() != null) {
-            for (Schema s : schema.getAllOf()) {
-                if (s instanceof ObjectSchema) {
-                    addProperties(model, s);
-                } else if (s.get$ref() != null) {
-                    String superName = refResolver.resolveSchemaName(s.get$ref());
-                    ClassName superClass = ClassName.get(modelPackageName, superName);
-                    model.superclass(superClass);
-                    getModel(superName).subTypes.add(name);
-                }
-            }
-        }
+    private void extendSchema(TypeSpec.Builder model, Schema schema) {
+        ClassName superClass = ClassName.get(modelPackageName, schema.getSuperSchema());
+        model.superclass(superClass);
+        getModel(schema.getSuperSchema()).subTypes.add(schema.getName());
     }
 
-    private void extendMap(TypeSpec.Builder model, MapSchema schema) {
-        Schema valueSchema = (Schema) schema.getAdditionalProperties();
+    private void extendMap(TypeSpec.Builder model, Schema schema) {
+        Schema valueSchema = schema.getAdditionalProperties();
         TypeName valueType = valueSchema != null ? getType(valueSchema) : OBJECT;
         model.superclass(ParameterizedTypeName.get(HASH_MAP, STRING, valueType));
     }
 
-    private void addProperties(TypeSpec.Builder model, Schema<?> schema) {
+    private void addProperties(TypeSpec.Builder model, Schema schema) {
         if (schema.getProperties() != null) {
-            schema.getProperties().forEach((propertyName, propertySchema) -> {
-                if (propertySchema.getEnum() != null) {
-                    String enumName = pascalCase(propertyName + "Enum");
-                    TypeSpec enumSpec = createEnum(enumName, propertySchema)
+            schema.getProperties().forEach((property) -> {
+                if (property.getSchema().getEnumValues() != null) {
+                    String enumName = pascalCase(property.getName() + "Enum");
+                    TypeSpec enumSpec = createEnum(enumName, property.getSchema())
                             .addModifiers(Modifier.PUBLIC)
                             .build();
                     ClassName typeName = ClassName.get(modelPackageName, model.build().name, enumName);
                     model.addType(enumSpec);
-                    addProperty(model, propertyName, typeName, propertySchema);
+                    addProperty(model, property.getName(), typeName, property.getSchema());
                 } else {
-                    addProperty(model, propertyName, getType(propertySchema), propertySchema);
+                    addProperty(model, property.getName(), getType(property.getSchema()), property.getSchema());
                 }
             });
         }
@@ -140,17 +132,17 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Ope
                         .build()
                 );
 
-        if (schema.getDefault() != null) {
-            if (schema.getEnum() != null) {
-                builder.initializer("$T.$L", type, schema.getDefault());
+        if (schema.getDefaultValue() != null) {
+            if (schema.getEnumValues() != null) {
+                builder.initializer("$T.$L", type, schema.getDefaultValue());
             } else if (type == STRING) {
-                builder.initializer("$S", schema.getDefault());
+                builder.initializer("$S", schema.getDefaultValue());
             } else if (type == FLOAT || type == FLOAT.box()) {
-                builder.initializer("$LF", schema.getDefault());
+                builder.initializer("$LF", schema.getDefaultValue());
             } else if (type == LONG || type == LONG.box()) {
-                builder.initializer("$LL", schema.getDefault());
+                builder.initializer("$LL", schema.getDefaultValue());
             } else {
-                builder.initializer("$L", schema.getDefault());
+                builder.initializer("$L", schema.getDefaultValue());
             }
         }
 

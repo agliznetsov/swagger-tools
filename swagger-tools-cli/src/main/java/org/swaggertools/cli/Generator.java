@@ -9,7 +9,7 @@ import org.swaggertools.core.consumer.JavaFileWriterImpl;
 import org.swaggertools.core.consumer.model.JacksonModelGenerator;
 import org.swaggertools.core.consumer.spring.web.ClientGenerator;
 import org.swaggertools.core.consumer.spring.web.ServerGenerator;
-import org.swaggertools.core.supplier.OpenAPIDefinition;
+import org.swaggertools.core.supplier.ApiDefinitionSupplier;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,7 +47,7 @@ public class Generator {
         String src = commandLine.getOptionValue(SOURCE_LOCATION);
         FileFormat ff = src.toLowerCase().endsWith(".json") ? FileFormat.JSON : FileFormat.YAML;
         FileInputStream is = new FileInputStream(new File(src));
-        processor.setApiSupplier(new OpenAPIDefinition(is, ff));
+        processor.setApiSupplier(new ApiDefinitionSupplier(is, ff));
     }
 
     private void setTargets(Processor processor, CommandLine commandLine) {

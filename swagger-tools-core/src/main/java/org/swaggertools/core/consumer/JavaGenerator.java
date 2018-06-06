@@ -3,11 +3,9 @@ package org.swaggertools.core.consumer;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
+import org.swaggertools.core.model.*;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -17,7 +15,7 @@ import java.util.function.Consumer;
 import static com.squareup.javapoet.TypeName.*;
 import static org.swaggertools.core.util.AssertUtils.notNull;
 
-public abstract class JavaGenerator implements Consumer<OpenAPI> {
+public abstract class JavaGenerator implements Consumer<ApiDefinition> {
     protected static final TypeName STRING = TypeName.get(String.class);
     protected static final ClassName LIST = ClassName.get(List.class);
     protected static final ClassName LINKED_LIST = ClassName.get(LinkedList.class);
@@ -34,8 +32,6 @@ public abstract class JavaGenerator implements Consumer<OpenAPI> {
     @Getter
     protected final Map<String, Class> stringFormats = new HashMap<>();
 
-    protected RefResolver refResolver;
-
     @Getter
     @Setter
     protected String indent = "    ";
@@ -47,18 +43,16 @@ public abstract class JavaGenerator implements Consumer<OpenAPI> {
     }
 
     @Override
-    public void accept(OpenAPI openAPI) {
+    public void accept(ApiDefinition apiDefinition) {
         notNull(writer, "writer is not set");
         notNull(modelPackageName, "modelPackageName is not set");
-        this.refResolver = new RefResolver(openAPI);
     }
 
     protected TypeName getType(Schema schema) {
-        if (schema instanceof ArraySchema) {
-            return getArrayType((ArraySchema) schema, LIST);
-        } else if (schema.get$ref() != null) {
-            String name = refResolver.resolveSchemaName(schema.get$ref());
-            return ClassName.get(modelPackageName, name);
+        if ("array".equals(schema.getType())) {
+            return getArrayType(schema, LIST);
+        } else if (schema.getRef() != null) {
+            return ClassName.get(modelPackageName, schema.getRef());
         } else {
             return getSimpleType(schema);
         }
@@ -82,7 +76,7 @@ public abstract class JavaGenerator implements Consumer<OpenAPI> {
         throw new IllegalArgumentException("Unknown type: " + schema.getType() + ":" + schema.getFormat());
     }
 
-    protected TypeName getArrayType(ArraySchema schema, ClassName superClass) {
+    protected TypeName getArrayType(Schema schema, ClassName superClass) {
         if (schema.getItems() != null) {
             TypeName itemType = getType(schema.getItems());
             return ParameterizedTypeName.get(superClass, itemType);

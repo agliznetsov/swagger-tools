@@ -1,0 +1,221 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: Swagger Petstore
+  license:
+    name: MIT
+basePath: /v1
+paths:
+  /hidden:
+    get:
+      operationId: hiddenOp
+      x-ignore: true
+      tags:
+        - pets
+      responses:
+        '200':
+          description: OK
+  /pets:
+    get:
+      summary: List all pets
+      operationId: listPets
+      tags:
+        - pets
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: An paged array of pets
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Pet"
+    post:
+      summary: Create a pet
+      operationId: createPet
+      tags:
+        - pets
+      parameters:
+        - name: requestBody
+          in: body
+          schema:
+            $ref: '#/definitions/Pet'
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: "#/definitions/Pet"
+
+  /pets/{petId}:
+    get:
+      summary: Info for a specific pet
+      operationId: getPetById
+      tags:
+        - pets
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          description: The id of the pet to retrieve
+          type: integer
+          format: int64
+        - name: details
+          in: query
+          required: false
+          description: Include pet details
+          type: boolean
+          default: false
+      responses:
+        '200':
+          description: Expected response to a valid request
+          schema:
+            $ref: "#/definitions/Pet"
+    put:
+      summary: Update a pet
+      operationId: updatePet
+      tags:
+        - pets
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          description: The id of the pet to retrieve
+          type: integer
+          format: int64
+        - name: requestBody
+          in: body
+          schema:
+            $ref: '#/definitions/Pet'
+      responses:
+        '204':
+          description: OK
+    delete:
+      summary: Info for a specific pet
+      operationId: deletePetById
+      tags:
+        - pets
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: Deleted
+
+definitions:
+  Pet:
+    type: object
+    discriminator: _type
+    required:
+      - id
+      - name
+    properties:
+      _type:
+        type: string
+        default: 'Pet'
+        readOnly: true
+      id:
+        type: integer
+        format: int64
+        default: 0
+      name:
+        type: string
+        default: "noname"
+      available:
+        type: boolean
+        default: true
+      price:
+        type: number
+      uid:
+        type: string
+        format: uuid
+      createTime:
+        type: string
+        format: date-time
+      owner:
+        $ref: "#/definitions/Owner"
+      color:
+        default: Black
+        $ref: "#/definitions/Color"
+
+
+  Cat:  ## "Cat" will be used as the discriminator value
+    description: A representation of a cat
+    allOf:
+    - $ref: '#/definitions/Pet'
+    - type: object
+      properties:
+        huntingSkill:
+          type: string
+          description: The measured skill for hunting
+          default: lazy
+          enum:
+          - clueless
+          - lazy
+          - adventurous
+          - aggressive
+      required:
+      - huntingSkill
+
+  Dog:  ## "Dog" will be used as the discriminator value
+    description: A representation of a dog
+    allOf:
+    - $ref: '#/definitions/Pet'
+    - type: object
+      properties:
+        packSize:
+          type: integer
+          format: int32
+          description: the size of the pack the dog is from
+          default: 0
+          minimum: 0
+      required:
+      - packSize
+
+  Owner:
+    properties:
+      name:
+        type: string
+
+  Pets:
+    type: array
+    items:
+      $ref: "#/definitions/Pet"
+
+  Color:
+    type: string
+    enum:
+      - Black
+      - White
+      - Red
+
+  PetList:
+    type: object
+    required:
+      - _items
+    properties:
+      _items:
+        type: array
+        items:
+          $ref: "#/definitions/Pet"
+      _max:
+        type: integer
+      _offset:
+        type: integer
+
+  Error:
+    additionalProperties:
+      type: string
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string

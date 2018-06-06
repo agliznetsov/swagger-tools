@@ -7,7 +7,7 @@ import org.swaggertools.core.consumer.JavaFileWriter;
 import org.swaggertools.core.consumer.model.JacksonModelGenerator;
 import org.swaggertools.core.consumer.spring.web.ClientGenerator;
 import org.swaggertools.core.consumer.spring.web.ServerGenerator;
-import org.swaggertools.core.supplier.OpenAPIDefinition;
+import org.swaggertools.core.supplier.ApiDefinitionSupplier;
 import org.swaggertools.core.util.StreamUtils;
 
 import java.io.File;
@@ -24,8 +24,23 @@ import static org.junit.Assert.assertEquals;
 public class PetstoreTest {
 
     @Test
-    public void test_petstore_model() throws Exception {
-        Processor processor = createProcessor();
+    public void test_openapi() throws Exception {
+        String source = "/petstore/openapi.yaml";
+        testModel(source);
+        testServer(source);
+        testClient(source);
+    }
+
+    @Test
+    public void test_swagger() throws Exception {
+        String source = "/petstore/swagger.yaml";
+        testModel(source);
+        testServer(source);
+        testClient(source);
+    }
+
+    public void testModel(String source) throws Exception {
+        Processor processor = createProcessor(source);
 
         MemoryWriter memoryWriter = new MemoryWriter();
         JacksonModelGenerator generator = new JacksonModelGenerator();
@@ -38,9 +53,8 @@ public class PetstoreTest {
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/model/" + k, v));
     }
 
-    @Test
-    public void test_petstore_server() throws Exception {
-        Processor processor = createProcessor();
+    public void testServer(String source) throws Exception {
+        Processor processor = createProcessor(source);
 
         MemoryWriter memoryWriter = new MemoryWriter();
         ServerGenerator generator = new ServerGenerator();
@@ -54,9 +68,8 @@ public class PetstoreTest {
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/server/" + k, v));
     }
 
-    @Test
-    public void test_petstore_client() throws Exception {
-        Processor processor = createProcessor();
+    public void testClient(String source) throws Exception {
+        Processor processor = createProcessor(source);
 
         MemoryWriter memoryWriter = new MemoryWriter();
         ClientGenerator generator = new ClientGenerator();
@@ -70,11 +83,11 @@ public class PetstoreTest {
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/client/" + k, v));
     }
 
-    private Processor createProcessor() throws FileNotFoundException, URISyntaxException {
-        URL url = this.getClass().getResource("/petstore/petstore.yaml");
+    private Processor createProcessor(String source) throws FileNotFoundException, URISyntaxException {
+        URL url = this.getClass().getResource(source);
         FileInputStream is = new FileInputStream(new File(url.toURI()));
         Processor processor = new Processor();
-        processor.setApiSupplier(new OpenAPIDefinition(is, FileFormat.YAML));
+        processor.setApiSupplier(new ApiDefinitionSupplier(is, FileFormat.YAML));
         return processor;
     }
 
@@ -82,6 +95,10 @@ public class PetstoreTest {
     private void verifyJavaFile(String path, String java) {
         String expected = StreamUtils.copyToString(getClass().getResourceAsStream(path + ".java"));
         assertEquals(normalize(expected), normalize(java));
+//        if (!normalize(expected).equals(normalize(java))) {
+//            System.err.println(path);
+//            System.err.println(java);
+//        }
     }
 
     String normalize(String string) {
