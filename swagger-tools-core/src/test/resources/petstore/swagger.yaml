@@ -110,6 +110,7 @@ paths:
           description: Deleted
 
 definitions:
+
   Pet:
     type: object
     discriminator: _type
@@ -144,6 +145,10 @@ definitions:
       color:
         default: Black
         $ref: "#/definitions/Color"
+      details:
+        type: object
+        additionalProperties:
+          type: string
 
 
   Cat:  ## "Cat" will be used as the discriminator value
@@ -211,6 +216,7 @@ definitions:
         type: integer
 
   Error:
+    type: object
     additionalProperties:
       type: string
     properties:

@@ -92,26 +92,9 @@ public class SwaggerMapper {
                 schema.setDefaultValue(sp.getDefaultValue().toString());
             }
             res.setSchema(schema);
-        } else {
-            res = res;
         }
         return res;
     }
-
-//    private Parameter mapRequestBody(RequestBody requestBody) {
-//        if (requestBody != null && requestBody.getContent() != null) {
-//            MediaType mediaType = requestBody.getContent().get(JSON);
-//            if (mediaType != null && mediaType.getSchema() != null) {
-//                Parameter res = new Parameter();
-//                res.setName("requestBody");
-//                res.setKind(ParameterKind.BODY);
-//                res.setRequired(true);
-//                res.setSchema(mapSchema(mediaType.getSchema()));
-//                return res;
-//            }
-//        }
-//        return null;
-//    }
 
     private void addResponse(Operation info, Map<String, Response> responses) {
         for (Map.Entry<String, Response> e : responses.entrySet()) {
@@ -220,6 +203,9 @@ public class SwaggerMapper {
                 if (items != null) {
                     schema.setItems(mapPropertySchema(items));
                 }
+            } else if (property instanceof MapProperty) {
+                schema.setType("map");
+                schema.setAdditionalProperties(mapPropertySchema(((MapProperty) property).getAdditionalProperties()));
             }
         }
         return schema;

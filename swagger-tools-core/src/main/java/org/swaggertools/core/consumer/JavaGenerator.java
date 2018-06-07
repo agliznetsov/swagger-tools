@@ -19,6 +19,7 @@ public abstract class JavaGenerator implements Consumer<ApiDefinition> {
     protected static final TypeName STRING = TypeName.get(String.class);
     protected static final ClassName LIST = ClassName.get(List.class);
     protected static final ClassName LINKED_LIST = ClassName.get(LinkedList.class);
+    protected static final ClassName MAP = ClassName.get(Map.class);
     protected static final ClassName HASH_MAP = ClassName.get(HashMap.class);
 
     @Getter
@@ -51,6 +52,9 @@ public abstract class JavaGenerator implements Consumer<ApiDefinition> {
     protected TypeName getType(Schema schema) {
         if ("array".equals(schema.getType())) {
             return getArrayType(schema, LIST);
+        } else if ("map".equals(schema.getType())) {
+            TypeName valueType = getType(schema.getAdditionalProperties());
+            return ParameterizedTypeName.get(MAP, STRING, valueType);
         } else if (schema.getRef() != null) {
             return ClassName.get(modelPackageName, schema.getRef());
         } else {

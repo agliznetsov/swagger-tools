@@ -8,6 +8,7 @@ import java.lang.Double;
 import java.lang.Long;
 import java.lang.String;
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @JsonTypeInfo(
@@ -46,6 +47,9 @@ public class Pet {
 
     @JsonProperty("color")
     Color color;
+
+    @JsonProperty("details")
+    Map<String, String> details;
 
     public String getType() {
         return type;
@@ -117,5 +121,13 @@ public class Pet {
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    public Map<String, String> getDetails() {
+        return details;
+    }
+
+    public void setDetails(Map<String, String> details) {
+        this.details = details;
     }
 }

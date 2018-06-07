@@ -182,6 +182,10 @@ components:
         color:
           default: Black
           $ref: "#/components/schemas/Color"
+        details:
+          type: object
+          additionalProperties:
+            type: string
 
 
     Cat:  ## "Cat" will be used as the discriminator value
