@@ -58,6 +58,7 @@ public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefini
 
         addMethodParameters(builder, operation);
         addMethodResponse(builder, operation);
+        createUrlVariables(builder, operation);
         createQueryParameters(builder, operation);
         createTypeRef(builder, operation);
         invokeApi(builder, operation);
@@ -65,12 +66,27 @@ public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefini
         getClient(operation.getTag()).client.addMethod(builder.build());
     }
 
+    private void createUrlVariables(MethodSpec.Builder builder, Operation operation) {
+        List<String> names = new LinkedList<>();
+        List<Object> args = new LinkedList<>();
+        args.add(MAP);
+        operation.getParameters().forEach(p -> {
+            if (p.getKind() == ParameterKind.PATH) {
+                names.add("$S");
+                names.add("$L");
+                args.add(p.getName());
+                args.add(p.getName());
+            }
+        });
+        builder.addStatement("$T urlVariables = createUrlVariables(" + String.join(", ", names) + ")", args.toArray());
+    }
+
     private void createQueryParameters(MethodSpec.Builder builder, Operation operation) {
         List<String> names = new LinkedList<>();
         List<Object> args = new LinkedList<>();
         args.add(MULTI_MAP);
         operation.getParameters().forEach(p -> {
-            if (p.getKind() != ParameterKind.BODY) {
+            if (p.getKind() == ParameterKind.QUERY) {
                 names.add("$S");
                 names.add("$L");
                 args.add(p.getName());
@@ -97,7 +113,7 @@ public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefini
             format = "$T response = ";
             args.add(typeRef);
         }
-        format += "invokeAPI($S, $T.$L, parameters, $L, typeRef)";
+        format += "invokeAPI($S, $T.$L, urlVariables, parameters, $L, typeRef)";
         args.add(operation.getPath());
         args.add(HTTP_METHOD);
         args.add(operation.getMethod().name());
@@ -137,6 +153,13 @@ public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefini
                             .addModifiers(Modifier.PUBLIC)
                             .addParameter(REST_TEMPLATE, "restTemplate")
                             .addStatement("super($N)", "restTemplate")
+                            .build()
+                    )
+                    .addMethod(MethodSpec.constructorBuilder()
+                            .addModifiers(Modifier.PUBLIC)
+                            .addParameter(REST_TEMPLATE, "restTemplate")
+                            .addParameter(STRING, "basePath")
+                            .addStatement("super($N, $N)", "restTemplate", "basePath")
                             .build()
                     );
         }
