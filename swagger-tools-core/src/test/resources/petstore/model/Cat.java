@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Cat extends Pet {
     @JsonProperty("huntingSkill")
-    HuntingSkillEnum huntingSkill = HuntingSkillEnum.lazy;
+    HuntingSkillEnum huntingSkill = HuntingSkillEnum.LAZY;
 
     public HuntingSkillEnum getHuntingSkill() {
         return huntingSkill;
@@ -15,12 +15,16 @@ public class Cat extends Pet {
     }
 
     public enum HuntingSkillEnum {
-        clueless,
+        @JsonProperty("clueless")
+        CLUELESS,
 
-        lazy,
+        @JsonProperty("lazy")
+        LAZY,
 
-        adventurous,
+        @JsonProperty("adventurous")
+        ADVENTUROUS,
 
-        aggressive
+        @JsonProperty("aggressive")
+        AGGRESSIVE
     }
 }

@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.swaggertools.core.consumer.NameUtils.*;
+import static org.swaggertools.core.util.NameUtils.*;
 import static org.swaggertools.core.util.AssertUtils.notNull;
 
 public class ServerGenerator extends JavaGenerator implements Consumer<ApiDefinition> {

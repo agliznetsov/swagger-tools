@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 import org.swaggertools.core.consumer.JavaGenerator;
 import org.swaggertools.core.model.ApiDefinition;
 import org.swaggertools.core.model.Schema;
+import org.swaggertools.core.util.NameUtils;
 
 import javax.lang.model.element.Modifier;
 import java.util.HashMap;
@@ -17,8 +18,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static com.squareup.javapoet.TypeName.*;
-import static org.swaggertools.core.consumer.NameUtils.pascalCase;
-import static org.swaggertools.core.consumer.NameUtils.sanitize;
+import static org.swaggertools.core.util.NameUtils.pascalCase;
+import static org.swaggertools.core.util.NameUtils.sanitize;
 
 
 public class JacksonModelGenerator extends JavaGenerator implements Consumer<ApiDefinition> {
@@ -80,7 +81,14 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
 
     private TypeSpec.Builder createEnum(String name, Schema schema) {
         TypeSpec.Builder model = TypeSpec.enumBuilder(name);
-        schema.getEnumValues().forEach(model::addEnumConstant);
+        for (String value : schema.getEnumValues()) {
+            String valueName = NameUtils.upperCase(value);
+            model.addEnumConstant(valueName, TypeSpec.anonymousClassBuilder("")
+                    .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
+                            .addMember("value", "$S", value)
+                            .build())
+                    .build());
+        }
         return model;
     }
 
@@ -134,7 +142,7 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
 
         if (schema.getDefaultValue() != null) {
             if (schema.getEnumValues() != null) {
-                builder.initializer("$T.$L", type, schema.getDefaultValue());
+                builder.initializer("$T.$L", type, NameUtils.upperCase(schema.getDefaultValue()));
             } else if (type == STRING) {
                 builder.initializer("$S", schema.getDefaultValue());
             } else if (type == FLOAT || type == FLOAT.box()) {

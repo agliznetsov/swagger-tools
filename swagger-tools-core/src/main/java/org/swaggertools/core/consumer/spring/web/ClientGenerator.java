@@ -15,7 +15,7 @@ import javax.lang.model.element.Modifier;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static org.swaggertools.core.consumer.NameUtils.*;
+import static org.swaggertools.core.util.NameUtils.*;
 import static org.swaggertools.core.util.AssertUtils.notNull;
 
 public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefinition> {
