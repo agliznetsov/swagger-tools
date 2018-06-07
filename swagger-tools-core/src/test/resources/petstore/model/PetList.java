@@ -2,11 +2,12 @@ package com.example;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.Integer;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PetList {
     @JsonProperty("_items")
-    List<Pet> items;
+    List<Pet> items = new ArrayList<Pet>();
 
     @JsonProperty("_max")
     Integer max;

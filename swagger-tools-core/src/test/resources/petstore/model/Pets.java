@@ -1,6 +1,6 @@
 package com.example;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
-public class Pets extends LinkedList<Pet> {
+public class Pets extends ArrayList<Pet> {
 }

@@ -18,7 +18,7 @@ import static org.swaggertools.core.util.AssertUtils.notNull;
 public abstract class JavaGenerator implements Consumer<ApiDefinition> {
     protected static final TypeName STRING = TypeName.get(String.class);
     protected static final ClassName LIST = ClassName.get(List.class);
-    protected static final ClassName LINKED_LIST = ClassName.get(LinkedList.class);
+    protected static final ClassName ARRAY_LIST = ClassName.get(ArrayList.class);
     protected static final ClassName MAP = ClassName.get(Map.class);
     protected static final ClassName HASH_MAP = ClassName.get(HashMap.class);
 
@@ -53,12 +53,21 @@ public abstract class JavaGenerator implements Consumer<ApiDefinition> {
         if ("array".equals(schema.getType())) {
             return getArrayType(schema, LIST);
         } else if ("map".equals(schema.getType())) {
-            TypeName valueType = getType(schema.getAdditionalProperties());
-            return ParameterizedTypeName.get(MAP, STRING, valueType);
+            return getMapName(schema, MAP);
         } else if (schema.getRef() != null) {
             return ClassName.get(modelPackageName, schema.getRef());
         } else {
             return getSimpleType(schema);
+        }
+    }
+
+    protected TypeName getCollectionType(Schema schema) {
+        if ("array".equals(schema.getType())) {
+            return getArrayType(schema, ARRAY_LIST);
+        } else if ("map".equals(schema.getType())) {
+            return getMapName(schema, HASH_MAP);
+        } else {
+            throw new IllegalArgumentException("Not a collection type: " + schema.getType());
         }
     }
 
@@ -87,6 +96,11 @@ public abstract class JavaGenerator implements Consumer<ApiDefinition> {
         } else {
             return superClass;
         }
+    }
+
+    private TypeName getMapName(Schema schema, ClassName superClass) {
+        TypeName valueType = getType(schema.getAdditionalProperties());
+        return ParameterizedTypeName.get(superClass, STRING, valueType);
     }
 
 }

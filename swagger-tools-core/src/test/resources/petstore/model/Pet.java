@@ -8,6 +8,7 @@ import java.lang.Double;
 import java.lang.Long;
 import java.lang.String;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -49,7 +50,7 @@ public class Pet {
     Color color;
 
     @JsonProperty("details")
-    Map<String, String> details;
+    Map<String, String> details = new HashMap<String, String>();
 
     public String getType() {
         return type;

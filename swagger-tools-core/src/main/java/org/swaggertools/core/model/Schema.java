@@ -17,4 +17,8 @@ public class Schema {
     String defaultValue;
     Collection<String> enumValues;
     Collection<Property> properties;
+
+    public boolean isCollection() {
+        return "array".equals(type) || "map".equals(type);
+    }
 }

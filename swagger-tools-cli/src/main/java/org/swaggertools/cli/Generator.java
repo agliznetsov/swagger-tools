@@ -54,10 +54,15 @@ public class Generator {
         if (commandLine.hasOption(TARGET_MODEL_LOCATION)) {
             String target = commandLine.getOptionValue(TARGET_MODEL_LOCATION);
             String modelPackage = commandLine.getOptionValue(TARGET_MODEL_MODEL_PACKAGE, "model");
+            String initCollections = commandLine.getOptionValue(TARGET_MODEL_INITIALIZE_COLLECTIONS);
 
             JacksonModelGenerator generator = new JacksonModelGenerator();
             generator.setModelPackageName(modelPackage);
             generator.setWriter(getWriter(target));
+            if (initCollections != null) {
+                generator.setInitializeCollectionFields(Boolean.parseBoolean(initCollections));
+            }
+
             processor.getApiConsumers().add(generator);
             System.out.println("Generating model in " + target + "/" + modelPackage);
         }
@@ -103,6 +108,7 @@ public class Generator {
         
         options.addOption(Option.builder().longOpt(TARGET_MODEL_LOCATION).hasArg().desc("Model classes location").build());
         options.addOption(Option.builder().longOpt(TARGET_MODEL_MODEL_PACKAGE).hasArg().desc("Model package name").build());
+        options.addOption(Option.builder().longOpt(TARGET_MODEL_INITIALIZE_COLLECTIONS).hasArg().desc("Initialize collection type fields (lists and maps)").build());
 
         options.addOption(Option.builder().longOpt(TARGET_SERVER_LOCATION).hasArg().desc("Server classes location").build());
         options.addOption(Option.builder().longOpt(TARGET_SERVER_MODEL_PACKAGE).hasArg().desc("Model package name").build());
@@ -118,7 +124,8 @@ public class Generator {
     
     private static final String TARGET_MODEL_LOCATION = "target.model.location";
     private static final String TARGET_MODEL_MODEL_PACKAGE = "target.model.model-package";
-    
+    private static final String TARGET_MODEL_INITIALIZE_COLLECTIONS = "target.model.init-collections";
+
     private static final String TARGET_SERVER_LOCATION = "target.server.location";
     private static final String TARGET_SERVER_MODEL_PACKAGE = "target.server.model-package";
     private static final String TARGET_SERVER_SERVER_PACKAGE = "target.server.server-package";

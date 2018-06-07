@@ -4,9 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.squareup.javapoet.*;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import org.swaggertools.core.consumer.JavaGenerator;
 import org.swaggertools.core.model.ApiDefinition;
+import org.swaggertools.core.model.Property;
 import org.swaggertools.core.model.Schema;
 import org.swaggertools.core.util.NameUtils;
 
@@ -24,6 +27,10 @@ import static org.swaggertools.core.util.NameUtils.sanitize;
 
 public class JacksonModelGenerator extends JavaGenerator implements Consumer<ApiDefinition> {
     final Map<String, ModelInfo> models = new HashMap<>();
+
+    @Getter
+    @Setter
+    boolean initializeCollectionFields = true;
 
     @Override
     public void accept(ApiDefinition apiDefinition) {
@@ -64,7 +71,7 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
         if (schema.getEnumValues() != null) {
             model = createEnum(schema.getName(), schema);
         } else if ("array".equals(schema.getType())) {
-            model.superclass(getArrayType(schema, LINKED_LIST));
+            model.superclass(getArrayType(schema, ARRAY_LIST));
         } else {
             if (schema.getSuperSchema() != null) {
                 extendSchema(model, schema);
@@ -118,16 +125,16 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
                             .build();
                     ClassName typeName = ClassName.get(modelPackageName, model.build().name, enumName);
                     model.addType(enumSpec);
-                    addProperty(model, property.getName(), typeName, property.getSchema());
+                    addProperty(model, property, typeName);
                 } else {
-                    addProperty(model, property.getName(), getType(property.getSchema()), property.getSchema());
+                    addProperty(model, property, getType(property.getSchema()));
                 }
             });
         }
     }
 
-    private void addProperty(TypeSpec.Builder model, String propertyName, TypeName propertyType, Schema propertySchema) {
-        FieldSpec field = field(propertyName, propertyType, propertySchema);
+    private void addProperty(TypeSpec.Builder model, Property property, TypeName propertyType) {
+        FieldSpec field = field(property.getName(), propertyType, property.getSchema());
         model.addField(field);
         model.addMethod(getter(field));
         model.addMethod(setter(field));
@@ -152,6 +159,8 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
             } else {
                 builder.initializer("$L", schema.getDefaultValue());
             }
+        } else if (initializeCollectionFields && schema.isCollection()) {
+            builder.initializer("new $T()", getCollectionType(schema));
         }
 
         return builder.build();
