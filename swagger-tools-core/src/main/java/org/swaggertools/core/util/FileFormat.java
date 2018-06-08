@@ -1,4 +1,4 @@
-package org.swaggertools.core;
+package org.swaggertools.core.util;
 
 public enum FileFormat {
     YAML, JSON

@@ -1,4 +1,4 @@
-package org.swaggertools.core;
+package org.swaggertools.core.run;
 
 import lombok.Getter;
 import lombok.Setter;

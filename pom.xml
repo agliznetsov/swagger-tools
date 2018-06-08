@@ -10,6 +10,8 @@
     <modules>
         <module>swagger-tools-core</module>
         <module>swagger-tools-cli</module>
+        <module>swagger-tools-maven-plugin</module>
+        <module>demo-app</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -24,6 +26,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.swagger.core.v3</groupId>
                 <artifactId>swagger-core</artifactId>

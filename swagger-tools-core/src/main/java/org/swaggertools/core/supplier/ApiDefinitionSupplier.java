@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.swaggertools.core.FileFormat;
+import org.swaggertools.core.util.FileFormat;
 import org.swaggertools.core.model.ApiDefinition;
 
 import java.io.InputStream;

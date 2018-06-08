@@ -6,6 +6,7 @@ import com.squareup.javapoet.TypeName;
 import lombok.Getter;
 import lombok.Setter;
 import org.swaggertools.core.model.*;
+import org.swaggertools.core.util.JavaFileWriter;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;

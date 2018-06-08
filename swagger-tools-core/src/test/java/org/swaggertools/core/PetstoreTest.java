@@ -3,11 +3,13 @@ package org.swaggertools.core;
 import com.squareup.javapoet.JavaFile;
 import lombok.SneakyThrows;
 import org.junit.Test;
-import org.swaggertools.core.consumer.JavaFileWriter;
+import org.swaggertools.core.run.Processor;
+import org.swaggertools.core.util.JavaFileWriter;
 import org.swaggertools.core.consumer.model.JacksonModelGenerator;
 import org.swaggertools.core.consumer.spring.web.ClientGenerator;
 import org.swaggertools.core.consumer.spring.web.ServerGenerator;
 import org.swaggertools.core.supplier.ApiDefinitionSupplier;
+import org.swaggertools.core.util.FileFormat;
 import org.swaggertools.core.util.StreamUtils;
 
 import java.io.File;

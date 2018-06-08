@@ -1,19 +1,15 @@
 package org.swaggertools.cli;
 
-import com.squareup.javapoet.JavaFile;
-import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
-import org.swaggertools.core.FileFormat;
-import org.swaggertools.core.Processor;
-import org.swaggertools.core.consumer.JavaFileWriterImpl;
-import org.swaggertools.core.consumer.model.JacksonModelGenerator;
-import org.swaggertools.core.consumer.spring.web.ClientGenerator;
-import org.swaggertools.core.consumer.spring.web.ServerGenerator;
-import org.swaggertools.core.supplier.ApiDefinitionSupplier;
+import org.swaggertools.core.run.Configuration;
+import org.swaggertools.core.run.Processor;
+import org.swaggertools.core.run.ProcessorFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.util.HashMap;
+import java.util.Map;
 
+@Slf4j
 public class Generator {
     public static void main(String[] args) {
         new Generator().run(args);
@@ -31,106 +27,37 @@ public class Generator {
     }
 
     private void generate(CommandLine commandLine) {
-        Processor processor = new Processor();
-        setSource(processor, commandLine);
-        setTargets(processor, commandLine);
-        if (processor.getApiConsumers().isEmpty()) {
-            System.out.println("No target set");
+        Processor processor = null;
+        try {
+            processor = new ProcessorFactory(readOptions(commandLine)).create();
+        } catch (IllegalArgumentException e) {
+            log.error(e.getMessage());
             System.exit(1);
-        } else {
+        }
+        if (processor != null) {
             processor.process();
         }
     }
 
-    @SneakyThrows
-    private void setSource(Processor processor, CommandLine commandLine) {
-        String src = commandLine.getOptionValue(SOURCE_LOCATION);
-        FileFormat ff = src.toLowerCase().endsWith(".json") ? FileFormat.JSON : FileFormat.YAML;
-        FileInputStream is = new FileInputStream(new File(src));
-        processor.setApiSupplier(new ApiDefinitionSupplier(is, ff));
-    }
-
-    private void setTargets(Processor processor, CommandLine commandLine) {
-        if (commandLine.hasOption(TARGET_MODEL_LOCATION)) {
-            String target = commandLine.getOptionValue(TARGET_MODEL_LOCATION);
-            String modelPackage = commandLine.getOptionValue(TARGET_MODEL_MODEL_PACKAGE, "model");
-            String initCollections = commandLine.getOptionValue(TARGET_MODEL_INITIALIZE_COLLECTIONS);
-
-            JacksonModelGenerator generator = new JacksonModelGenerator();
-            generator.setModelPackageName(modelPackage);
-            generator.setWriter(getWriter(target));
-            if (initCollections != null) {
-                generator.setInitializeCollectionFields(Boolean.parseBoolean(initCollections));
+    private Map<Configuration, String> readOptions(CommandLine commandLine) {
+        Map<Configuration, String> options = new HashMap<>();
+        for (Configuration config : Configuration.values()) {
+            String value = commandLine.getOptionValue(config.getKey());
+            if (value != null) {
+                options.put(config, value);
             }
-
-            processor.getApiConsumers().add(generator);
-            System.out.println("Generating model in " + target + "/" + modelPackage);
         }
-        if (commandLine.hasOption(TARGET_SERVER_LOCATION)) {
-            String target = commandLine.getOptionValue(TARGET_SERVER_LOCATION);
-            String modelPackage = commandLine.getOptionValue(TARGET_SERVER_MODEL_PACKAGE, "model");
-            String serverPackage = commandLine.getOptionValue(TARGET_SERVER_SERVER_PACKAGE, "server");
-
-            ServerGenerator generator = new ServerGenerator();
-            generator.setModelPackageName(modelPackage);
-            generator.setApiPackageName(serverPackage);
-            generator.setWriter(getWriter(target));
-            processor.getApiConsumers().add(generator);
-            System.out.println("Generating server in " + target + "/" + serverPackage);
-        }
-        if (commandLine.hasOption(TARGET_CLIENT_LOCATION)) {
-            String target = commandLine.getOptionValue(TARGET_CLIENT_LOCATION);
-            String modelPackage = commandLine.getOptionValue(TARGET_CLIENT_MODEL_PACKAGE, "model");
-            String clientPackage = commandLine.getOptionValue(TARGET_CLIENT_CLIENT_PACKAGE, "client");
-
-            ClientGenerator generator = new ClientGenerator();
-            generator.setModelPackageName(modelPackage);
-            generator.setClientPackageName(clientPackage);
-            generator.setWriter(getWriter(target));
-            processor.getApiConsumers().add(generator);
-            System.out.println("Generating client in " + target + "/" + clientPackage);
-        }
-    }
-
-    private JavaFileWriterImpl getWriter(String target) {
-        return new JavaFileWriterImpl(new File(target)) {
-            @Override
-            public void write(JavaFile javaFile) {
-                System.out.println("Writing " + javaFile.packageName + "." + javaFile.typeSpec.name);
-                super.write(javaFile);
-            }
-        };
+        return options;
     }
 
     private Options createOptions() {
         Options options = new Options();
-        options.addOption(Option.builder().longOpt(SOURCE_LOCATION).required().hasArg().desc("Source file location").build());
-        
-        options.addOption(Option.builder().longOpt(TARGET_MODEL_LOCATION).hasArg().desc("Model classes location").build());
-        options.addOption(Option.builder().longOpt(TARGET_MODEL_MODEL_PACKAGE).hasArg().desc("Model package name").build());
-        options.addOption(Option.builder().longOpt(TARGET_MODEL_INITIALIZE_COLLECTIONS).hasArg().desc("Initialize collection type fields (lists and maps)").build());
-
-        options.addOption(Option.builder().longOpt(TARGET_SERVER_LOCATION).hasArg().desc("Server classes location").build());
-        options.addOption(Option.builder().longOpt(TARGET_SERVER_MODEL_PACKAGE).hasArg().desc("Model package name").build());
-        options.addOption(Option.builder().longOpt(TARGET_SERVER_SERVER_PACKAGE).hasArg().desc("Server package name").build());
-
-        options.addOption(Option.builder().longOpt(TARGET_CLIENT_LOCATION).hasArg().desc("Client classes location").build());
-        options.addOption(Option.builder().longOpt(TARGET_CLIENT_MODEL_PACKAGE).hasArg().desc("Model package name").build());
-        options.addOption(Option.builder().longOpt(TARGET_CLIENT_CLIENT_PACKAGE).hasArg().desc("Client package name").build());
+        for (Configuration config : Configuration.values()) {
+            Option.Builder builder = Option.builder().longOpt(config.getKey()).hasArg().desc(config.getDescription());
+            builder.required(config == Configuration.SOURCE_LOCATION);
+            options.addOption(builder.build());
+        }
         return options;
     }
-    
-    private static final String SOURCE_LOCATION = "source.location";
-    
-    private static final String TARGET_MODEL_LOCATION = "target.model.location";
-    private static final String TARGET_MODEL_MODEL_PACKAGE = "target.model.model-package";
-    private static final String TARGET_MODEL_INITIALIZE_COLLECTIONS = "target.model.init-collections";
 
-    private static final String TARGET_SERVER_LOCATION = "target.server.location";
-    private static final String TARGET_SERVER_MODEL_PACKAGE = "target.server.model-package";
-    private static final String TARGET_SERVER_SERVER_PACKAGE = "target.server.server-package";
-    
-    private static final String TARGET_CLIENT_LOCATION = "target.client.location";
-    private static final String TARGET_CLIENT_MODEL_PACKAGE = "target.client.model-package";
-    private static final String TARGET_CLIENT_CLIENT_PACKAGE = "target.client.client-package";
 }
