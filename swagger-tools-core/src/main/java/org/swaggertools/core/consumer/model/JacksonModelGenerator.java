@@ -8,9 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.swaggertools.core.consumer.JavaGenerator;
-import org.swaggertools.core.model.ApiDefinition;
-import org.swaggertools.core.model.Property;
-import org.swaggertools.core.model.Schema;
+import org.swaggertools.core.model.*;
 import org.swaggertools.core.util.NameUtils;
 
 import javax.lang.model.element.Modifier;
@@ -38,15 +36,16 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
         apiDefinition.getSchemas().values().forEach(this::createModel);
         models.values().forEach(it -> {
             addSubtypes(it);
-            writer.write(JavaFile.builder(modelPackageName, it.model.build()).indent(indent).build());
+            writer.write(JavaFile.builder(modelPackageName, it.typeSpec.build()).indent(indent).build());
         });
     }
 
     private void addSubtypes(ModelInfo modelInfo) {
         if (!modelInfo.subTypes.isEmpty()) {
+            ObjectSchema schema = (ObjectSchema) modelInfo.schema;
             AnnotationSpec typeInfo = AnnotationSpec.builder(JsonTypeInfo.class)
                     .addMember("use", "$L", "JsonTypeInfo.Id.NAME")
-                    .addMember("property", "$S", modelInfo.schema.getDiscriminator())
+                    .addMember("property", "$S", schema.getDiscriminator())
                     .addMember("visible", "$L", "true")
                     .build();
 
@@ -58,36 +57,51 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
                         .build());
             }
 
-            modelInfo.model.addAnnotation(typeInfo);
-            modelInfo.model.addAnnotation(subTypesBuilder.build());
+            modelInfo.typeSpec.addAnnotation(typeInfo);
+            modelInfo.typeSpec.addAnnotation(subTypesBuilder.build());
         }
     }
 
     @SneakyThrows
     private void createModel(Schema schema) {
-        TypeSpec.Builder model = TypeSpec.classBuilder(schema.getName())
-                .addModifiers(Modifier.PUBLIC);
+        TypeSpec.Builder typeSpec = null;
 
-        if (schema.getEnumValues() != null) {
-            model = createEnum(schema.getName(), schema);
-        } else if ("array".equals(schema.getType())) {
-            model.superclass(getArrayType(schema, ARRAY_LIST));
-        } else {
-            if (schema.getSuperSchema() != null) {
-                extendSchema(model, schema);
+        if (schema instanceof PrimitiveSchema) {
+            PrimitiveSchema primitiveSchema = (PrimitiveSchema) schema;
+            if (primitiveSchema.getEnumValues() != null) {
+                typeSpec = createEnum(schema.getName(), primitiveSchema);
             }
-            if (schema.getAdditionalProperties() != null) {
-                extendMap(model, schema);
-            }
-            addProperties(model, schema);
+        } else if (schema instanceof ArraySchema) {
+            typeSpec = TypeSpec.classBuilder(schema.getName()).addModifiers(Modifier.PUBLIC)
+                    .superclass(getArrayType((ArraySchema) schema, true));
+        } else if (schema instanceof ObjectSchema) {
+            typeSpec = createClass((ObjectSchema) schema);
         }
 
-        getModel(schema.getName()).model = model;
-        getModel(schema.getName()).schema = schema;
+        if (typeSpec != null) {
+            ModelInfo info = getModel(schema.getName());
+            info.typeSpec = typeSpec;
+            info.schema = schema;
+        }
     }
 
-    private TypeSpec.Builder createEnum(String name, Schema schema) {
-        TypeSpec.Builder model = TypeSpec.enumBuilder(name);
+    private TypeSpec.Builder createClass(ObjectSchema schema) {
+        TypeSpec.Builder typeSpec = TypeSpec.classBuilder(schema.getName()).addModifiers(Modifier.PUBLIC);
+        if (schema.getSuperSchema() != null) {
+            ClassName superClass = ClassName.get(modelPackageName, schema.getSuperSchema());
+            typeSpec.superclass(superClass);
+            getModel(schema.getSuperSchema()).subTypes.add(schema.getName());
+        } else if (schema.getAdditionalProperties() != null) {
+            Schema valueSchema = schema.getAdditionalProperties();
+            TypeName valueType = valueSchema != null ? getType(valueSchema, false) : OBJECT;
+            typeSpec.superclass(ParameterizedTypeName.get(HASH_MAP, STRING, valueType));
+        }
+        addProperties(typeSpec, schema);
+        return typeSpec;
+    }
+
+    private TypeSpec.Builder createEnum(String name, PrimitiveSchema schema) {
+        TypeSpec.Builder model = TypeSpec.enumBuilder(name).addModifiers(Modifier.PUBLIC);
         for (String value : schema.getEnumValues()) {
             String valueName = NameUtils.upperCase(value);
             model.addEnumConstant(valueName, TypeSpec.anonymousClassBuilder("")
@@ -103,31 +117,17 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
         return models.computeIfAbsent(name, it -> new ModelInfo());
     }
 
-    private void extendSchema(TypeSpec.Builder model, Schema schema) {
-        ClassName superClass = ClassName.get(modelPackageName, schema.getSuperSchema());
-        model.superclass(superClass);
-        getModel(schema.getSuperSchema()).subTypes.add(schema.getName());
-    }
-
-    private void extendMap(TypeSpec.Builder model, Schema schema) {
-        Schema valueSchema = schema.getAdditionalProperties();
-        TypeName valueType = valueSchema != null ? getType(valueSchema) : OBJECT;
-        model.superclass(ParameterizedTypeName.get(HASH_MAP, STRING, valueType));
-    }
-
-    private void addProperties(TypeSpec.Builder model, Schema schema) {
+    private void addProperties(TypeSpec.Builder model, ObjectSchema schema) {
         if (schema.getProperties() != null) {
             schema.getProperties().forEach((property) -> {
                 if (property.getSchema().getEnumValues() != null) {
                     String enumName = pascalCase(property.getName() + "Enum");
-                    TypeSpec enumSpec = createEnum(enumName, property.getSchema())
-                            .addModifiers(Modifier.PUBLIC)
-                            .build();
+                    TypeSpec enumSpec = createEnum(enumName, (PrimitiveSchema) property.getSchema()).build();
                     ClassName typeName = ClassName.get(modelPackageName, model.build().name, enumName);
                     model.addType(enumSpec);
                     addProperty(model, property, typeName);
                 } else {
-                    addProperty(model, property, getType(property.getSchema()));
+                    addProperty(model, property, getType(property.getSchema(), false));
                 }
             });
         }
@@ -160,7 +160,7 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
                 builder.initializer("$L", schema.getDefaultValue());
             }
         } else if (initializeCollectionFields && schema.isCollection()) {
-            builder.initializer("new $T()", getCollectionType(schema));
+            builder.initializer("new $T()", getType(schema, true));
         }
 
         return builder.build();
@@ -190,7 +190,7 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
     }
 
     private static class ModelInfo {
-        public TypeSpec.Builder model;
+        public TypeSpec.Builder typeSpec;
         public Schema schema;
         public List<String> subTypes = new LinkedList<>();
     }

@@ -14,8 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.swaggertools.core.util.NameUtils.*;
 import static org.swaggertools.core.util.AssertUtils.notNull;
+import static org.swaggertools.core.util.NameUtils.*;
 
 public class ServerGenerator extends JavaGenerator implements Consumer<ApiDefinition> {
     private static final String SPRING_ANNOTATIONS = "org.springframework.web.bind.annotation";
@@ -87,11 +87,12 @@ public class ServerGenerator extends JavaGenerator implements Consumer<ApiDefini
                         .addMember("name", "$S", p.getName())
                         .addMember("required", "$L", p.isRequired());
 
-                if (p.getSchema().getDefaultValue() != null) {
-                    anno.addMember("defaultValue", "$S", p.getSchema().getDefaultValue());
+                String defaultValue = p.getSchema().getDefaultValue();
+                if (defaultValue != null) {
+                    anno.addMember("defaultValue", "$S", defaultValue);
                 }
             }
-            ParameterSpec param = ParameterSpec.builder(getType(p.getSchema()), p.getName())
+            ParameterSpec param = ParameterSpec.builder(getType(p.getSchema(), false), p.getName())
                     .addAnnotation(anno.build())
                     .build();
             builder.addParameter(param);
@@ -100,9 +101,9 @@ public class ServerGenerator extends JavaGenerator implements Consumer<ApiDefini
 
     private void addResponse(MethodSpec.Builder builder, Operation operationInfo) {
         if (operationInfo.getResponseSchema() != null) {
-            builder.returns(getType(operationInfo.getResponseSchema()));
+            builder.returns(getType(operationInfo.getResponseSchema(), false));
         }
-        if (operationInfo.getResponseStatus() != HttpStatus.OK) {
+        if (operationInfo.getResponseStatus() != null && operationInfo.getResponseStatus() != HttpStatus.OK) {
             String statusName = operationInfo.getResponseStatus().name();
             builder.addAnnotation(
                     AnnotationSpec.builder(RESPONSE_STATUS)

@@ -2,7 +2,7 @@ package com.example;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-enum Color {
+public enum Color {
     @JsonProperty("Black")
     BLACK,
 

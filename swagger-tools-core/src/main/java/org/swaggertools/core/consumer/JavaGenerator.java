@@ -17,6 +17,7 @@ import static com.squareup.javapoet.TypeName.*;
 import static org.swaggertools.core.util.AssertUtils.notNull;
 
 public abstract class JavaGenerator implements Consumer<ApiDefinition> {
+
     protected static final TypeName STRING = TypeName.get(String.class);
     protected static final ClassName LIST = ClassName.get(List.class);
     protected static final ClassName ARRAY_LIST = ClassName.get(ArrayList.class);
@@ -50,58 +51,55 @@ public abstract class JavaGenerator implements Consumer<ApiDefinition> {
         notNull(modelPackageName, "modelPackageName is not set");
     }
 
-    protected TypeName getType(Schema schema) {
-        if ("array".equals(schema.getType())) {
-            return getArrayType(schema, LIST);
-        } else if ("map".equals(schema.getType())) {
-            return getMapName(schema, MAP);
-        } else if (schema.getRef() != null) {
-            return ClassName.get(modelPackageName, schema.getRef());
+    protected TypeName getType(Schema schema, boolean concrete) {
+        if (schema instanceof PrimitiveSchema) {
+            return getSimpleType((PrimitiveSchema) schema);
+        } else if (schema instanceof ArraySchema) {
+            return getArrayType((ArraySchema) schema, concrete);
+        } else if (schema instanceof ObjectSchema) {
+            return getObjectSchema((ObjectSchema) schema, concrete);
+        }
+        throw new IllegalArgumentException("Unknown type: " + schema.getClass());
+    }
+
+    private TypeName getObjectSchema(ObjectSchema schema, boolean concrete) {
+        if (schema.getAdditionalProperties() != null) {
+            ClassName superClass = concrete ? HASH_MAP : MAP;
+            TypeName valueType = getType(schema.getAdditionalProperties(), false);
+            return ParameterizedTypeName.get(superClass, STRING, valueType);
         } else {
-            return getSimpleType(schema);
+            if (schema.getName() != null) {
+                return ClassName.get(modelPackageName, schema.getName());
+            } else {
+                return OBJECT;
+            }
         }
     }
 
-    protected TypeName getCollectionType(Schema schema) {
-        if ("array".equals(schema.getType())) {
-            return getArrayType(schema, ARRAY_LIST);
-        } else if ("map".equals(schema.getType())) {
-            return getMapName(schema, HASH_MAP);
-        } else {
-            throw new IllegalArgumentException("Not a collection type: " + schema.getType());
-        }
-    }
-
-    protected TypeName getSimpleType(Schema schema) {
+    protected TypeName getSimpleType(PrimitiveSchema schema) {
         String format = schema.getFormat();
         switch (schema.getType()) {
-            case "integer":
+            case INTEGER:
                 return "int64".equals(format) ? LONG.box() : INT.box();
-            case "number":
+            case NUMBER:
                 return "float".equals(format) ? FLOAT.box() : DOUBLE.box();
-            case "boolean":
+            case BOOLEAN:
                 return BOOLEAN.box();
-            case "string":
+            case STRING:
                 Class clazz = stringFormats.get(format);
                 return clazz != null ? TypeName.get(clazz) : STRING;
-            case "object":
-                return OBJECT;
         }
         throw new IllegalArgumentException("Unknown type: " + schema.getType() + ":" + schema.getFormat());
     }
 
-    protected TypeName getArrayType(Schema schema, ClassName superClass) {
-        if (schema.getItems() != null) {
-            TypeName itemType = getType(schema.getItems());
+    protected TypeName getArrayType(ArraySchema schema, boolean concrete) {
+        ClassName superClass = concrete ? ARRAY_LIST : LIST;
+        if (schema.getItemsSchema() != null) {
+            TypeName itemType = getType(schema.getItemsSchema(), false);
             return ParameterizedTypeName.get(superClass, itemType);
         } else {
             return superClass;
         }
-    }
-
-    private TypeName getMapName(Schema schema, ClassName superClass) {
-        TypeName valueType = getType(schema.getAdditionalProperties());
-        return ParameterizedTypeName.get(superClass, STRING, valueType);
     }
 
 }

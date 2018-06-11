@@ -109,6 +109,38 @@ paths:
         '204':
           description: Deleted
 
+  /pets-ref/{petId}:
+    put:
+      operationId: updatePetRefById
+      tags:
+        - pets
+      parameters:
+        - $ref: '#/parameters/petId'
+        - $ref: '#/parameters/Pet'
+      responses:
+        '200':
+          $ref: '#/responses/PetResponse'
+
+parameters:
+  petId:
+    name: petId
+    in: path
+    required: true
+    description: The id of the pet to retrieve
+    type: integer
+    format: int64
+  Pet:
+    name: requestBody
+    in: body
+    schema:
+      $ref: '#/definitions/Pet'
+
+responses:
+    PetResponse:
+      description: Expected response to a valid request
+      schema:
+        $ref: "#/definitions/Pet"
+
 definitions:
 
   Pet:
@@ -225,3 +257,9 @@ definitions:
         format: int32
       message:
         type: string
+      value:
+        type: object
+      details:
+        type: object
+        additionalProperties:
+          type: object

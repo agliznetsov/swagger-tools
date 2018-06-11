@@ -98,7 +98,7 @@ public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefini
 
     private void createTypeRef(MethodSpec.Builder builder, Operation operation) {
         if (operation.getResponseSchema() != null) {
-            TypeName typeRef = ParameterizedTypeName.get(TYPE_REF, getType(operation.getResponseSchema()));
+            TypeName typeRef = ParameterizedTypeName.get(TYPE_REF, getType(operation.getResponseSchema(), false));
             builder.addStatement("$T typeRef = new $T(){}", typeRef, typeRef);
         } else {
             builder.addStatement("$T typeRef = VOID", TYPE_REF);
@@ -109,7 +109,7 @@ public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefini
         String format = "";
         List<Object> args = new LinkedList<>();
         if (operation.getResponseSchema() != null) {
-            TypeName typeRef = ParameterizedTypeName.get(RESPONSE_ENTITY, getType(operation.getResponseSchema()));
+            TypeName typeRef = ParameterizedTypeName.get(RESPONSE_ENTITY, getType(operation.getResponseSchema(), false));
             format = "$T response = ";
             args.add(typeRef);
         }
@@ -127,14 +127,14 @@ public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefini
 
     private void addMethodParameters(MethodSpec.Builder builder, Operation operation) {
         operation.getParameters().forEach(p -> {
-            ParameterSpec param = ParameterSpec.builder(getType(p.getSchema()), p.getName()).build();
+            ParameterSpec param = ParameterSpec.builder(getType(p.getSchema(), false), p.getName()).build();
             builder.addParameter(param);
         });
     }
 
     private void addMethodResponse(MethodSpec.Builder builder, Operation operation) {
         if (operation.getResponseSchema() != null) {
-            builder.returns(getType(operation.getResponseSchema()));
+            builder.returns(getType(operation.getResponseSchema(), false));
         }
     }
 

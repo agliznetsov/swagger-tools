@@ -39,4 +39,8 @@ public interface PetsApi {
     @DeleteMapping("/pets/{petId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deletePetById(@PathVariable(name = "petId", required = true) Long petId);
+
+    @PutMapping("/pets-ref/{petId}")
+    Pet updatePetRefById(@PathVariable(name = "petId", required = true) Long petId,
+            @RequestBody Pet requestBody);
 }

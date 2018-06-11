@@ -50,6 +50,7 @@
                 <version>${project.version}</version>
                 <executions>
                     <execution>
+                        <id>petstore</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>

@@ -59,4 +59,12 @@ public class PetsClient extends RestTemplateClient {
         ParameterizedTypeReference typeRef = VOID;
         invokeAPI("/pets/{petId}", HttpMethod.DELETE, urlVariables, parameters, null, typeRef);
     }
+
+    public Pet updatePetRefById(Long petId, Pet requestBody) {
+        Map urlVariables = createUrlVariables("petId", petId);
+        MultiValueMap parameters = createQueryParameters();
+        ParameterizedTypeReference<Pet> typeRef = new ParameterizedTypeReference<Pet>(){};
+        ResponseEntity<Pet> response = invokeAPI("/pets-ref/{petId}", HttpMethod.PUT, urlVariables, parameters, requestBody, typeRef);
+        return response.getBody();
+    }
 }

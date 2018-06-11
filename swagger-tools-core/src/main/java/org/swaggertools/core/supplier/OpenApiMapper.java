@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.parameters.RequestBody;
@@ -26,7 +25,7 @@ public class OpenApiMapper {
     private static final String X_IGNORE = "x-ignore";
     private static final String X_BASE_PATH = "x-base-path";
 
-    static final Pattern SCHEMA_REF = Pattern.compile("#\\/components\\/schemas\\/(.+)");
+    static final Pattern REF_PATTERN = Pattern.compile("#/components/(.+)/(.+)");
 
     OpenAPI openAPI;
     ApiDefinition apiDefinition;
@@ -89,6 +88,9 @@ public class OpenApiMapper {
     }
 
     private Parameter mapParameter(io.swagger.v3.oas.models.parameters.Parameter parameter) {
+        if (parameter.get$ref() != null) {
+            parameter = resolveRef(parameter.get$ref());
+        }
         Parameter res = new Parameter();
         res.setName(parameter.getName());
         res.setKind("path".equals(parameter.getIn()) ? ParameterKind.PATH : ParameterKind.QUERY);
@@ -98,15 +100,20 @@ public class OpenApiMapper {
     }
 
     private Parameter mapRequestBody(RequestBody requestBody) {
-        if (requestBody != null && requestBody.getContent() != null) {
-            MediaType mediaType = requestBody.getContent().get(JSON);
-            if (mediaType != null && mediaType.getSchema() != null) {
-                Parameter res = new Parameter();
-                res.setName("requestBody");
-                res.setKind(ParameterKind.BODY);
-                res.setRequired(true);
-                res.setSchema(mapSchema(mediaType.getSchema()));
-                return res;
+        if (requestBody != null) {
+            if (requestBody.get$ref() != null) {
+                requestBody = resolveRef(requestBody.get$ref());
+            }
+            if (requestBody.getContent() != null) {
+                MediaType mediaType = requestBody.getContent().get(JSON);
+                if (mediaType != null && mediaType.getSchema() != null) {
+                    Parameter res = new Parameter();
+                    res.setName("requestBody");
+                    res.setKind(ParameterKind.BODY);
+                    res.setRequired(true);
+                    res.setSchema(mapSchema(mediaType.getSchema()));
+                    return res;
+                }
             }
         }
         return null;
@@ -118,8 +125,12 @@ public class OpenApiMapper {
                 int statusCode = Integer.valueOf(e.getKey());
                 if (statusCode >= 200 && statusCode <= 299) {
                     info.setResponseStatus(HttpStatus.valueOf(statusCode));
-                    if (e.getValue().getContent() != null) {
-                        MediaType mediaType = e.getValue().getContent().get(JSON);
+                    ApiResponse response = e.getValue();
+                    if (response.get$ref() != null) {
+                        response = resolveRef(response.get$ref());
+                    }
+                    if (response.getContent() != null) {
+                        MediaType mediaType = response.getContent().get(JSON);
                         if (mediaType != null) {
                             info.setResponseSchema(mapSchema(mediaType.getSchema()));
                         }
@@ -131,15 +142,22 @@ public class OpenApiMapper {
     }
 
     private Schema mapSchema(io.swagger.v3.oas.models.media.Schema<?> schema) {
-        if (schema == null) {
-            return null;
-        }
-
-        Schema res = new Schema();
         if (schema.get$ref() != null) {
-            res.setRef(resolveSchemaName(schema.get$ref()));
+            return new ObjectSchema(resolveName(schema.get$ref()));
+        } else if (schema instanceof io.swagger.v3.oas.models.media.ArraySchema) {
+            return mapArraySchema((io.swagger.v3.oas.models.media.ArraySchema) schema);
+        } else if (schema instanceof ComposedSchema) {
+            return mapComposedSchema((ComposedSchema) schema);
+        } else if ("object".equals(schema.getType())) {
+            return mapObjectSchema(schema);
+        } else {
+            return mapPrimitiveSchema(schema);
         }
-        res.setType(schema.getType());
+    }
+
+    private Schema mapPrimitiveSchema(io.swagger.v3.oas.models.media.Schema<?> schema) {
+        PrimitiveSchema res = new PrimitiveSchema();
+        res.setType(PrimitiveType.fromSwaggerValue(schema.getType()));
         res.setFormat(schema.getFormat());
         if (schema.getDefault() != null) {
             res.setDefaultValue(schema.getDefault().toString());
@@ -148,8 +166,12 @@ public class OpenApiMapper {
             res.setEnumValues(new LinkedList<>());
             schema.getEnum().forEach(it -> res.getEnumValues().add(it.toString()));
         }
+        return res;
+    }
+
+    private Schema mapObjectSchema(io.swagger.v3.oas.models.media.Schema<?> schema) {
+        ObjectSchema res = new ObjectSchema();
         if (schema.getAdditionalProperties() != null) {
-            res.setType("map");
             if (schema.getAdditionalProperties() instanceof io.swagger.v3.oas.models.media.Schema) {
                 res.setAdditionalProperties(mapSchema((io.swagger.v3.oas.models.media.Schema<?>) schema.getAdditionalProperties()));
             }
@@ -158,27 +180,27 @@ public class OpenApiMapper {
             res.setProperties(new LinkedList<>());
             schema.getProperties().forEach((k, v) -> res.getProperties().add(mapProperty(k, v)));
         }
-        if (schema instanceof ArraySchema) {
-            io.swagger.v3.oas.models.media.Schema items = ((ArraySchema) schema).getItems();
-            if (items != null) {
-                res.setType("array");
-                res.setItems(mapSchema(items));
-            }
-        }
         if (schema.getDiscriminator() != null) {
             res.setDiscriminator(schema.getDiscriminator().getPropertyName());
-        }
-        if (schema instanceof ComposedSchema) {
-            mapComposedSchema((ComposedSchema) schema, res);
         }
         return res;
     }
 
-    private void mapComposedSchema(ComposedSchema schema, Schema res) {
+    private Schema mapArraySchema(io.swagger.v3.oas.models.media.ArraySchema schema) {
+        ArraySchema res = new ArraySchema();
+        io.swagger.v3.oas.models.media.Schema items = schema.getItems();
+        if (items != null) {
+            res.setItemsSchema(mapSchema(items));
+        }
+        return res;
+    }
+
+    private Schema mapComposedSchema(ComposedSchema schema) {
         if (schema.getAllOf() != null) {
+            ObjectSchema res = new ObjectSchema();
             for (io.swagger.v3.oas.models.media.Schema s : schema.getAllOf()) {
                 if (s.get$ref() != null) {
-                    res.setSuperSchema(resolveSchemaName(s.get$ref()));
+                    res.setSuperSchema(resolveName(s.get$ref()));
                 } else if (s.getProperties() != null) {
                     if (res.getProperties() == null) {
                         res.setProperties(new LinkedList<>());
@@ -187,6 +209,9 @@ public class OpenApiMapper {
                     properties.forEach((k, v) -> res.getProperties().add(mapProperty(k, v)));
                 }
             }
+            return res;
+        } else {
+            throw new IllegalArgumentException("Unsupported composed schema: " + schema.getTitle());
         }
     }
 
@@ -197,13 +222,30 @@ public class OpenApiMapper {
         return res;
     }
 
-    private String resolveSchemaName(String ref) {
-        Matcher matcher = SCHEMA_REF.matcher(ref);
+    private <T> T resolveRef(String ref) {
+        Matcher matcher = REF_PATTERN.matcher(ref);
         if (matcher.matches()) {
-            return matcher.group(1);
-        } else {
-            throw new IllegalArgumentException("Invalid ref: " + ref);
+            String type = matcher.group(1);
+            String name = matcher.group(2);
+            switch (type) {
+                case "schemas":
+                    return (T) openAPI.getComponents().getSchemas().get(name);
+                case "parameters":
+                    return (T) openAPI.getComponents().getParameters().get(name);
+                case "requestBodies":
+                    return (T) openAPI.getComponents().getRequestBodies().get(name);
+                case "responses":
+                    return (T) openAPI.getComponents().getResponses().get(name);
+            }
         }
+        throw new IllegalArgumentException("Invalid ref: " + ref);
     }
 
+    private String resolveName(String ref) {
+        Matcher matcher = REF_PATTERN.matcher(ref);
+        if (matcher.matches()) {
+            return matcher.group(2);
+        }
+        throw new IllegalArgumentException("Invalid ref: " + ref);
+    }
 }

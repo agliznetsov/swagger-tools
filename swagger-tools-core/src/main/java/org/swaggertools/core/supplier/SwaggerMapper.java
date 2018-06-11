@@ -3,27 +3,24 @@ package org.swaggertools.core.supplier;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.models.*;
-import io.swagger.models.parameters.*;
+import io.swagger.models.parameters.AbstractSerializableParameter;
+import io.swagger.models.parameters.BodyParameter;
+import io.swagger.models.parameters.RefParameter;
 import io.swagger.models.properties.*;
 import io.swagger.util.Json;
 import org.swaggertools.core.model.*;
 import org.swaggertools.core.model.HttpMethod;
 import org.swaggertools.core.model.Operation;
-import org.swaggertools.core.model.Parameter;
 import org.swaggertools.core.model.Property;
 
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.swaggertools.core.util.AssertUtils.notEmpty;
 import static org.swaggertools.core.util.AssertUtils.notNull;
 
 public class SwaggerMapper {
     private static final String X_IGNORE = "x-ignore";
-
-    static final Pattern SCHEMA_REF = Pattern.compile("#\\/definitions\\/(.+)");
 
     ObjectMapper objectMapper;
     Swagger swagger;
@@ -45,7 +42,7 @@ public class SwaggerMapper {
     }
 
     private void processSchema(String name, Model model) {
-        Schema schema = mapSchema(model);
+        Schema schema = mapModel(model);
         schema.setName(name);
         apiDefinition.getSchemas().put(name, schema);
     }
@@ -77,23 +74,35 @@ public class SwaggerMapper {
     }
 
     private Parameter mapParameter(io.swagger.models.parameters.Parameter parameter) {
+        if (parameter instanceof RefParameter) {
+            parameter = swagger.getParameters().get(((RefParameter) parameter).getSimpleRef());
+        }
         Parameter res = new Parameter();
         res.setName(parameter.getName());
         res.setKind(ParameterKind.valueOf(parameter.getIn().toUpperCase()));
         res.setRequired(parameter.getRequired());
         if (parameter instanceof BodyParameter) {
-            res.setSchema(mapSchema(((BodyParameter) parameter).getSchema()));
-        } else if (parameter instanceof AbstractSerializableParameter){
-            AbstractSerializableParameter sp = (AbstractSerializableParameter) parameter;
-            Schema schema = new Schema();
-            schema.setType(sp.getType());
+            res.setSchema(mapModel(((BodyParameter) parameter).getSchema()));
+        } else if (parameter instanceof AbstractSerializableParameter) {
+            res.setSchema(mapSerializableParameter((AbstractSerializableParameter) parameter));
+        }
+        return res;
+    }
+
+    private Schema mapSerializableParameter(AbstractSerializableParameter sp) {
+        if (sp.getItems() != null) {
+            ArraySchema schema = new ArraySchema();
+            schema.setItemsSchema(mapPropertySchema(sp.getItems()));
+            return schema;
+        } else {
+            PrimitiveSchema schema = new PrimitiveSchema();
+            schema.setType(PrimitiveType.fromSwaggerValue(sp.getType()));
             schema.setFormat(sp.getFormat());
             if (sp.getDefaultValue() != null) {
                 schema.setDefaultValue(sp.getDefaultValue().toString());
             }
-            res.setSchema(schema);
+            return schema;
         }
-        return res;
     }
 
     private void addResponse(Operation info, Map<String, Response> responses) {
@@ -102,8 +111,17 @@ public class SwaggerMapper {
                 int statusCode = Integer.valueOf(e.getKey());
                 if (statusCode >= 200 && statusCode <= 299) {
                     info.setResponseStatus(HttpStatus.valueOf(statusCode));
-                    if (e.getValue().getResponseSchema() != null) {
-                        info.setResponseSchema(mapSchema(e.getValue().getResponseSchema()));
+                    Response response = e.getValue();
+                    if (response instanceof RefResponse) {
+                        response = swagger.getResponses().get(((RefResponse) response).getSimpleRef());
+                    }
+                    Model model = response.getResponseSchema();
+                    if (model != null) {
+                        if (model instanceof RefModel) {
+                            info.setResponseSchema(new ObjectSchema(((RefModel) model).getSimpleRef()));
+                        } else {
+                            info.setResponseSchema(mapModel(model));
+                        }
                     }
                     break;
                 }
@@ -111,49 +129,54 @@ public class SwaggerMapper {
         }
     }
 
-    private Schema mapSchema(Model model) {
-        if (model == null) {
-            return null;
-        }
-
-        Schema schema = new Schema();
+    private Schema mapModel(Model model) {
         if (model instanceof RefModel) {
-            schema.setRef(resolveSchemaName(((RefModel) model).get$ref()));
+            ObjectSchema objectSchema = new ObjectSchema();
+            objectSchema.setName(((RefModel) model).getSimpleRef());
+            return objectSchema;
         } else if (model instanceof ArrayModel) {
-            io.swagger.models.properties.Property items = ((ArrayModel) model).getItems();
-            if (items != null) {
-                schema.setType("array");
-                schema.setItems(mapPropertySchema(items));
-            }
+            return mapArrayModel((ArrayModel) model);
         } else if (model instanceof ModelImpl) {
-            mapModelImpl(schema, (ModelImpl) model);
+            return mapModelImpl((ModelImpl) model);
         } else if (model instanceof ComposedModel) {
-            mapComposedSchema(schema, (ComposedModel) model);
+            return mapComposedSchema((ComposedModel) model);
         } else {
-            System.out.println(model.getClass());
+            throw new IllegalArgumentException("Unknown model: " + model);
+        }
+    }
+
+    private Schema mapArrayModel(ArrayModel model) {
+        ArraySchema schema = new ArraySchema();
+        io.swagger.models.properties.Property items = model.getItems();
+        if (items != null) {
+            schema.setItemsSchema(mapPropertySchema(items));
         }
         return schema;
     }
 
-    private void mapModelImpl(Schema schema, ModelImpl model) {
-        schema.setType(model.getType());
-        schema.setFormat(model.getFormat());
-        schema.setDiscriminator(model.getDiscriminator());
-        schema.setEnumValues(model.getEnum());
-        if (model.getDefaultValue() != null) {
-            schema.setDefaultValue(model.getDefaultValue().toString());
-        }
-        if (model.getAdditionalProperties() != null) {
-            schema.setType("map");
-            schema.setAdditionalProperties(mapPropertySchema(model.getAdditionalProperties()));
-        }
-        if (model.getProperties() != null) {
-            schema.setType("object");
-            schema.setProperties(new LinkedList<>());
-            model.getProperties().forEach((k, v) -> {
-                Property property = mapProperty(k, v);
-                schema.getProperties().add(property);
-            });
+    private Schema mapModelImpl(ModelImpl model) {
+        if (model.getEnum() != null) {
+            PrimitiveSchema schema = new PrimitiveSchema();
+            schema.setType(PrimitiveType.STRING);
+            schema.setEnumValues(model.getEnum());
+            if (model.getDefaultValue() != null) {
+                schema.setDefaultValue(model.getDefaultValue().toString());
+            }
+            return schema;
+        } else {
+            ObjectSchema schema = new ObjectSchema();
+            schema.setDiscriminator(model.getDiscriminator());
+            if (model.getAdditionalProperties() != null) {
+                schema.setAdditionalProperties(mapPropertySchema(model.getAdditionalProperties()));
+            }
+            if (model.getProperties() != null) {
+                schema.setProperties(new LinkedList<>());
+                model.getProperties().forEach((k, v) -> {
+                    Property property = mapProperty(k, v);
+                    schema.getProperties().add(property);
+                });
+            }
+            return schema;
         }
     }
 
@@ -164,12 +187,12 @@ public class SwaggerMapper {
         return res;
     }
 
-    private void mapComposedSchema(Schema schema, ComposedModel model) {
-        schema.setType("object");
+    private Schema mapComposedSchema(ComposedModel model) {
         if (model.getAllOf() != null) {
+            ObjectSchema schema = new ObjectSchema();
             for (Model m : model.getAllOf()) {
                 if (m instanceof RefModel) {
-                    schema.setSuperSchema(resolveSchemaName(((RefModel) m).get$ref()));
+                    schema.setSuperSchema(((RefModel) m).getSimpleRef());
                 } else if (m.getProperties() != null) {
                     if (schema.getProperties() == null) {
                         schema.setProperties(new LinkedList<>());
@@ -177,15 +200,33 @@ public class SwaggerMapper {
                     m.getProperties().forEach((k, v) -> schema.getProperties().add(mapProperty(k, v)));
                 }
             }
+            return schema;
+        } else {
+            throw new IllegalArgumentException("Unsupported composed schema definition: " + model.getTitle());
         }
     }
 
     private Schema mapPropertySchema(io.swagger.models.properties.Property property) {
-        Schema schema = new Schema();
         if (property instanceof RefProperty) {
-            schema.setRef(resolveSchemaName(((RefProperty) property).get$ref()));
+            ObjectSchema schema = new ObjectSchema();
+            schema.setName(((RefProperty) property).getSimpleRef());
+            return schema;
+        } else if (property instanceof ArrayProperty) {
+            ArraySchema schema = new ArraySchema();
+            io.swagger.models.properties.Property items = ((ArrayProperty) property).getItems();
+            if (items != null) {
+                schema.setItemsSchema(mapPropertySchema(items));
+            }
+            return schema;
+        } else if (property instanceof MapProperty) {
+            ObjectSchema schema = new ObjectSchema();
+            schema.setAdditionalProperties(mapPropertySchema(((MapProperty) property).getAdditionalProperties()));
+            return schema;
+        } else if (property instanceof ObjectProperty) {
+            return new ObjectSchema();
         } else {
-            schema.setType(property.getType());
+            PrimitiveSchema schema = new PrimitiveSchema();
+            schema.setType(PrimitiveType.fromSwaggerValue(property.getType()));
             schema.setFormat(property.getFormat());
 
             Map map = objectMapper.convertValue(property, Map.class);
@@ -197,26 +238,8 @@ public class SwaggerMapper {
             if (property instanceof StringProperty) {
                 schema.setEnumValues(((StringProperty) property).getEnum());
             }
-
-            if (property instanceof ArrayProperty) {
-                io.swagger.models.properties.Property items = ((ArrayProperty) property).getItems();
-                if (items != null) {
-                    schema.setItems(mapPropertySchema(items));
-                }
-            } else if (property instanceof MapProperty) {
-                schema.setType("map");
-                schema.setAdditionalProperties(mapPropertySchema(((MapProperty) property).getAdditionalProperties()));
-            }
-        }
-        return schema;
-    }
-
-    private String resolveSchemaName(String ref) {
-        Matcher matcher = SCHEMA_REF.matcher(ref);
-        if (matcher.matches()) {
-            return matcher.group(1);
-        } else {
-            throw new IllegalArgumentException("Invalid ref: " + ref);
+            return schema;
         }
     }
+
 }
