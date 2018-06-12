@@ -7,13 +7,29 @@
     <groupId>org.swagger-tools</groupId>
     <artifactId>swagger-tools</artifactId>
     <version>0.1.0</version>
-    <modules>
-        <module>swagger-tools-core</module>
-        <module>swagger-tools-cli</module>
-        <module>swagger-tools-maven-plugin</module>
-        <module>demo-app</module>
-    </modules>
     <packaging>pom</packaging>
+
+    <name>swagger-tools</name>
+    <description>code generator to produce java client and server mappings from Swagger / OpenAPI REST API definition</description>
+    <url>https://github.com/agliznetsov/swagger-tools</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Andrey Gliznetsov</name>
+            <email>a.gliznetsov@gmail.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/agliznetsov/swagger-tools.git</url>
+    </scm>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -68,7 +84,27 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.21.0</version>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <modules>
+        <module>swagger-tools-core</module>
+        <module>swagger-tools-cli</module>
+        <module>swagger-tools-maven-plugin</module>
+        <module>demo-app</module>
+    </modules>
 
 </project>
