@@ -16,11 +16,12 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class RestTemplateClient {
-    protected static final ParameterizedTypeReference<Void> VOID = new ParameterizedTypeReference<Void>() {
-    };
+    protected static final ParameterizedTypeReference<Void> VOID = new ParameterizedTypeReference<Void>() {};
     protected static final MultiValueMap<String, String> EMPTY_MAP = new LinkedMultiValueMap<>();
+
     protected final RestTemplate restTemplate;
     protected String basePath = "";
+    protected MultiValueMap<String, String> headers;
 
     public RestTemplate getRestTemplate() {
         return restTemplate;
@@ -34,6 +35,14 @@ public abstract class RestTemplateClient {
         this.basePath = basePath;
     }
 
+    public MultiValueMap<String, String> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(MultiValueMap<String, String> headers) {
+        this.headers = headers;
+    }
+
     public RestTemplateClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -41,6 +50,12 @@ public abstract class RestTemplateClient {
     public RestTemplateClient(RestTemplate restTemplate, String basePath) {
         this.restTemplate = restTemplate;
         this.basePath = basePath;
+    }
+
+    public RestTemplateClient(RestTemplate restTemplate, String basePath, MultiValueMap<String, String> headers) {
+        this.restTemplate = restTemplate;
+        this.basePath = basePath;
+        this.headers = headers;
     }
 
     protected MultiValueMap<String, String> createQueryParameters(Object... keyValues) {
@@ -90,5 +105,8 @@ public abstract class RestTemplateClient {
     }
 
     protected void customizeRequest(RequestEntity.BodyBuilder requestBuilder) {
+        if (headers != null) {
+            headers.forEach((k, v) -> requestBuilder.header(k, v.toArray(new String[0])));
+        }
     }
 }

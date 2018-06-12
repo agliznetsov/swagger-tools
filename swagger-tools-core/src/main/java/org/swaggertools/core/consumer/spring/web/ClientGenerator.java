@@ -15,12 +15,13 @@ import javax.lang.model.element.Modifier;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static org.swaggertools.core.util.NameUtils.*;
 import static org.swaggertools.core.util.AssertUtils.notNull;
+import static org.swaggertools.core.util.NameUtils.*;
 
 public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefinition> {
     public static final ClassName REST_TEMPLATE = ClassName.get("org.springframework.web.client", "RestTemplate");
     public static final ClassName MULTI_MAP = ClassName.get("org.springframework.util", "MultiValueMap");
+    public static final TypeName STRING_MULTI_MAP = ParameterizedTypeName.get(MULTI_MAP, STRING, STRING);
     public static final ClassName TYPE_REF = ClassName.get("org.springframework.core", "ParameterizedTypeReference");
     public static final ClassName RESPONSE_ENTITY = ClassName.get("org.springframework.http", "ResponseEntity");
     public static final ClassName HTTP_METHOD = ClassName.get("org.springframework.http", "HttpMethod");
@@ -160,6 +161,14 @@ public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefini
                             .addParameter(REST_TEMPLATE, "restTemplate")
                             .addParameter(STRING, "basePath")
                             .addStatement("super($N, $N)", "restTemplate", "basePath")
+                            .build()
+                    )
+                    .addMethod(MethodSpec.constructorBuilder()
+                            .addModifiers(Modifier.PUBLIC)
+                            .addParameter(REST_TEMPLATE, "restTemplate")
+                            .addParameter(STRING, "basePath")
+                            .addParameter(STRING_MULTI_MAP, "headers")
+                            .addStatement("super($N, $N, $N)", "restTemplate", "basePath", "headers")
                             .build()
                     );
         }

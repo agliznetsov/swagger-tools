@@ -22,6 +22,11 @@ public class PetsClient extends RestTemplateClient {
         super(restTemplate, basePath);
     }
 
+    public PetsClient(RestTemplate restTemplate, String basePath,
+            MultiValueMap<String, String> headers) {
+        super(restTemplate, basePath, headers);
+    }
+
     public List<Pet> listPets(Integer limit) {
         Map urlVariables = createUrlVariables();
         MultiValueMap parameters = createQueryParameters("limit", limit);
