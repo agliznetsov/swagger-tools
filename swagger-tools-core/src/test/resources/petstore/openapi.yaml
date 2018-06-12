@@ -157,6 +157,26 @@ paths:
         '200':
           $ref: '#/components/responses/PetResponse'
 
+  '/pets/{petId}/body':
+    get:
+      tags:
+        - pets
+      operationId: getPetBody
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+
 components:
   parameters:
     petId:
@@ -222,6 +242,9 @@ components:
           type: object
           additionalProperties:
             type: string
+        thumbnail:
+          type: string
+          format: binary
 
 
     Cat:  ## "Cat" will be used as the discriminator value

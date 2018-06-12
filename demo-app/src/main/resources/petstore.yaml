@@ -147,6 +147,9 @@ definitions:
         type: object
         additionalProperties:
           type: string
+      thumbnail:
+        type: string
+        format: binary
 
 
   Cat:  ## "Cat" will be used as the discriminator value

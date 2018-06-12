@@ -121,6 +121,25 @@ paths:
         '200':
           $ref: '#/responses/PetResponse'
 
+  '/pets/{petId}/body':
+    get:
+      tags:
+        - pets
+      operationId: getPetBody
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          type: integer
+          format: int64
+      produces:
+        - text/plain
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+
 parameters:
   petId:
     name: petId
@@ -179,6 +198,9 @@ definitions:
         type: object
         additionalProperties:
           type: string
+      thumbnail:
+        type: string
+        format: binary
 
 
   Cat:  ## "Cat" will be used as the discriminator value

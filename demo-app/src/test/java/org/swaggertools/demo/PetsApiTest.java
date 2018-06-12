@@ -45,9 +45,10 @@ public class PetsApiTest {
     @Test
     public void getOne() {
         Long id = postPet();
-        Pet pet = petsClient.getPetById(id, true);
-        assertNotNull(pet);
-        assertEquals("cat", pet.getName());
+        Cat cat = (Cat) petsClient.getPetById(id, true);
+        assertNotNull(cat);
+        assertEquals("cat", cat.getName());
+        assertEquals(100, cat.getThumbnail().length);
     }
 
     @Test
@@ -90,6 +91,7 @@ public class PetsApiTest {
     private Pet createPet() {
         Cat cat = new Cat();
         cat.setName("cat");
+        cat.setThumbnail(new byte[100]);
         return cat;
     }
 

@@ -43,6 +43,7 @@ public abstract class JavaGenerator implements Consumer<ApiDefinition> {
         stringFormats.put("date", LocalDate.class);
         stringFormats.put("date-time", OffsetDateTime.class);
         stringFormats.put("uuid", UUID.class);
+        stringFormats.put("binary", byte[].class);
     }
 
     @Override

@@ -165,19 +165,26 @@ public class SwaggerMapper {
             }
             return schema;
         } else {
-            ObjectSchema schema = new ObjectSchema();
-            schema.setDiscriminator(model.getDiscriminator());
-            if (model.getAdditionalProperties() != null) {
-                schema.setAdditionalProperties(mapPropertySchema(null, null, model.getAdditionalProperties()));
+            if (model.getType() == null || model.getType().equals("object")) {
+                ObjectSchema schema = new ObjectSchema();
+                schema.setDiscriminator(model.getDiscriminator());
+                if (model.getAdditionalProperties() != null) {
+                    schema.setAdditionalProperties(mapPropertySchema(null, null, model.getAdditionalProperties()));
+                }
+                if (model.getProperties() != null) {
+                    schema.setProperties(new LinkedList<>());
+                    model.getProperties().forEach((k, v) -> {
+                        Property property = mapProperty(name, k, v);
+                        schema.getProperties().add(property);
+                    });
+                }
+                return schema;
+            } else {
+                PrimitiveSchema schema = new PrimitiveSchema();
+                schema.setType(PrimitiveType.fromSwaggerValue(model.getType()));
+                schema.setFormat(model.getFormat());
+                return schema;
             }
-            if (model.getProperties() != null) {
-                schema.setProperties(new LinkedList<>());
-                model.getProperties().forEach((k, v) -> {
-                    Property property = mapProperty(name, k, v);
-                    schema.getProperties().add(property);
-                });
-            }
-            return schema;
         }
     }
 

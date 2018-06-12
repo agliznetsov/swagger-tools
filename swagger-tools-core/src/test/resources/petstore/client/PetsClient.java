@@ -67,4 +67,12 @@ public class PetsClient extends RestTemplateClient {
         ResponseEntity<Pet> response = invokeAPI("/pets-ref/{petId}", HttpMethod.PUT, urlVariables, parameters, requestBody, typeRef);
         return response.getBody();
     }
+
+    public String getPetBody(Long petId) {
+        Map urlVariables = createUrlVariables("petId", petId);
+        MultiValueMap parameters = createQueryParameters();
+        ParameterizedTypeReference<String> typeRef = new ParameterizedTypeReference<String>(){};
+        ResponseEntity<String> response = invokeAPI("/pets/{petId}/body", HttpMethod.GET, urlVariables, parameters, null, typeRef);
+        return response.getBody();
+    }
 }

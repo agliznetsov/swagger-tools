@@ -52,6 +52,9 @@ public class Pet {
     @JsonProperty("details")
     Map<String, String> details = new HashMap<String, String>();
 
+    @JsonProperty("thumbnail")
+    byte[] thumbnail;
+
     public String getType() {
         return type;
     }
@@ -130,5 +133,13 @@ public class Pet {
 
     public void setDetails(Map<String, String> details) {
         this.details = details;
+    }
+
+    public byte[] getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(byte[] thumbnail) {
+        this.thumbnail = thumbnail;
     }
 }

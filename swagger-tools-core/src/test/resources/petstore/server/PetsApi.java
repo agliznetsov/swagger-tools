@@ -4,6 +4,7 @@ import com.example.model.Pet;
 import java.lang.Boolean;
 import java.lang.Integer;
 import java.lang.Long;
+import java.lang.String;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,4 +44,7 @@ public interface PetsApi {
     @PutMapping("/pets-ref/{petId}")
     Pet updatePetRefById(@PathVariable(name = "petId", required = true) Long petId,
             @RequestBody Pet requestBody);
+
+    @GetMapping("/pets/{petId}/body")
+    String getPetBody(@PathVariable(name = "petId", required = true) Long petId);
 }
