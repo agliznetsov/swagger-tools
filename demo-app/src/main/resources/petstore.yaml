@@ -120,8 +120,6 @@ definitions:
     properties:
       _type:
         type: string
-        default: 'Pet'
-        readOnly: true
       id:
         type: integer
         format: int64

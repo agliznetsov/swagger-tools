@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Error extends HashMap<String, String> {
+    @JsonProperty("_type")
+    final String type = "Error";
+
     @JsonProperty("code")
     Integer code;
 
@@ -19,6 +22,10 @@ public class Error extends HashMap<String, String> {
 
     @JsonProperty("details")
     Map<String, Object> details = new HashMap<String, Object>();
+
+    public String getType() {
+        return type;
+    }
 
     public Integer getCode() {
         return code;

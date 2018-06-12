@@ -162,6 +162,9 @@ public class OpenApiMapper {
         if (schema.getDefault() != null) {
             res.setDefaultValue(schema.getDefault().toString());
         }
+        if (schema.getReadOnly() != null) {
+            res.setReadOnly(schema.getReadOnly());
+        }
         if (schema.getEnum() != null) {
             res.setEnumValues(new LinkedList<>());
             schema.getEnum().forEach(it -> res.getEnumValues().add(it.toString()));

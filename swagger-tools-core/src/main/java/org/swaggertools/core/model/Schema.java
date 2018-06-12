@@ -12,6 +12,10 @@ public abstract class Schema {
         return null;
     }
 
+    public boolean isReadOnly() {
+        return false;
+    }
+
     public Collection<String> getEnumValues() {
         return null;
     }

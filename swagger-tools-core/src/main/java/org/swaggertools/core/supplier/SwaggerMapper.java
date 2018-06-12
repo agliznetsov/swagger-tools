@@ -235,6 +235,10 @@ public class SwaggerMapper {
                 schema.setDefaultValue(def.toString());
             }
 
+            if (property.getReadOnly() != null) {
+                schema.setReadOnly(property.getReadOnly());
+            }
+
             if (property instanceof StringProperty) {
                 schema.setEnumValues(((StringProperty) property).getEnum());
             }

@@ -23,7 +23,7 @@ import java.util.UUID;
 })
 public class Pet {
     @JsonProperty("_type")
-    String type = "Pet";
+    String type;
 
     @JsonProperty("id")
     Long id = 0L;

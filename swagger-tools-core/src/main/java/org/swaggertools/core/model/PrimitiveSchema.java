@@ -8,6 +8,7 @@ import java.util.Collection;
 public class PrimitiveSchema extends Schema {
     PrimitiveType type;
     String format;
+    boolean readOnly;
     String defaultValue;
     Collection<String> enumValues;
 }

@@ -137,7 +137,9 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
         FieldSpec field = field(property.getName(), propertyType, property.getSchema());
         model.addField(field);
         model.addMethod(getter(field));
-        model.addMethod(setter(field));
+        if (!property.getSchema().isReadOnly()) {
+            model.addMethod(setter(field));
+        }
     }
 
     private FieldSpec field(String name, TypeName type, Schema schema) {
@@ -146,6 +148,10 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
                         .addMember("value", "$S", name)
                         .build()
                 );
+
+        if (schema.isReadOnly()) {
+            builder.addModifiers(Modifier.FINAL);
+        }
 
         if (schema.getDefaultValue() != null) {
             if (schema.getEnumValues() != null) {

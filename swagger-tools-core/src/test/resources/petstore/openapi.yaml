@@ -195,8 +195,6 @@ components:
       properties:
         _type:
           type: string
-          default: 'Pet'
-          readOnly: true
         id:
           type: integer
           format: int64
@@ -294,6 +292,10 @@ components:
       additionalProperties:
         type: string
       properties:
+        _type:
+          type: string
+          default: 'Error'
+          readOnly: true
         code:
           type: integer
           format: int32
