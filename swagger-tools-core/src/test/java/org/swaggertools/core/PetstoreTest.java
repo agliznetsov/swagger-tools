@@ -51,7 +51,7 @@ public class PetstoreTest {
         processor.getApiConsumers().add(generator);
         processor.process();
 
-        assertEquals(8, memoryWriter.files.size());
+        assertEquals(10, memoryWriter.files.size());
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/model/" + k, v));
     }
 

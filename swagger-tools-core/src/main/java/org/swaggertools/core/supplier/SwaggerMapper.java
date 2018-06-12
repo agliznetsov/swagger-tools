@@ -12,6 +12,7 @@ import org.swaggertools.core.model.*;
 import org.swaggertools.core.model.HttpMethod;
 import org.swaggertools.core.model.Operation;
 import org.swaggertools.core.model.Property;
+import org.swaggertools.core.util.NameUtils;
 
 import java.util.LinkedList;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class SwaggerMapper {
     }
 
     private void processSchema(String name, Model model) {
-        Schema schema = mapModel(model);
+        Schema schema = mapModel(name, model);
         schema.setName(name);
         apiDefinition.getSchemas().put(name, schema);
     }
@@ -82,7 +83,7 @@ public class SwaggerMapper {
         res.setKind(ParameterKind.valueOf(parameter.getIn().toUpperCase()));
         res.setRequired(parameter.getRequired());
         if (parameter instanceof BodyParameter) {
-            res.setSchema(mapModel(((BodyParameter) parameter).getSchema()));
+            res.setSchema(mapModel(null, ((BodyParameter) parameter).getSchema()));
         } else if (parameter instanceof AbstractSerializableParameter) {
             res.setSchema(mapSerializableParameter((AbstractSerializableParameter) parameter));
         }
@@ -92,7 +93,7 @@ public class SwaggerMapper {
     private Schema mapSerializableParameter(AbstractSerializableParameter sp) {
         if (sp.getItems() != null) {
             ArraySchema schema = new ArraySchema();
-            schema.setItemsSchema(mapPropertySchema(sp.getItems()));
+            schema.setItemsSchema(mapPropertySchema(null, null, sp.getItems()));
             return schema;
         } else {
             PrimitiveSchema schema = new PrimitiveSchema();
@@ -120,7 +121,7 @@ public class SwaggerMapper {
                         if (model instanceof RefModel) {
                             info.setResponseSchema(new ObjectSchema(((RefModel) model).getSimpleRef()));
                         } else {
-                            info.setResponseSchema(mapModel(model));
+                            info.setResponseSchema(mapModel(null, model));
                         }
                     }
                     break;
@@ -129,7 +130,7 @@ public class SwaggerMapper {
         }
     }
 
-    private Schema mapModel(Model model) {
+    private Schema mapModel(String name, Model model) {
         if (model instanceof RefModel) {
             ObjectSchema objectSchema = new ObjectSchema();
             objectSchema.setName(((RefModel) model).getSimpleRef());
@@ -137,7 +138,7 @@ public class SwaggerMapper {
         } else if (model instanceof ArrayModel) {
             return mapArrayModel((ArrayModel) model);
         } else if (model instanceof ModelImpl) {
-            return mapModelImpl((ModelImpl) model);
+            return mapModelImpl(name, (ModelImpl) model);
         } else if (model instanceof ComposedModel) {
             return mapComposedSchema((ComposedModel) model);
         } else {
@@ -149,12 +150,12 @@ public class SwaggerMapper {
         ArraySchema schema = new ArraySchema();
         io.swagger.models.properties.Property items = model.getItems();
         if (items != null) {
-            schema.setItemsSchema(mapPropertySchema(items));
+            schema.setItemsSchema(mapPropertySchema(null, null, items));
         }
         return schema;
     }
 
-    private Schema mapModelImpl(ModelImpl model) {
+    private Schema mapModelImpl(String name, ModelImpl model) {
         if (model.getEnum() != null) {
             PrimitiveSchema schema = new PrimitiveSchema();
             schema.setType(PrimitiveType.STRING);
@@ -167,12 +168,12 @@ public class SwaggerMapper {
             ObjectSchema schema = new ObjectSchema();
             schema.setDiscriminator(model.getDiscriminator());
             if (model.getAdditionalProperties() != null) {
-                schema.setAdditionalProperties(mapPropertySchema(model.getAdditionalProperties()));
+                schema.setAdditionalProperties(mapPropertySchema(null, null, model.getAdditionalProperties()));
             }
             if (model.getProperties() != null) {
                 schema.setProperties(new LinkedList<>());
                 model.getProperties().forEach((k, v) -> {
-                    Property property = mapProperty(k, v);
+                    Property property = mapProperty(name, k, v);
                     schema.getProperties().add(property);
                 });
             }
@@ -180,10 +181,10 @@ public class SwaggerMapper {
         }
     }
 
-    private Property mapProperty(String name, io.swagger.models.properties.Property property) {
+    private Property mapProperty(String className, String propertyName, io.swagger.models.properties.Property property) {
         Property res = new Property();
-        res.setName(name);
-        res.setSchema(mapPropertySchema(property));
+        res.setName(propertyName);
+        res.setSchema(mapPropertySchema(className, propertyName, property));
         return res;
     }
 
@@ -197,7 +198,7 @@ public class SwaggerMapper {
                     if (schema.getProperties() == null) {
                         schema.setProperties(new LinkedList<>());
                     }
-                    m.getProperties().forEach((k, v) -> schema.getProperties().add(mapProperty(k, v)));
+                    m.getProperties().forEach((k, v) -> schema.getProperties().add(mapProperty(null, k, v)));
                 }
             }
             return schema;
@@ -206,7 +207,7 @@ public class SwaggerMapper {
         }
     }
 
-    private Schema mapPropertySchema(io.swagger.models.properties.Property property) {
+    private Schema mapPropertySchema(String className, String propertyName, io.swagger.models.properties.Property property) {
         if (property instanceof RefProperty) {
             ObjectSchema schema = new ObjectSchema();
             schema.setName(((RefProperty) property).getSimpleRef());
@@ -215,15 +216,15 @@ public class SwaggerMapper {
             ArraySchema schema = new ArraySchema();
             io.swagger.models.properties.Property items = ((ArrayProperty) property).getItems();
             if (items != null) {
-                schema.setItemsSchema(mapPropertySchema(items));
+                schema.setItemsSchema(mapPropertySchema(null, null, items));
             }
             return schema;
         } else if (property instanceof MapProperty) {
             ObjectSchema schema = new ObjectSchema();
-            schema.setAdditionalProperties(mapPropertySchema(((MapProperty) property).getAdditionalProperties()));
+            schema.setAdditionalProperties(mapPropertySchema(null, null, ((MapProperty) property).getAdditionalProperties()));
             return schema;
         } else if (property instanceof ObjectProperty) {
-            return new ObjectSchema();
+            return mapObjectProperty(className, propertyName, (ObjectProperty) property);
         } else {
             PrimitiveSchema schema = new PrimitiveSchema();
             schema.setType(PrimitiveType.fromSwaggerValue(property.getType()));
@@ -244,6 +245,21 @@ public class SwaggerMapper {
             }
             return schema;
         }
+    }
+
+    private Schema mapObjectProperty(String className, String propertyName, ObjectProperty property) {
+        ObjectSchema schema = new ObjectSchema();
+        if (property.getProperties() != null && !property.getProperties().isEmpty()) {
+            if (className != null && propertyName != null) {
+                String name = className + NameUtils.pascalCase(propertyName);
+                schema.setName(name);
+
+                ModelImpl model = new ModelImpl();
+                model.setProperties(property.getProperties());
+                processSchema(name, model);
+            }
+        }
+        return schema;
     }
 
 }

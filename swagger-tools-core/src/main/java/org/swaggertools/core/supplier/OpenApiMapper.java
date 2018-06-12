@@ -11,6 +11,7 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import org.swaggertools.core.model.*;
+import org.swaggertools.core.util.NameUtils;
 
 import java.util.LinkedList;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class OpenApiMapper {
     }
 
     private void processSchema(String name, io.swagger.v3.oas.models.media.Schema schema) {
-        Schema res = mapSchema(schema);
+        Schema res = mapSchema(name, schema);
         res.setName(name);
         apiDefinition.getSchemas().put(name, res);
     }
@@ -95,7 +96,7 @@ public class OpenApiMapper {
         res.setName(parameter.getName());
         res.setKind("path".equals(parameter.getIn()) ? ParameterKind.PATH : ParameterKind.QUERY);
         res.setRequired(parameter.getRequired() == null ? false : parameter.getRequired());
-        res.setSchema(mapSchema(parameter.getSchema()));
+        res.setSchema(mapSchema(null, parameter.getSchema()));
         return res;
     }
 
@@ -111,7 +112,7 @@ public class OpenApiMapper {
                     res.setName("requestBody");
                     res.setKind(ParameterKind.BODY);
                     res.setRequired(true);
-                    res.setSchema(mapSchema(mediaType.getSchema()));
+                    res.setSchema(mapSchema(null, mediaType.getSchema()));
                     return res;
                 }
             }
@@ -132,7 +133,7 @@ public class OpenApiMapper {
                     if (response.getContent() != null) {
                         MediaType mediaType = response.getContent().get(JSON);
                         if (mediaType != null) {
-                            info.setResponseSchema(mapSchema(mediaType.getSchema()));
+                            info.setResponseSchema(mapSchema(null, mediaType.getSchema()));
                         }
                     }
                     break;
@@ -141,15 +142,15 @@ public class OpenApiMapper {
         }
     }
 
-    private Schema mapSchema(io.swagger.v3.oas.models.media.Schema<?> schema) {
+    private Schema mapSchema(String name, io.swagger.v3.oas.models.media.Schema<?> schema) {
         if (schema.get$ref() != null) {
             return new ObjectSchema(resolveName(schema.get$ref()));
         } else if (schema instanceof io.swagger.v3.oas.models.media.ArraySchema) {
             return mapArraySchema((io.swagger.v3.oas.models.media.ArraySchema) schema);
         } else if (schema instanceof ComposedSchema) {
-            return mapComposedSchema((ComposedSchema) schema);
+            return mapComposedSchema(name, (ComposedSchema) schema);
         } else if ("object".equals(schema.getType())) {
-            return mapObjectSchema(schema);
+            return mapObjectSchema(name, schema);
         } else {
             return mapPrimitiveSchema(schema);
         }
@@ -172,16 +173,16 @@ public class OpenApiMapper {
         return res;
     }
 
-    private Schema mapObjectSchema(io.swagger.v3.oas.models.media.Schema<?> schema) {
+    private Schema mapObjectSchema(String name, io.swagger.v3.oas.models.media.Schema<?> schema) {
         ObjectSchema res = new ObjectSchema();
         if (schema.getAdditionalProperties() != null) {
             if (schema.getAdditionalProperties() instanceof io.swagger.v3.oas.models.media.Schema) {
-                res.setAdditionalProperties(mapSchema((io.swagger.v3.oas.models.media.Schema<?>) schema.getAdditionalProperties()));
+                res.setAdditionalProperties(mapSchema(null, (io.swagger.v3.oas.models.media.Schema<?>) schema.getAdditionalProperties()));
             }
         }
         if (schema.getProperties() != null) {
             res.setProperties(new LinkedList<>());
-            schema.getProperties().forEach((k, v) -> res.getProperties().add(mapProperty(k, v)));
+            schema.getProperties().forEach((k, v) -> res.getProperties().add(mapProperty(name, k, v)));
         }
         if (schema.getDiscriminator() != null) {
             res.setDiscriminator(schema.getDiscriminator().getPropertyName());
@@ -193,12 +194,12 @@ public class OpenApiMapper {
         ArraySchema res = new ArraySchema();
         io.swagger.v3.oas.models.media.Schema items = schema.getItems();
         if (items != null) {
-            res.setItemsSchema(mapSchema(items));
+            res.setItemsSchema(mapSchema(null, items));
         }
         return res;
     }
 
-    private Schema mapComposedSchema(ComposedSchema schema) {
+    private Schema mapComposedSchema(String name, ComposedSchema schema) {
         if (schema.getAllOf() != null) {
             ObjectSchema res = new ObjectSchema();
             for (io.swagger.v3.oas.models.media.Schema s : schema.getAllOf()) {
@@ -209,7 +210,7 @@ public class OpenApiMapper {
                         res.setProperties(new LinkedList<>());
                     }
                     Map<String, io.swagger.v3.oas.models.media.Schema> properties = s.getProperties();
-                    properties.forEach((k, v) -> res.getProperties().add(mapProperty(k, v)));
+                    properties.forEach((k, v) -> res.getProperties().add(mapProperty(name, k, v)));
                 }
             }
             return res;
@@ -218,10 +219,16 @@ public class OpenApiMapper {
         }
     }
 
-    private Property mapProperty(String name, io.swagger.v3.oas.models.media.Schema schema) {
+    private Property mapProperty(String className, String propertyName, io.swagger.v3.oas.models.media.Schema schema) {
         Property res = new Property();
-        res.setName(name);
-        res.setSchema(mapSchema(schema));
+        res.setName(propertyName);
+        if (className != null && schema.getProperties() != null && !schema.getProperties().isEmpty()) {
+            String name = className + NameUtils.pascalCase(propertyName);
+            res.setSchema(new ObjectSchema(name));
+            processSchema(name, schema);
+        } else {
+            res.setSchema(mapSchema(null, schema));
+        }
         return res;
     }
 

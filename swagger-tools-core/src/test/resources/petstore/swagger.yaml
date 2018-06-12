@@ -266,3 +266,17 @@ definitions:
         additionalProperties:
           type: object
 
+  CompositeClass:
+    type: object
+    properties:
+      name:
+        type: string
+      details:
+        type: object
+        properties:
+          description:
+            type: string
+          tags:
+            type: array
+            items:
+              type: string
