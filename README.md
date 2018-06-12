@@ -37,7 +37,7 @@ java -jar swagger-tools-cli.jar \
 <build>
     <plugins>
         <plugin>
-            <groupId>org.swagger-tools</groupId>
+            <groupId>io.github.agliznetsov</groupId>
             <artifactId>swagger-tools-maven-plugin</artifactId>
             <version>0.1.0</version>
             <executions>
@@ -82,7 +82,7 @@ configurations {
 }
  
 dependencies {
-   swagger 'org.swagger-tools:swagger-tools-cli:0.1.0'
+   swagger 'io.github.agliznetsov:swagger-tools-cli:0.1.0'
 }
  
 task "swagger-generate"(type: JavaExec) {
