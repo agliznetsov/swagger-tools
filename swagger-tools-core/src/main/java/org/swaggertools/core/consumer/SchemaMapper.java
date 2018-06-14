@@ -5,54 +5,37 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import lombok.Getter;
 import lombok.Setter;
-import org.swaggertools.core.model.*;
-import org.swaggertools.core.util.JavaFileWriter;
+import org.swaggertools.core.model.ArraySchema;
+import org.swaggertools.core.model.ObjectSchema;
+import org.swaggertools.core.model.PrimitiveSchema;
+import org.swaggertools.core.model.Schema;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import static com.squareup.javapoet.TypeName.*;
 import static org.swaggertools.core.util.AssertUtils.notNull;
+import static org.swaggertools.core.util.JavaUtils.*;
 
-public abstract class JavaGenerator implements Consumer<ApiDefinition> {
-
-    protected static final TypeName STRING = TypeName.get(String.class);
-    protected static final ClassName LIST = ClassName.get(List.class);
-    protected static final ClassName ARRAY_LIST = ClassName.get(ArrayList.class);
-    protected static final ClassName MAP = ClassName.get(Map.class);
-    protected static final ClassName HASH_MAP = ClassName.get(HashMap.class);
-
-    @Getter
-    @Setter
-    protected JavaFileWriter writer;
-
-    @Getter
-    @Setter
-    protected String modelPackageName;
-
+public class SchemaMapper {
     @Getter
     protected final Map<String, Class> stringFormats = new HashMap<>();
 
     @Getter
     @Setter
-    protected String indent = "    ";
+    protected String modelPackageName;
 
-    public JavaGenerator() {
+    public SchemaMapper() {
         stringFormats.put("date", LocalDate.class);
         stringFormats.put("date-time", OffsetDateTime.class);
         stringFormats.put("uuid", UUID.class);
         stringFormats.put("binary", byte[].class);
     }
 
-    @Override
-    public void accept(ApiDefinition apiDefinition) {
-        notNull(writer, "writer is not set");
-        notNull(modelPackageName, "modelPackageName is not set");
-    }
-
-    protected TypeName getType(Schema schema, boolean concrete) {
+    public TypeName getType(Schema schema, boolean concrete) {
         if (schema instanceof PrimitiveSchema) {
             return getSimpleType((PrimitiveSchema) schema);
         } else if (schema instanceof ArraySchema) {
@@ -70,6 +53,7 @@ public abstract class JavaGenerator implements Consumer<ApiDefinition> {
             return ParameterizedTypeName.get(superClass, STRING, valueType);
         } else {
             if (schema.getName() != null) {
+                notNull(modelPackageName, "modelPackageName is not set");
                 return ClassName.get(modelPackageName, schema.getName());
             } else {
                 return OBJECT;
@@ -77,7 +61,7 @@ public abstract class JavaGenerator implements Consumer<ApiDefinition> {
         }
     }
 
-    protected TypeName getSimpleType(PrimitiveSchema schema) {
+    private TypeName getSimpleType(PrimitiveSchema schema) {
         String format = schema.getFormat();
         switch (schema.getType()) {
             case INTEGER:
@@ -93,7 +77,7 @@ public abstract class JavaGenerator implements Consumer<ApiDefinition> {
         throw new IllegalArgumentException("Unknown type: " + schema.getType() + ":" + schema.getFormat());
     }
 
-    protected TypeName getArrayType(ArraySchema schema, boolean concrete) {
+    private TypeName getArrayType(ArraySchema schema, boolean concrete) {
         ClassName superClass = concrete ? ARRAY_LIST : LIST;
         if (schema.getItemsSchema() != null) {
             TypeName itemType = getType(schema.getItemsSchema(), false);
@@ -102,5 +86,4 @@ public abstract class JavaGenerator implements Consumer<ApiDefinition> {
             return superClass;
         }
     }
-
 }

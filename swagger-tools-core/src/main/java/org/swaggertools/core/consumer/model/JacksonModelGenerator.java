@@ -7,7 +7,8 @@ import com.squareup.javapoet.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.swaggertools.core.consumer.JavaGenerator;
+import org.swaggertools.core.consumer.JavaFileGenerator;
+import org.swaggertools.core.consumer.SchemaMapper;
 import org.swaggertools.core.model.*;
 import org.swaggertools.core.util.NameUtils;
 
@@ -19,20 +20,30 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static com.squareup.javapoet.TypeName.*;
+import static org.swaggertools.core.util.AssertUtils.notNull;
+import static org.swaggertools.core.util.JavaUtils.*;
 import static org.swaggertools.core.util.NameUtils.pascalCase;
 import static org.swaggertools.core.util.NameUtils.sanitize;
 
 
-public class JacksonModelGenerator extends JavaGenerator implements Consumer<ApiDefinition> {
-    final Map<String, ModelInfo> models = new HashMap<>();
+public class JacksonModelGenerator extends JavaFileGenerator implements Consumer<ApiDefinition> {
 
     @Getter
     @Setter
     boolean initializeCollectionFields = true;
 
+    @Getter
+    @Setter
+    String modelPackageName;
+
+    final Map<String, ModelInfo> models = new HashMap<>();
+    final SchemaMapper schemaMapper = new SchemaMapper();
+
     @Override
     public void accept(ApiDefinition apiDefinition) {
         super.accept(apiDefinition);
+        notNull(modelPackageName, "modelPackageName is not set");
+        schemaMapper.setModelPackageName(modelPackageName);
         apiDefinition.getSchemas().values().forEach(this::createModel);
         models.values().forEach(it -> {
             addSubtypes(it);
@@ -72,8 +83,9 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
                 typeSpec = createEnum(schema.getName(), primitiveSchema);
             }
         } else if (schema instanceof ArraySchema) {
-            typeSpec = TypeSpec.classBuilder(schema.getName()).addModifiers(Modifier.PUBLIC)
-                    .superclass(getArrayType((ArraySchema) schema, true));
+            typeSpec = TypeSpec.classBuilder(schema.getName())
+                    .addModifiers(Modifier.PUBLIC)
+                    .superclass(schemaMapper.getType(schema, true));
         } else if (schema instanceof ObjectSchema) {
             typeSpec = createClass((ObjectSchema) schema);
         }
@@ -93,7 +105,7 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
             getModel(schema.getSuperSchema()).subTypes.add(schema.getName());
         } else if (schema.getAdditionalProperties() != null) {
             Schema valueSchema = schema.getAdditionalProperties();
-            TypeName valueType = valueSchema != null ? getType(valueSchema, false) : OBJECT;
+            TypeName valueType = valueSchema != null ? schemaMapper.getType(valueSchema, false) : OBJECT;
             typeSpec.superclass(ParameterizedTypeName.get(HASH_MAP, STRING, valueType));
         }
         addProperties(typeSpec, schema);
@@ -127,7 +139,7 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
                     model.addType(enumSpec);
                     addProperty(model, property, typeName);
                 } else {
-                    addProperty(model, property, getType(property.getSchema(), false));
+                    addProperty(model, property, schemaMapper.getType(property.getSchema(), false));
                 }
             });
         }
@@ -166,34 +178,12 @@ public class JacksonModelGenerator extends JavaGenerator implements Consumer<Api
                 builder.initializer("$L", schema.getDefaultValue());
             }
         } else if (initializeCollectionFields && schema.isCollection()) {
-            builder.initializer("new $T()", getType(schema, true));
+            builder.initializer("new $T()", schemaMapper.getType(schema, true));
         }
 
         return builder.build();
     }
 
-    private MethodSpec getter(FieldSpec field) {
-        String prefix = isBoolean(field.type) ? "is" : "get";
-        String name = prefix + pascalCase(field.name);
-        return MethodSpec.methodBuilder(name)
-                .addModifiers(Modifier.PUBLIC)
-                .returns(field.type)
-                .addStatement("return $N", field.name)
-                .build();
-    }
-
-    private boolean isBoolean(TypeName type) {
-        return type == BOOLEAN || type == BOOLEAN.box();
-    }
-
-    private MethodSpec setter(FieldSpec field) {
-        String name = "set" + pascalCase(field.name);
-        return MethodSpec.methodBuilder(name)
-                .addModifiers(Modifier.PUBLIC)
-                .addParameter(field.type, field.name)
-                .addStatement("this.$N = $N", field.name, field.name)
-                .build();
-    }
 
     private static class ModelInfo {
         public TypeSpec.Builder typeSpec;

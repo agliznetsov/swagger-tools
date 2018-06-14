@@ -39,7 +39,7 @@ java -jar swagger-tools-cli.jar \
         <plugin>
             <groupId>com.github.agliznetsov.swagger-tools</groupId>
             <artifactId>swagger-tools-maven-plugin</artifactId>
-            <version>0.1.1</version>
+            <version>0.1.2</version>
             <executions>
                 <execution>
                     <id>petstore</id>
@@ -82,7 +82,7 @@ configurations {
 }
  
 dependencies {
-   swagger 'com.github.agliznetsov.swagger-tools:swagger-tools-cli:0.1.1'
+   swagger 'com.github.agliznetsov.swagger-tools:swagger-tools-cli:0.1.2'
 }
  
 task "swagger-generate"(type: JavaExec) {

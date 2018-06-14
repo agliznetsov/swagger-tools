@@ -4,7 +4,8 @@ import com.squareup.javapoet.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.swaggertools.core.consumer.JavaGenerator;
+import org.swaggertools.core.consumer.JavaFileGenerator;
+import org.swaggertools.core.consumer.SchemaMapper;
 import org.swaggertools.core.model.ApiDefinition;
 import org.swaggertools.core.model.Operation;
 import org.swaggertools.core.model.Parameter;
@@ -16,9 +17,11 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static org.swaggertools.core.util.AssertUtils.notNull;
+import static org.swaggertools.core.util.JavaUtils.MAP;
+import static org.swaggertools.core.util.JavaUtils.STRING;
 import static org.swaggertools.core.util.NameUtils.*;
 
-public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefinition> {
+public class ClientGenerator extends JavaFileGenerator implements Consumer<ApiDefinition> {
     public static final ClassName REST_TEMPLATE = ClassName.get("org.springframework.web.client", "RestTemplate");
     public static final ClassName MULTI_MAP = ClassName.get("org.springframework.util", "MultiValueMap");
     public static final TypeName STRING_MULTI_MAP = ParameterizedTypeName.get(MULTI_MAP, STRING, STRING);
@@ -32,15 +35,21 @@ public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefini
 
     @Getter
     @Setter
+    String modelPackageName;
+
+    @Getter
+    @Setter
     String clientSuffix = "Client";
 
     final Map<String, ClientInfo> apis = new HashMap<>();
+    final SchemaMapper schemaMapper = new SchemaMapper();
 
     @Override
     public void accept(ApiDefinition apiDefinition) {
         super.accept(apiDefinition);
         notNull(modelPackageName, "modelPackageName is not set");
         notNull(clientPackageName, "clientPackageName is not set");
+        schemaMapper.setModelPackageName(modelPackageName);
         apiDefinition.getOperations().forEach(this::processOperation);
         writeBaseClient();
         apis.forEach((k, v) -> writer.write(JavaFile.builder(clientPackageName, v.client.build()).indent(indent).build()));
@@ -99,7 +108,7 @@ public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefini
 
     private void createTypeRef(MethodSpec.Builder builder, Operation operation) {
         if (operation.getResponseSchema() != null) {
-            TypeName typeRef = ParameterizedTypeName.get(TYPE_REF, getType(operation.getResponseSchema(), false));
+            TypeName typeRef = ParameterizedTypeName.get(TYPE_REF, schemaMapper.getType(operation.getResponseSchema(), false));
             builder.addStatement("$T typeRef = new $T(){}", typeRef, typeRef);
         } else {
             builder.addStatement("$T typeRef = VOID", TYPE_REF);
@@ -110,7 +119,7 @@ public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefini
         String format = "";
         List<Object> args = new LinkedList<>();
         if (operation.getResponseSchema() != null) {
-            TypeName typeRef = ParameterizedTypeName.get(RESPONSE_ENTITY, getType(operation.getResponseSchema(), false));
+            TypeName typeRef = ParameterizedTypeName.get(RESPONSE_ENTITY, schemaMapper.getType(operation.getResponseSchema(), false));
             format = "$T response = ";
             args.add(typeRef);
         }
@@ -128,14 +137,14 @@ public class ClientGenerator extends JavaGenerator implements Consumer<ApiDefini
 
     private void addMethodParameters(MethodSpec.Builder builder, Operation operation) {
         operation.getParameters().forEach(p -> {
-            ParameterSpec param = ParameterSpec.builder(getType(p.getSchema(), false), p.getName()).build();
+            ParameterSpec param = ParameterSpec.builder(schemaMapper.getType(p.getSchema(), false), p.getName()).build();
             builder.addParameter(param);
         });
     }
 
     private void addMethodResponse(MethodSpec.Builder builder, Operation operation) {
         if (operation.getResponseSchema() != null) {
-            builder.returns(getType(operation.getResponseSchema(), false));
+            builder.returns(schemaMapper.getType(operation.getResponseSchema(), false));
         }
     }
 

@@ -3,7 +3,8 @@ package org.swaggertools.core.consumer.spring.web;
 import com.squareup.javapoet.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.swaggertools.core.consumer.JavaGenerator;
+import org.swaggertools.core.consumer.JavaFileGenerator;
+import org.swaggertools.core.consumer.SchemaMapper;
 import org.swaggertools.core.model.ApiDefinition;
 import org.swaggertools.core.model.HttpStatus;
 import org.swaggertools.core.model.Operation;
@@ -17,7 +18,7 @@ import java.util.function.Consumer;
 import static org.swaggertools.core.util.AssertUtils.notNull;
 import static org.swaggertools.core.util.NameUtils.*;
 
-public class ServerGenerator extends JavaGenerator implements Consumer<ApiDefinition> {
+public class ServerGenerator extends JavaFileGenerator implements Consumer<ApiDefinition> {
     private static final String SPRING_ANNOTATIONS = "org.springframework.web.bind.annotation";
     private static final ClassName REST_CONTROLLER = ClassName.get(SPRING_ANNOTATIONS, "RestController");
     private static final ClassName REQUEST_BODY = ClassName.get(SPRING_ANNOTATIONS, "RequestBody");
@@ -33,15 +34,21 @@ public class ServerGenerator extends JavaGenerator implements Consumer<ApiDefini
 
     @Getter
     @Setter
+    String modelPackageName;
+
+    @Getter
+    @Setter
     String apiSuffix = "Api";
 
     final Map<String, ApiInfo> apis = new HashMap<>();
+    final SchemaMapper schemaMapper = new SchemaMapper();
 
     @Override
     public void accept(ApiDefinition apiDefinition) {
         super.accept(apiDefinition);
         notNull(modelPackageName, "modelPackageName is not set");
         notNull(apiPackageName, "apiPackageName is not set");
+        schemaMapper.setModelPackageName(modelPackageName);
         apiDefinition.getOperations().forEach(this::processOperation);
         apis.forEach((k, v) -> writeApi(apiDefinition, v));
     }
@@ -92,7 +99,7 @@ public class ServerGenerator extends JavaGenerator implements Consumer<ApiDefini
                     anno.addMember("defaultValue", "$S", defaultValue);
                 }
             }
-            ParameterSpec param = ParameterSpec.builder(getType(p.getSchema(), false), p.getName())
+            ParameterSpec param = ParameterSpec.builder(schemaMapper.getType(p.getSchema(), false), p.getName())
                     .addAnnotation(anno.build())
                     .build();
             builder.addParameter(param);
@@ -101,7 +108,7 @@ public class ServerGenerator extends JavaGenerator implements Consumer<ApiDefini
 
     private void addResponse(MethodSpec.Builder builder, Operation operationInfo) {
         if (operationInfo.getResponseSchema() != null) {
-            builder.returns(getType(operationInfo.getResponseSchema(), false));
+            builder.returns(schemaMapper.getType(operationInfo.getResponseSchema(), false));
         }
         if (operationInfo.getResponseStatus() != null && operationInfo.getResponseStatus() != HttpStatus.OK) {
             String statusName = operationInfo.getResponseStatus().name();
