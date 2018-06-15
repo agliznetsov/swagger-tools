@@ -1,4 +1,4 @@
-package org.swaggertools.core.util;
+package org.swaggertools.core.run;
 
 import com.squareup.javapoet.JavaFile;
 

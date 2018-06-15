@@ -8,15 +8,13 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.swaggertools.core.run.Configuration;
+import org.swaggertools.core.config.Configuration;
 import org.swaggertools.core.run.ProcessorFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import static org.swaggertools.core.run.Configuration.*;
 
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class ProcessorMojo extends AbstractMojo {

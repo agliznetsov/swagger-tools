@@ -2,7 +2,7 @@ package org.swaggertools.cli;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
-import org.swaggertools.core.run.Configuration;
+import org.swaggertools.core.config.Configuration;
 import org.swaggertools.core.run.Processor;
 import org.swaggertools.core.run.ProcessorFactory;
 

@@ -1,109 +1,83 @@
 package org.swaggertools.core.run;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.swaggertools.core.consumer.model.JacksonModelGenerator;
-import org.swaggertools.core.consumer.spring.web.ClientGenerator;
-import org.swaggertools.core.consumer.spring.web.ServerGenerator;
-import org.swaggertools.core.supplier.ApiDefinitionSupplier;
-import org.swaggertools.core.util.AssertUtils;
-import org.swaggertools.core.util.FileFormat;
-import org.swaggertools.core.util.JavaFileWriterImpl;
+import org.swaggertools.core.source.ApiDefinitionSource;
+import org.swaggertools.core.target.model.JacksonModelGenerator;
+import org.swaggertools.core.target.spring.ClientGenerator;
+import org.swaggertools.core.target.spring.ServerGenerator;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.util.HashMap;
 import java.util.Map;
-
-import static org.swaggertools.core.run.Configuration.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class ProcessorFactory {
-    private Map<Configuration, String> options;
+    private static final String SOURCE = "source.";
+    private static final Pattern TARGET = Pattern.compile("target\\.(.+?)\\.(.+?)");
+    private static final String MODEL = "model";
+    private static final String CLIENT = "client";
+    private static final String SERVER = "server";
 
-    public ProcessorFactory(Map<Configuration, String> options) {
+    private Map<String, String> options;
+    Processor processor;
+
+    public Processor create(Map<String, String> options) {
         this.options = options;
-    }
-
-    public Processor create() {
-        Processor processor = new Processor();
-        setSource(processor);
-        setTargets(processor);
-        if (processor.getApiConsumers().isEmpty()) {
-            throw new IllegalArgumentException("Target not set");
-        }
+        processor = new Processor();
+        setSource();
+        setTargets();
         return processor;
     }
 
-    @SneakyThrows
-    private void setSource(Processor processor) {
-        String src = getOption(SOURCE_LOCATION);
-        AssertUtils.notNull(src, "Source is not set");
-        FileFormat ff = src.toLowerCase().endsWith(".json") ? FileFormat.JSON : FileFormat.YAML;
-        FileInputStream is = new FileInputStream(new File(src));
-        processor.setApiSupplier(new ApiDefinitionSupplier(is, ff));
+    private void setSource() {
+        Map<String, String> sourceOptions = findSourceOptions();
+        ApiDefinitionSource source = new ApiDefinitionSource();
+        source.configure(sourceOptions);
+        processor.setSource(source);
     }
 
-    private void setTargets(Processor processor) {
-        addModel(processor);
-        addServer(processor);
-        addClient(processor);
+    private void setTargets() {
+        Map<String, Map<String, String>> targets = findTargets();
+        targets.forEach(this::addTarget);
     }
 
-    private void addClient(Processor processor) {
-        String target = getOption(TARGET_CLIENT_LOCATION);
-        if (target != null) {
-            String modelPackage = getOption(TARGET_CLIENT_MODEL_PACKAGE);
-            String clientPackage = getOption(TARGET_CLIENT_CLIENT_PACKAGE);
+    private void addTarget(String name, Map<String, String> options) {
+        Target target = createTarget(name, options);
+        target.configure(options);
+        processor.getTargets().add(target);
+    }
 
-            ClientGenerator generator = new ClientGenerator();
-            generator.setModelPackageName(modelPackage);
-            generator.setClientPackageName(clientPackage);
-            generator.setClientSuffix(getOption(TARGET_CLIENT_SUFFIX));
-            generator.setWriter(getWriter(target));
-            processor.getApiConsumers().add(generator);
-            log.info("Generating client in {}/{}", target, clientPackage);
+    private Target createTarget(String name, Map<String, String> options) {
+        switch (name) {
+            case MODEL:
+                return new JacksonModelGenerator();
+            case CLIENT:
+                return new ClientGenerator();
+            case SERVER:
+                return new ServerGenerator();
         }
+        throw new IllegalArgumentException("Unknown target type: " + name);
     }
 
-    private void addServer(Processor processor) {
-        String target = getOption(TARGET_SERVER_LOCATION);
-        if (target != null) {
-            String modelPackage = getOption(TARGET_SERVER_MODEL_PACKAGE);
-            String serverPackage = getOption(TARGET_SERVER_SERVER_PACKAGE);
-
-            ServerGenerator generator = new ServerGenerator();
-            generator.setModelPackageName(modelPackage);
-            generator.setApiPackageName(serverPackage);
-            generator.setApiSuffix(getOption(TARGET_SERVER_SUFFIX));
-            generator.setWriter(getWriter(target));
-            processor.getApiConsumers().add(generator);
-            log.info("Generating server in {}/{}", target, serverPackage);
-        }
-    }
-
-    private void addModel(Processor processor) {
-        String target = getOption(TARGET_MODEL_LOCATION);
-        if (target != null) {
-            String modelPackage = getOption(TARGET_MODEL_MODEL_PACKAGE);
-            String initCollections = getOption(TARGET_MODEL_INITIALIZE_COLLECTIONS);
-
-            JacksonModelGenerator generator = new JacksonModelGenerator();
-            generator.setModelPackageName(modelPackage);
-            generator.setWriter(getWriter(target));
-            if (initCollections != null) {
-                generator.setInitializeCollectionFields(Boolean.parseBoolean(initCollections));
+    private Map<String, Map<String, String>> findTargets() {
+        Map<String, Map<String, String>> res = new HashMap<>();
+        options.forEach((k, v) -> {
+            Matcher m = TARGET.matcher(k);
+            if (m.matches()) {
+                String name = m.group(1);
+                String key = m.group(2);
+                res.computeIfAbsent(name, it -> new HashMap<>()).put(key, v);
             }
-
-            processor.getApiConsumers().add(generator);
-            log.info("Generating model in {}/{}", target, modelPackage);
-        }
+        });
+        return res;
     }
 
-    private JavaFileWriterImpl getWriter(String target) {
-        return new JavaFileWriterImpl(new File(target));
-    }
-
-    private String getOption(Configuration key) {
-        return options.getOrDefault(key, key.getDefaultValue());
+    private Map<String, String> findSourceOptions() {
+        return options.keySet().stream()
+                .filter(it -> it.startsWith(SOURCE))
+                .map(it -> it.substring(SOURCE.length()))
+                .collect(Collectors.toMap(it -> it, it -> options.get(it)));
     }
 }

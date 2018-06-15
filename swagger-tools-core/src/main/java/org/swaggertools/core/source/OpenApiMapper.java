@@ -1,4 +1,4 @@
-package org.swaggertools.core.supplier;
+package org.swaggertools.core.source;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -6,21 +6,20 @@ import org.swaggertools.core.model.ApiDefinition;
 
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
+import static org.swaggertools.core.util.AssertUtils.notEmpty;
 import static org.swaggertools.core.util.AssertUtils.notNull;
 
 @Getter
 @Setter
 public class Processor {
-    private Supplier<ApiDefinition> apiSupplier;
-    private final Collection<Consumer<ApiDefinition>> apiConsumers = new LinkedList<>();
+    private Source source;
+    private Collection<Target> targets = new LinkedList<>();
 
     public void process() {
-        notNull(apiSupplier, "apiSupplier is not set");
-        notNull(apiConsumers, "apiConsumers is not set");
-        ApiDefinition api = apiSupplier.get();
-        apiConsumers.forEach(it -> it.accept(api));
+        notNull(source, "source is not set");
+        notEmpty(targets, "target is not set");
+        ApiDefinition api = source.getApiDefinition();
+        targets.forEach(it -> it.accept(api));
     }
 }
