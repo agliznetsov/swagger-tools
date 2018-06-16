@@ -6,6 +6,7 @@ import org.swaggertools.core.model.ApiDefinition;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 
 import static org.swaggertools.core.util.AssertUtils.notEmpty;
 import static org.swaggertools.core.util.AssertUtils.notNull;
@@ -14,7 +15,7 @@ import static org.swaggertools.core.util.AssertUtils.notNull;
 @Setter
 public class Processor {
     private Source source;
-    private Collection<Target> targets = new LinkedList<>();
+    private List<Target> targets = new LinkedList<>();
 
     public void process() {
         notNull(source, "source is not set");

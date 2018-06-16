@@ -1,8 +1,7 @@
 package org.swaggertools.cli;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.*;
-import org.swaggertools.core.config.Configuration;
+import org.swaggertools.core.config.HelpPrinter;
 import org.swaggertools.core.run.Processor;
 import org.swaggertools.core.run.ProcessorFactory;
 
@@ -15,49 +14,56 @@ public class Generator {
         new Generator().run(args);
     }
 
-    private void run(String[] args) {
-        Options options = createOptions();
+    public void run(String[] args) {
         try {
-            generate(new DefaultParser().parse(options, args));
-        } catch (ParseException e) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(100, "swagger-tools-cli", "", options, "", true);
-            System.exit(1);
-        }
-    }
-
-    private void generate(CommandLine commandLine) {
-        Processor processor = null;
-        try {
-            processor = new ProcessorFactory(readOptions(commandLine)).create();
+            Map<String, String> options = readOptions(args);
+            if (options.isEmpty() || options.containsKey("help")) {
+                printHelp();
+            } else {
+                Processor processor = new ProcessorFactory().create(options);
+                processor.process();
+            }
         } catch (IllegalArgumentException e) {
             log.error(e.getMessage());
             System.exit(1);
-        }
-        if (processor != null) {
-            processor.process();
+        } catch (Exception e) {
+            log.error("Error", e);
+            System.exit(1);
         }
     }
 
-    private Map<Configuration, String> readOptions(CommandLine commandLine) {
-        Map<Configuration, String> options = new HashMap<>();
-        for (Configuration config : Configuration.values()) {
-            String value = commandLine.getOptionValue(config.getKey());
-            if (value != null) {
-                options.put(config, value);
-            }
+    private void printHelp() {
+        HelpPrinter printer = new HelpPrinter("--");
+        printer.print("Usage:");
+        printer.print("help", "Print help");
+        printer.print("source.<property>=<value>", "Set source property");
+        printer.print("target.<name>.class=<value>", "Set target <name> class name");
+        printer.print("target.<name>.<property>=<value>", "Set target <name> property");
+        printer.print("");
+        printer.printProperties();
+        System.out.println(printer.getHelp());
+    }
+
+    protected Map<String, String> readOptions(String[] args) {
+        Map<String, String> options = new HashMap<>();
+        for(String arg : args) {
+            readOption(arg, options);
         }
         return options;
     }
 
-    private Options createOptions() {
-        Options options = new Options();
-        for (Configuration config : Configuration.values()) {
-            Option.Builder builder = Option.builder().longOpt(config.getKey()).hasArg().desc(config.getDescription());
-            builder.required(config == Configuration.SOURCE_LOCATION);
-            options.addOption(builder.build());
+    private void readOption(String arg, Map<String, String> options) {
+        if (arg.startsWith("--")) {
+            arg = arg.substring(2);
         }
-        return options;
+        int i = arg.indexOf('=');
+        if (i > 0) {
+            String key = arg.substring(0, i).trim();
+            String value = arg.substring(i + 1).trim();
+            options.put(key, value);
+        } else {
+            options.put(arg, null);
+        }
     }
 
 }

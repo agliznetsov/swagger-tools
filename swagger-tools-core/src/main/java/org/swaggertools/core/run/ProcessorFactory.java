@@ -1,5 +1,6 @@
 package org.swaggertools.core.run;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.swaggertools.core.source.ApiDefinitionSource;
 import org.swaggertools.core.target.model.JacksonModelGenerator;
@@ -57,8 +58,18 @@ public class ProcessorFactory {
                 return new ClientGenerator();
             case SERVER:
                 return new ServerGenerator();
+            default:
+                return createTargetModel(name, options);
         }
-        throw new IllegalArgumentException("Unknown target type: " + name);
+    }
+
+    @SneakyThrows
+    private Target createTargetModel(String name, Map<String, String> options) {
+        String className = options.get("class");
+        if (className == null) {
+            throw new IllegalArgumentException(name + ".class is not set");
+        }
+        return (Target) Class.forName(className).newInstance();
     }
 
     private Map<String, Map<String, String>> findTargets() {
@@ -77,7 +88,6 @@ public class ProcessorFactory {
     private Map<String, String> findSourceOptions() {
         return options.keySet().stream()
                 .filter(it -> it.startsWith(SOURCE))
-                .map(it -> it.substring(SOURCE.length()))
-                .collect(Collectors.toMap(it -> it, it -> options.get(it)));
+                .collect(Collectors.toMap(it -> it.substring(SOURCE.length()), it -> options.get(it)));
     }
 }

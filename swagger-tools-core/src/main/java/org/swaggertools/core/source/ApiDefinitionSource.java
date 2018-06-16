@@ -7,6 +7,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.Data;
 import lombok.SneakyThrows;
 import org.swaggertools.core.config.AutoConfigurable;
+import org.swaggertools.core.config.ConfigurationProperty;
 import org.swaggertools.core.model.ApiDefinition;
 import org.swaggertools.core.run.Source;
 
@@ -17,7 +18,7 @@ import java.io.InputStream;
 public class ApiDefinitionSource extends AutoConfigurable<ApiDefinitionSource.Options> implements Source {
 
     public ApiDefinitionSource() {
-        super(new Options());
+        super("source", new Options());
     }
 
     @Override
@@ -54,6 +55,7 @@ public class ApiDefinitionSource extends AutoConfigurable<ApiDefinitionSource.Op
 
     @Data
     public static class Options {
+        @ConfigurationProperty(required = true, description = "Api definition location")
         String location;
     }
 

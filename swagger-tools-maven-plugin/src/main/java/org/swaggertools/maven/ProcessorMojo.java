@@ -1,6 +1,5 @@
 package org.swaggertools.maven;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -8,10 +7,9 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.swaggertools.core.config.Configuration;
+import org.swaggertools.core.config.HelpPrinter;
 import org.swaggertools.core.run.ProcessorFactory;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -39,9 +37,8 @@ public class ProcessorMojo extends AbstractMojo {
         } else {
             getLog().info("Process swagger definition");
             try {
-                Map<Configuration, String> configurations = parseOptions(options);
-                new ProcessorFactory(configurations).create().process();
-                addCompileSourceRoot(configurations);
+                new ProcessorFactory().create(options).process();
+                addCompileSourceRoot();
             } catch (Exception e) {
                 getLog().error(e);
                 throw new MojoFailureException(e.getMessage());
@@ -50,38 +47,25 @@ public class ProcessorMojo extends AbstractMojo {
     }
 
     private void printHelp() {
-        getLog().info("Possible options:");
-        for (Configuration config : Configuration.values()) {
-            getLog().info(StringUtils.rightPad(config.getKey(), 40) + "  :  " + config.getDescription());
-        }
+        HelpPrinter printer = new HelpPrinter("");
+        printer.printProperties();
+        getLog().info(printer.getHelp());
     }
 
-    private Map<Configuration, String> parseOptions(Map<String, String> options) {
-        Map<Configuration, String> res = new HashMap<>();
-        for (Configuration config : Configuration.values()) {
-            String value = options.get(config.getKey());
-            if (value != null) {
-                res.put(config, value);
-            }
-        }
-        return res;
-    }
-
-    private void addCompileSourceRoot(Map<Configuration, String> configurations) {
-        Set<String> targets = findTargets(configurations, TARGET_MODEL_LOCATION, TARGET_CLIENT_LOCATION, TARGET_SERVER_LOCATION);
-        for(String target : targets) {
+    private void addCompileSourceRoot() {
+        Set<String> targets = findTargets();
+        for (String target : targets) {
             project.addCompileSourceRoot(target);
         }
     }
 
-    private Set<String> findTargets(Map<Configuration, String> configurations, Configuration... keys) {
+    private Set<String> findTargets() {
         Set<String> targets = new HashSet<>();
-        for(Configuration key : keys) {
-            String target = configurations.get(key);
-            if (target != null) {
-                targets.add(target);
+        options.forEach((k, v) -> {
+            if (k.endsWith(".target")) {
+                targets.add(v);
             }
-        }
+        });
         return targets;
     }
 }
