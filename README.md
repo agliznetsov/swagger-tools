@@ -26,9 +26,12 @@ To generate models and client code:
 
 ```sh
 java -jar swagger-tools-cli.jar \
---source.location swagger.yaml
---target.model.location ./generated \
---target.client.location ./generated
+--source.location=swagger.yaml \
+--target.model.location=./generated \
+--target.model.model-package=com.example.model \
+--target.client.location=./generated \
+--target.client.model-package=com.example.model \
+--target.client.client-package=com.example.client \
 ```
 
 ### Run from maven
@@ -91,6 +94,7 @@ task "swagger-generate"(type: JavaExec) {
    args = [
          "--source.location", "src/main/resources/swagger.yaml",
          "--target.model.location", "src/main/java",
+         "--target.model.model-package", "com.example.model",
    ]
 }
 ```
