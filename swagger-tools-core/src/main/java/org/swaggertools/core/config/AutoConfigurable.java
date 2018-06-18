@@ -1,6 +1,7 @@
 package org.swaggertools.core.config;
 
 import lombok.SneakyThrows;
+import org.swaggertools.core.util.NameUtils;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -9,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class AutoConfigurable<T> implements Configurable {
-    private String prefix;
     protected final T options;
     private final List<Configuration> configurations = new LinkedList<>();
     private final Map<String, Field> fields = new HashMap<>();
@@ -18,8 +18,7 @@ public abstract class AutoConfigurable<T> implements Configurable {
         return options;
     }
 
-    protected AutoConfigurable(String prefix, T options) {
-        this.prefix = prefix;
+    protected AutoConfigurable(T options) {
         this.options = options;
         discoverProperties();
     }
@@ -35,7 +34,7 @@ public abstract class AutoConfigurable<T> implements Configurable {
 
     private Configuration createConfiguration(Field field) {
         Configuration config = new Configuration();
-        config.setName(field.getName());
+        config.setName(NameUtils.spinalCase(field.getName()));
         ConfigurationProperty property = field.getAnnotation(ConfigurationProperty.class);
         if (property != null) {
             if (!property.name().isEmpty()) {
@@ -58,7 +57,7 @@ public abstract class AutoConfigurable<T> implements Configurable {
         configValues.forEach((k, v) -> {
             Field f = fields.get(k);
             if (f == null) {
-                throw new IllegalArgumentException("Unknown configuration property: " + prefix + "." + k);
+                throw new IllegalArgumentException("Unknown configuration property: " + getGroupName() + "." + k);
             }
             setValue(f, v);
         });
@@ -82,7 +81,7 @@ public abstract class AutoConfigurable<T> implements Configurable {
             if (config.isRequired()) {
                 Object value = fields.get(config.getName()).get(options);
                 if (value == null || String.valueOf(value).isEmpty()) {
-                    throw new IllegalArgumentException("Required configuration property is not set: " + prefix + "." + config.getName());
+                    throw new IllegalArgumentException("Required configuration property is not set: " + getGroupName() + "." + config.getName());
                 }
             }
         }

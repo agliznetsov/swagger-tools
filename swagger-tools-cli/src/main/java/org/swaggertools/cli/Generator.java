@@ -37,7 +37,6 @@ public class Generator {
         printer.print("Usage:");
         printer.print("help", "Print help");
         printer.print("source.<property>=<value>", "Set source property");
-        printer.print("target.<name>.class=<value>", "Set target <name> class name");
         printer.print("target.<name>.<property>=<value>", "Set target <name> property");
         printer.print("");
         printer.printProperties();

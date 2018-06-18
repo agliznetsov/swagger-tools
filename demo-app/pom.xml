@@ -70,7 +70,7 @@
 
                                 <target.server.location>${project.build.directory}/generated-sources/swagger</target.server.location>
                                 <target.server.model-package>org.swaggertools.demo.model</target.server.model-package>
-                                <target.server.server-package>org.swaggertools.demo.web</target.server.server-package>
+                                <target.server.api-package>org.swaggertools.demo.web</target.server.api-package>
 
                                 <target.client.location>${project.build.directory}/generated-sources/swagger</target.client.location>
                                 <target.client.model-package>org.swaggertools.demo.model</target.client.model-package>

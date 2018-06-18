@@ -1,10 +1,10 @@
 package org.swaggertools.core.config;
 
 import org.apache.commons.lang3.StringUtils;
+import org.swaggertools.core.run.ProcessorFactory;
 import org.swaggertools.core.source.ApiDefinitionSource;
-import org.swaggertools.core.target.model.JacksonModelGenerator;
-import org.swaggertools.core.target.spring.ClientGenerator;
-import org.swaggertools.core.target.spring.ServerGenerator;
+
+import java.util.List;
 
 public class HelpPrinter {
     private String prefix;
@@ -21,24 +21,22 @@ public class HelpPrinter {
 
     public void printProperties() {
         sb.append("Source properties:\n");
-        printProperties(new ApiDefinitionSource());
+        printProperties(new ApiDefinitionSource().getConfigurations());
 
-        sb.append("\n");
-        sb.append("Target [model] properties:\n");
-        printProperties(new JacksonModelGenerator());
-
-        sb.append("\n");
-        sb.append("Target [client] properties:\n");
-        printProperties(new ClientGenerator());
-
-        sb.append("\n");
-        sb.append("Target [server] properties:\n");
-        printProperties(new ServerGenerator());
+        ProcessorFactory.getTargets().forEach((k, v) -> {
+            sb.append("\n");
+            sb.append("Target [" + k + "] properties:\n");
+            printProperties(v);
+        });
     }
 
-    private void printProperties(AutoConfigurable<?> autoConfigurable) {
-        for(Configuration config : autoConfigurable.getConfigurations()) {
-            print(config.getName(), config.getDescription());
+    private void printProperties(List<Configuration> configurations) {
+        for (Configuration config : configurations) {
+            String desc = config.getDescription();
+            if (config.getDefaultValue() != null && !config.getDefaultValue().isEmpty()) {
+                desc += " (default: '" + config.getDefaultValue() + "')";
+            }
+            print(config.getName(), desc);
         }
     }
 

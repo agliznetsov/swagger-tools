@@ -4,8 +4,8 @@ import org.junit.Test;
 import org.swaggertools.core.config.Configuration;
 import org.swaggertools.core.model.ApiDefinition;
 import org.swaggertools.core.source.ApiDefinitionSource;
-import org.swaggertools.core.target.model.JacksonModelGenerator;
-import org.swaggertools.core.target.spring.ClientGenerator;
+import org.swaggertools.core.target.JacksonModelGenerator;
+import org.swaggertools.core.target.ClientGenerator;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,10 +21,10 @@ public class ProcessorFactoryTest {
         options.put("source.location", "/src/file");
         options.put("target.model.location", "/target");
         options.put("target.model.model-package", "com.example.model");
+        options.put("target.model.initialize-collections", "false");
         options.put("target.client.location", "/target");
         options.put("target.client.model-package", "com.example.model");
         options.put("target.client.client-package", "com.example.client");
-        options.put("target.client.initialize-collections", "false");
 
         ProcessorFactory factory = new ProcessorFactory();
         Processor processor = factory.create(options);
@@ -36,18 +36,19 @@ public class ProcessorFactoryTest {
         JacksonModelGenerator model = (JacksonModelGenerator) processor.getTargets().get(1);
         assertEquals("/target", model.getOptions().getLocation());
         assertEquals("com.example.model", model.getOptions().getModelPackage());
+        assertEquals(false, model.getOptions().isInitializeCollections());
 
         ClientGenerator client = (ClientGenerator) processor.getTargets().get(0);
         assertEquals("/target", client.getOptions().getLocation());
-        assertEquals(false, client.getOptions().isInitializeCollections());
     }
 
     @Test
     public void create_from_class() {
+        ProcessorFactory.registerTarget("abc", MyTarget::new);
+
         Map<String, String> options = new HashMap<>();
         options.put("source.location", "/src/file");
         options.put("target.abc.location", "/target");
-        options.put("target.abc.class", MyTarget.class.getName());
 
         ProcessorFactory factory = new ProcessorFactory();
         Processor processor = factory.create(options);
@@ -87,6 +88,11 @@ public class ProcessorFactoryTest {
 
         @Override
         public void accept(ApiDefinition apiDefinition) {
+        }
+
+        @Override
+        public String getGroupName() {
+            return "abc";
         }
 
         @Override

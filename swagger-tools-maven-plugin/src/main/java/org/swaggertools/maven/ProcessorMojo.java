@@ -13,9 +13,12 @@ import org.swaggertools.core.run.ProcessorFactory;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class ProcessorMojo extends AbstractMojo {
+    private static final Pattern TARGET = Pattern.compile("target\\.(.+?)\\.location");
+
     @Parameter
     private Boolean skip;
 
@@ -62,7 +65,7 @@ public class ProcessorMojo extends AbstractMojo {
     private Set<String> findTargets() {
         Set<String> targets = new HashSet<>();
         options.forEach((k, v) -> {
-            if (k.endsWith(".target")) {
+            if (TARGET.matcher(k).matches()) {
                 targets.add(v);
             }
         });

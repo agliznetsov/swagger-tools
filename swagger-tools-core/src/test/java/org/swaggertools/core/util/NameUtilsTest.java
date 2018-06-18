@@ -13,4 +13,10 @@ public class NameUtilsTest {
         assertEquals("ONE_TWO_THREE_F", upperCase("oneTwoThreeF"));
         assertEquals("ONE_TWO", upperCase("OneTwo"));
     }
+
+    @Test
+    public void spinal_case() {
+        assertEquals("one", spinalCase("one"));
+        assertEquals("one-two", spinalCase("oneTwo"));
+    }
 }

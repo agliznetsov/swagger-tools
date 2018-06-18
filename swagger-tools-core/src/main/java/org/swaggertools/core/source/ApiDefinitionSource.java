@@ -18,7 +18,7 @@ import java.io.InputStream;
 public class ApiDefinitionSource extends AutoConfigurable<ApiDefinitionSource.Options> implements Source {
 
     public ApiDefinitionSource() {
-        super("source", new Options());
+        super(new Options());
     }
 
     @Override
@@ -51,6 +51,11 @@ public class ApiDefinitionSource extends AutoConfigurable<ApiDefinitionSource.Op
         } else {
             return new ObjectMapper(new YAMLFactory());
         }
+    }
+
+    @Override
+    public String getGroupName() {
+        return "source";
     }
 
     @Data
