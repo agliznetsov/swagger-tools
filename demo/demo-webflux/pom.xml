@@ -6,10 +6,11 @@
         <artifactId>swagger-tools</artifactId>
         <groupId>com.github.agliznetsov.swagger-tools</groupId>
         <version>0.2.0</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>demo-app</artifactId>
+    <artifactId>demo-webflux</artifactId>
 
     <dependencyManagement>
         <dependencies>
@@ -33,11 +34,16 @@
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -67,10 +73,6 @@
 
                                 <target.model.location>${project.build.directory}/generated-sources/swagger</target.model.location>
                                 <target.model.model-package>org.swaggertools.demo.model</target.model.model-package>
-
-                                <target.server.location>${project.build.directory}/generated-sources/swagger</target.server.location>
-                                <target.server.model-package>org.swaggertools.demo.model</target.server.model-package>
-                                <target.server.api-package>org.swaggertools.demo.web</target.server.api-package>
 
                                 <target.client.location>${project.build.directory}/generated-sources/swagger</target.client.location>
                                 <target.client.model-package>org.swaggertools.demo.model</target.client.model-package>
