@@ -1,4 +1,4 @@
-package org.swaggertools.core.target;
+package org.swaggertools.core.targets;
 
 import com.squareup.javapoet.*;
 import lombok.Data;
@@ -14,6 +14,7 @@ import javax.lang.model.element.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.squareup.javapoet.TypeName.VOID;
 import static org.swaggertools.core.util.NameUtils.*;
 
 @Slf4j
@@ -28,6 +29,7 @@ public class ServerGenerator extends JavaFileGenerator<ServerGenerator.Options> 
     private static final ClassName PATH_VARIABLE = ClassName.get(SPRING_ANNOTATIONS, "PathVariable");
     private static final ClassName RESPONSE_STATUS = ClassName.get(SPRING_ANNOTATIONS, "ResponseStatus");
     private static final ClassName HTTP_STATUS = ClassName.get("org.springframework.http", "HttpStatus");
+    private static final ClassName MONO = ClassName.get("reactor.core.publisher", "Mono");
 
     final Map<String, ApiInfo> apis = new HashMap<>();
     final SchemaMapper schemaMapper = new SchemaMapper();
@@ -100,8 +102,17 @@ public class ServerGenerator extends JavaFileGenerator<ServerGenerator.Options> 
     }
 
     private void addResponse(MethodSpec.Builder builder, Operation operationInfo) {
-        if (operationInfo.getResponseSchema() != null) {
-            builder.returns(schemaMapper.getType(operationInfo.getResponseSchema(), false));
+        if (options.reactive) {
+            if (operationInfo.getResponseSchema() != null) {
+                TypeName type = schemaMapper.getType(operationInfo.getResponseSchema(), false);
+                builder.returns(ParameterizedTypeName.get(MONO, type));
+            } else {
+                builder.returns(ParameterizedTypeName.get(MONO, VOID.box()));
+            }
+        } else {
+            if (operationInfo.getResponseSchema() != null) {
+                builder.returns(schemaMapper.getType(operationInfo.getResponseSchema(), false));
+            }
         }
         if (operationInfo.getResponseStatus() != null && operationInfo.getResponseStatus() != HttpStatus.OK) {
             String statusName = operationInfo.getResponseStatus().name();
@@ -142,5 +153,9 @@ public class ServerGenerator extends JavaFileGenerator<ServerGenerator.Options> 
         String modelPackage;
         @ConfigurationProperty(description = "Server classes name suffix", defaultValue = "Api")
         String apiSuffix = "Api";
+        @ConfigurationProperty(description = "Generate reactive, non-blocking API", defaultValue = "false")
+        boolean reactive = false;
+        @ConfigurationProperty(description = "Implemetation dialect [spring/jaxrs]", defaultValue = "spring")
+        String dialect = "spring";
     }
 }

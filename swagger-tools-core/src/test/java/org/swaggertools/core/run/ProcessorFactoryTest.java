@@ -4,8 +4,8 @@ import org.junit.Test;
 import org.swaggertools.core.config.Configuration;
 import org.swaggertools.core.model.ApiDefinition;
 import org.swaggertools.core.source.ApiDefinitionSource;
-import org.swaggertools.core.target.JacksonModelGenerator;
-import org.swaggertools.core.target.ClientGenerator;
+import org.swaggertools.core.targets.JacksonModelGenerator;
+import org.swaggertools.core.targets.ClientGenerator;
 
 import java.util.HashMap;
 import java.util.List;

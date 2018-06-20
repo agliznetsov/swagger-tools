@@ -8,9 +8,9 @@ import org.swaggertools.core.run.Processor;
 import org.swaggertools.core.run.Source;
 import org.swaggertools.core.run.Target;
 import org.swaggertools.core.source.ApiDefinitionSource;
-import org.swaggertools.core.target.JacksonModelGenerator;
-import org.swaggertools.core.target.ClientGenerator;
-import org.swaggertools.core.target.ServerGenerator;
+import org.swaggertools.core.targets.JacksonModelGenerator;
+import org.swaggertools.core.targets.ClientGenerator;
+import org.swaggertools.core.targets.ServerGenerator;
 import org.swaggertools.core.util.StreamUtils;
 
 import java.net.URL;
@@ -26,15 +26,28 @@ public class PetstoreTest {
 
     @Test
     public void test_openapi() throws Exception {
-        test("/petstore/openapi.yaml");
+        testPetStore("/petstore/openapi.yaml");
     }
 
     @Test
     public void test_swagger() throws Exception {
-        test("/petstore/swagger.yaml");
+        testPetStore("/petstore/swagger.yaml");
     }
 
-    public void test(String source) throws Exception {
+    @Test
+    public void test_server_reactive() throws Exception {
+        memoryWriter.files.clear();
+        Processor processor = new Processor();
+        processor.setSource(createSource("/petstore/openapi.yaml"));
+
+        ServerGenerator target = createServerGenerator();
+        target.getOptions().setReactive(true);
+        processor.setTargets(Collections.singletonList(target));
+        processor.process();
+        verifyJavaFile("/petstore/server/PetsApiReactive", memoryWriter.files.get("PetsApi"));
+    }
+
+    public void testPetStore(String source) throws Exception {
         Processor processor = new Processor();
         processor.setSource(createSource(source));
 
@@ -56,7 +69,7 @@ public class PetstoreTest {
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/server/" + k, v));
     }
 
-    private Target createModelGenerator() {
+    private JacksonModelGenerator createModelGenerator() {
         JacksonModelGenerator generator = new JacksonModelGenerator() {
             @Override
             protected JavaFileWriter createWriter(String target) {
@@ -68,7 +81,7 @@ public class PetstoreTest {
         return generator;
     }
 
-    private Target createServerGenerator() {
+    private ServerGenerator createServerGenerator() {
         ServerGenerator generator = new ServerGenerator() {
             @Override
             protected JavaFileWriter createWriter(String target) {
@@ -81,7 +94,7 @@ public class PetstoreTest {
         return generator;
     }
 
-    private Target createClientGenerator() {
+    private ClientGenerator createClientGenerator() {
         ClientGenerator generator = new ClientGenerator() {
             @Override
             protected JavaFileWriter createWriter(String target) {

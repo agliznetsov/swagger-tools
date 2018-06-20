@@ -61,6 +61,11 @@
                                 <target.client.location>${project.build.directory}/generated-sources/swagger</target.client.location>
                                 <target.client.model-package>org.swaggertools.demo.model</target.client.model-package>
                                 <target.client.client-package>org.swaggertools.demo.client</target.client.client-package>
+
+                                <target.server.location>${project.build.directory}/generated-sources/swagger</target.server.location>
+                                <target.server.model-package>org.swaggertools.demo.model</target.server.model-package>
+                                <target.server.api-package>org.swaggertools.demo.web</target.server.api-package>
+                                <target.server.reactive>true</target.server.reactive>
                             </options>
                         </configuration>
                     </execution>

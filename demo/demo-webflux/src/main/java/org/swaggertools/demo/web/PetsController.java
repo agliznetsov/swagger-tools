@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
-public class PetsApiImpl implements PetsApi {
+public class PetsController implements PetsApi {
     Long counter = 0L;
     Map<Long, Pet> pets = new HashMap<>();
 

@@ -1,4 +1,4 @@
-package org.swaggertools.core.target;
+package org.swaggertools.core.targets;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
