@@ -61,6 +61,7 @@
                                 <target.client.location>${project.build.directory}/generated-sources/swagger</target.client.location>
                                 <target.client.model-package>org.swaggertools.demo.model</target.client.model-package>
                                 <target.client.client-package>org.swaggertools.demo.client</target.client.client-package>
+                                <target.client.dialect>WebClient</target.client.dialect>
 
                                 <target.server.location>${project.build.directory}/generated-sources/swagger</target.server.location>
                                 <target.server.model-package>org.swaggertools.demo.model</target.server.model-package>

@@ -4,7 +4,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.swaggertools.core.run.ProcessorFactory;
 import org.swaggertools.core.source.ApiDefinitionSource;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class HelpPrinter {
     private String prefix;
@@ -30,9 +32,13 @@ public class HelpPrinter {
         });
     }
 
-    private void printProperties(List<Configuration> configurations) {
+    protected void printProperties(List<Configuration> configurations) {
         for (Configuration config : configurations) {
             String desc = config.getDescription();
+            if (config.getEnumClass() != null) {
+                Enum[] enumConstants = config.getEnumClass().getEnumConstants();
+                desc += " [" + String.join(",", Arrays.stream(enumConstants).map(Enum::toString).collect(Collectors.toList())) + "]";
+            }
             if (config.getDefaultValue() != null && !config.getDefaultValue().isEmpty()) {
                 desc += " (default: '" + config.getDefaultValue() + "')";
             }

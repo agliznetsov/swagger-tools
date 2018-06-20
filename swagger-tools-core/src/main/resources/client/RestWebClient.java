@@ -1,4 +1,4 @@
-package org.swaggertools.demo.client;
+package {{package}};
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -12,8 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class RestWebClient {
-    protected static final ParameterizedTypeReference<Void> VOID = new ParameterizedTypeReference<Void>() {
-    };
+    protected static final ParameterizedTypeReference<Void> VOID = new ParameterizedTypeReference<Void>() {};
     protected static final MultiValueMap<String, String> EMPTY_MAP = new LinkedMultiValueMap<>();
 
     protected final WebClient webClient;
@@ -83,7 +82,7 @@ public abstract class RestWebClient {
         return parameters;
     }
 
-    protected WebClient.ResponseSpec invoke(String path, HttpMethod method, Map<String, ?> urlVariables, MultiValueMap<String, String> queryParams, Object body) {
+    protected WebClient.ResponseSpec invokeAPI(String path, HttpMethod method, Map<String, ?> urlVariables, MultiValueMap<String, String> queryParams, Object body) {
         WebClient.RequestBodySpec request1 = webClient
                 .method(method)
                 .uri(builder -> builder

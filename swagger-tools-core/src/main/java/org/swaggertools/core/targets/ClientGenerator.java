@@ -11,11 +11,13 @@ import org.swaggertools.core.model.Operation;
 import org.swaggertools.core.model.Parameter;
 import org.swaggertools.core.model.ParameterKind;
 import org.swaggertools.core.run.JavaFileWriter;
+import org.swaggertools.core.util.NameUtils;
 import org.swaggertools.core.util.StreamUtils;
 
 import javax.lang.model.element.Modifier;
 import java.util.*;
 
+import static com.squareup.javapoet.TypeName.VOID;
 import static org.swaggertools.core.util.JavaUtils.MAP;
 import static org.swaggertools.core.util.JavaUtils.STRING;
 import static org.swaggertools.core.util.NameUtils.*;
@@ -30,6 +32,9 @@ public class ClientGenerator extends JavaFileGenerator<ClientGenerator.Options> 
     static final ClassName TYPE_REF = ClassName.get("org.springframework.core", "ParameterizedTypeReference");
     static final ClassName RESPONSE_ENTITY = ClassName.get("org.springframework.http", "ResponseEntity");
     static final ClassName HTTP_METHOD = ClassName.get("org.springframework.http", "HttpMethod");
+
+    static final ClassName MONO = ClassName.get("reactor.core.publisher", "Mono");
+    static final ClassName WEB_CLIENT = ClassName.get("org.springframework.web.reactive.function.client", "WebClient");
 
     final Map<String, ClientInfo> apis = new HashMap<>();
     final SchemaMapper schemaMapper = new SchemaMapper();
@@ -51,9 +56,32 @@ public class ClientGenerator extends JavaFileGenerator<ClientGenerator.Options> 
 
     @SneakyThrows
     private void writeBaseClient(JavaFileWriter writer) {
-        String body = StreamUtils.copyToString(getClass().getResourceAsStream("/client/RestTemplateClient.java"));
+        String className = getBaseClassName();
+        String body = StreamUtils.copyToString(getClass().getResourceAsStream("/client/" + className + ".java"));
         body = body.replace("{{package}}", options.clientPackage);
-        writer.write(options.clientPackage, "RestTemplateClient", body);
+        writer.write(options.clientPackage, className, body);
+    }
+
+    private String getBaseClassName() {
+        switch (options.dialect) {
+            case RestTemplate:
+                return "RestTemplateClient";
+            case WebClient:
+                return "RestWebClient";
+            default:
+                throw new IllegalArgumentException("Unknown dialect: " + options.dialect);
+        }
+    }
+
+    private ClassName getClientType() {
+        switch (options.dialect) {
+            case RestTemplate:
+                return REST_TEMPLATE;
+            case WebClient:
+                return WEB_CLIENT;
+            default:
+                throw new IllegalArgumentException("Unknown dialect: " + options.dialect);
+        }
     }
 
     private void processOperation(Operation operation) {
@@ -110,6 +138,27 @@ public class ClientGenerator extends JavaFileGenerator<ClientGenerator.Options> 
     }
 
     private void invokeApi(MethodSpec.Builder builder, Operation operation) {
+        if (options.getDialect() == ClientDialect.RestTemplate) {
+            invokeRestTemplate(builder, operation);
+        } else if (options.getDialect() == ClientDialect.WebClient) {
+            invokeWebClient(builder, operation);
+        } else {
+            throw new IllegalArgumentException("Unknown dialect: " + options.getDialect());
+        }
+    }
+
+    private void invokeWebClient(MethodSpec.Builder builder, Operation operation) {
+        List<Object> args = new LinkedList<>();
+        String format = "return invokeAPI($S, $T.$L, urlVariables, parameters, $L).bodyToMono(typeRef)";
+        args.add(operation.getPath());
+        args.add(HTTP_METHOD);
+        args.add(operation.getMethod().name());
+        Optional<Parameter> body = operation.getParameters().stream().filter(it -> it.getKind() == ParameterKind.BODY).findFirst();
+        args.add(body.isPresent() ? body.get().getName() : "null");
+        builder.addStatement(format, args.toArray());
+    }
+
+    private void invokeRestTemplate(MethodSpec.Builder builder, Operation operation) {
         String format = "";
         List<Object> args = new LinkedList<>();
         if (operation.getResponseSchema() != null) {
@@ -137,8 +186,17 @@ public class ClientGenerator extends JavaFileGenerator<ClientGenerator.Options> 
     }
 
     private void addMethodResponse(MethodSpec.Builder builder, Operation operation) {
-        if (operation.getResponseSchema() != null) {
-            builder.returns(schemaMapper.getType(operation.getResponseSchema(), false));
+        if (options.dialect == ClientDialect.WebClient) {
+            if (operation.getResponseSchema() != null) {
+                TypeName type = schemaMapper.getType(operation.getResponseSchema(), false);
+                builder.returns(ParameterizedTypeName.get(MONO, type));
+            } else {
+                builder.returns(ParameterizedTypeName.get(MONO, VOID.box()));
+            }
+        } else {
+            if (operation.getResponseSchema() != null) {
+                builder.returns(schemaMapper.getType(operation.getResponseSchema(), false));
+            }
         }
     }
 
@@ -155,28 +213,30 @@ public class ClientGenerator extends JavaFileGenerator<ClientGenerator.Options> 
         public final TypeSpec.Builder client;
 
         public ClientInfo(String name) {
+            ClassName clientClass = getClientType();
+            String clientName = NameUtils.camelCase(clientClass.simpleName());
             client = TypeSpec.classBuilder(name)
                     .addModifiers(Modifier.PUBLIC)
-                    .superclass(ClassName.get(options.clientPackage, "RestTemplateClient"))
+                    .superclass(ClassName.get(options.clientPackage, getBaseClassName()))
                     .addMethod(MethodSpec.constructorBuilder()
                             .addModifiers(Modifier.PUBLIC)
-                            .addParameter(REST_TEMPLATE, "restTemplate")
-                            .addStatement("super($N)", "restTemplate")
+                            .addParameter(clientClass, clientName)
+                            .addStatement("super($N)", clientName)
                             .build()
                     )
                     .addMethod(MethodSpec.constructorBuilder()
                             .addModifiers(Modifier.PUBLIC)
-                            .addParameter(REST_TEMPLATE, "restTemplate")
+                            .addParameter(clientClass, clientName)
                             .addParameter(STRING, "basePath")
-                            .addStatement("super($N, $N)", "restTemplate", "basePath")
+                            .addStatement("super($N, $N)", clientName, "basePath")
                             .build()
                     )
                     .addMethod(MethodSpec.constructorBuilder()
                             .addModifiers(Modifier.PUBLIC)
-                            .addParameter(REST_TEMPLATE, "restTemplate")
+                            .addParameter(clientClass, clientName)
                             .addParameter(STRING, "basePath")
                             .addParameter(STRING_MULTI_MAP, "headers")
-                            .addStatement("super($N, $N, $N)", "restTemplate", "basePath", "headers")
+                            .addStatement("super($N, $N, $N)", clientName, "basePath", "headers")
                             .build()
                     );
         }
@@ -193,5 +253,11 @@ public class ClientGenerator extends JavaFileGenerator<ClientGenerator.Options> 
         String modelPackage;
         @ConfigurationProperty(description = "Client classes name suffix", defaultValue = "Client")
         String clientSuffix = "Client";
+        @ConfigurationProperty(description = "Client implementation dialect", defaultValue = "RestTemplate")
+        ClientDialect dialect = ClientDialect.RestTemplate;
+    }
+
+    public enum ClientDialect {
+        RestTemplate, WebClient;
     }
 }

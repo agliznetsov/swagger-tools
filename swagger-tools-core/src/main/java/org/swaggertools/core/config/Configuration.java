@@ -8,4 +8,5 @@ public class Configuration {
     String description;
     String defaultValue;
     boolean required;
+    Class<Enum> enumClass;
 }

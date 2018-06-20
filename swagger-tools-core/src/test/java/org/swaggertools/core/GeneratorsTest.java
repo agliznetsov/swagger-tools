@@ -21,7 +21,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 
-public class PetstoreTest {
+public class GeneratorsTest {
     MemoryWriter memoryWriter = new MemoryWriter();
 
     @Test
@@ -45,6 +45,20 @@ public class PetstoreTest {
         processor.setTargets(Collections.singletonList(target));
         processor.process();
         verifyJavaFile("/petstore/server/PetsApiReactive", memoryWriter.files.get("PetsApi"));
+    }
+
+    @Test
+    public void test_client_reactive() throws Exception {
+        memoryWriter.files.clear();
+        Processor processor = new Processor();
+        processor.setSource(createSource("/petstore/openapi.yaml"));
+
+        ClientGenerator target = createClientGenerator();
+        target.getOptions().setDialect(ClientGenerator.ClientDialect.WebClient);
+        target.getOptions().setClientSuffix("WebClient");
+        processor.setTargets(Collections.singletonList(target));
+        processor.process();
+        verifyJavaFile("/petstore/client/PetsWebClient", memoryWriter.files.get("PetsWebClient"));
     }
 
     public void testPetStore(String source) throws Exception {

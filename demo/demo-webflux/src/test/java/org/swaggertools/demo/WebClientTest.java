@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.swaggertools.demo.client.PetsClientFlux;
+import org.swaggertools.demo.client.PetsClient;
 import org.swaggertools.demo.model.Cat;
 import org.swaggertools.demo.model.Pet;
 
@@ -25,13 +25,13 @@ public class WebClientTest {
     @Autowired
     ApplicationContext applicationContext;
 
-    PetsClientFlux petsClient;
+    PetsClient petsClient;
 
     @Before
     public void setUp() {
         String port = this.applicationContext.getEnvironment().getProperty("local.server.port", "8080");
         String baseUrl = "http://localhost:" + port;
-        petsClient = new PetsClientFlux(WebClient.builder().baseUrl(baseUrl).build(), "/v1");
+        petsClient = new PetsClient(WebClient.builder().baseUrl(baseUrl).build(), "/v1");
 
     }
 
