@@ -1,6 +1,5 @@
 package org.swaggertools.demo;
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-@Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class WebClientTest {
@@ -30,7 +28,7 @@ public class WebClientTest {
     PetsClientFlux petsClient;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         String port = this.applicationContext.getEnvironment().getProperty("local.server.port", "8080");
         String baseUrl = "http://localhost:" + port;
         petsClient = new PetsClientFlux(WebClient.builder().baseUrl(baseUrl).build(), "/v1");

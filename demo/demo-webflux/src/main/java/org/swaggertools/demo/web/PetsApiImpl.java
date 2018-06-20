@@ -1,7 +1,8 @@
 package org.swaggertools.demo.web;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.swaggertools.demo.model.Pet;
 import reactor.core.publisher.Mono;
 
@@ -11,13 +12,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@RestController
-@RequestMapping("/v1")
-public class PetsControllerImpl {
+@Component
+public class PetsApiImpl implements PetsApi {
     Long counter = 0L;
     Map<Long, Pet> pets = new HashMap<>();
 
-    @GetMapping("/pets")
+    @Override
     public Mono<List<Pet>> listPets(Integer limit) {
         Stream<Pet> stream = pets.values().stream();
         if (limit != null) {
@@ -26,30 +26,29 @@ public class PetsControllerImpl {
         return Mono.just(stream.collect(Collectors.toList()));
     }
 
-    @PostMapping("/pets")
-    @ResponseStatus(HttpStatus.CREATED)
+    @Override
     public Mono<Pet> createPet(@RequestBody Pet requestBody) {
         requestBody.setId(++counter);
         pets.put(requestBody.getId(), requestBody);
         return Mono.just(requestBody);
     }
 
-    @GetMapping("/pets/{petId}")
+    @Override
     public Mono<Pet> getPetById(@PathVariable Long petId, Boolean details) {
         return Mono.just(getPet(petId));
     }
 
-    @PutMapping("/pets/{petId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updatePet(@PathVariable Long petId, @RequestBody Pet requestBody) {
+    @Override
+    public Mono<Void> updatePet(@PathVariable Long petId, @RequestBody Pet requestBody) {
         pets.put(petId, requestBody);
+        return Mono.empty();
     }
 
-    @DeleteMapping("/pets/{petId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletePetById(@PathVariable Long petId) {
+    @Override
+    public Mono<Void> deletePetById(@PathVariable Long petId) {
         getPet(petId);
         pets.remove(petId);
+        return Mono.empty();
     }
 
     private Pet getPet(Long petId) {
@@ -59,5 +58,4 @@ public class PetsControllerImpl {
         }
         return pet;
     }
-
 }
