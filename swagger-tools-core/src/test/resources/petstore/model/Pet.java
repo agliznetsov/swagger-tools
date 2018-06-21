@@ -23,37 +23,37 @@ import java.util.UUID;
 })
 public class Pet {
     @JsonProperty("_type")
-    String type;
+    private String type;
 
     @JsonProperty("id")
-    Long id = 0L;
+    private Long id = 0L;
 
     @JsonProperty("name")
-    String name = "noname";
+    private String name = "noname";
 
     @JsonProperty("available")
-    Boolean available = true;
+    private Boolean available = true;
 
     @JsonProperty("price")
-    Double price;
+    private Double price;
 
     @JsonProperty("uid")
-    UUID uid;
+    private UUID uid;
 
     @JsonProperty("createTime")
-    OffsetDateTime createTime;
+    private OffsetDateTime createTime;
 
     @JsonProperty("owner")
-    Owner owner;
+    private Owner owner;
 
     @JsonProperty("color")
-    Color color;
+    private Color color;
 
     @JsonProperty("details")
-    Map<String, String> details = new HashMap<String, String>();
+    private Map<String, String> details = new HashMap<String, String>();
 
     @JsonProperty("thumbnail")
-    byte[] thumbnail;
+    private byte[] thumbnail;
 
     public String getType() {
         return type;

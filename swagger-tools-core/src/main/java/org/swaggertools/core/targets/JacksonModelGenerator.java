@@ -28,6 +28,9 @@ import static org.swaggertools.core.util.NameUtils.sanitize;
 public class JacksonModelGenerator extends JavaFileGenerator<JacksonModelGenerator.Options> implements Target {
     public static final String NAME = "model";
 
+    static final ClassName TO_STRING = ClassName.get("lombok", "ToString");
+    static final ClassName EQUALS = ClassName.get("lombok", "EqualsAndHashCode");
+
     final Map<String, ModelInfo> models = new HashMap<>();
     final SchemaMapper schemaMapper = new SchemaMapper();
 
@@ -105,6 +108,9 @@ public class JacksonModelGenerator extends JavaFileGenerator<JacksonModelGenerat
             TypeName valueType = valueSchema != null ? schemaMapper.getType(valueSchema, false) : OBJECT;
             typeSpec.superclass(ParameterizedTypeName.get(HASH_MAP, STRING, valueType));
         }
+        if (options.lombok) {
+            typeSpec.addAnnotation(TO_STRING).addAnnotation(EQUALS);
+        }
         addProperties(typeSpec, schema);
         return typeSpec;
     }
@@ -153,6 +159,7 @@ public class JacksonModelGenerator extends JavaFileGenerator<JacksonModelGenerat
 
     private FieldSpec field(String name, TypeName type, Schema schema) {
         FieldSpec.Builder builder = FieldSpec.builder(type, sanitize(name))
+                .addModifiers(Modifier.PRIVATE)
                 .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
                         .addMember("value", "$S", name)
                         .build()
@@ -201,6 +208,8 @@ public class JacksonModelGenerator extends JavaFileGenerator<JacksonModelGenerat
         String modelPackage;
         @ConfigurationProperty(description = "Initialize collection fields with empty collection", defaultValue = "true")
         boolean initializeCollections = true;
+        @ConfigurationProperty(description = "Annotate model classes with lombok to generate equals/hashCode/toString", defaultValue = "false")
+        boolean lombok = false;
     }
 
 }

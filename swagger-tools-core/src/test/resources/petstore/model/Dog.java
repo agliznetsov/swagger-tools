@@ -5,7 +5,7 @@ import java.lang.Integer;
 
 public class Dog extends Pet {
     @JsonProperty("packSize")
-    Integer packSize = 0;
+    private Integer packSize = 0;
 
     public Integer getPackSize() {
         return packSize;

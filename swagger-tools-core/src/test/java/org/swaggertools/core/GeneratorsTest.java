@@ -3,16 +3,14 @@ package org.swaggertools.core;
 import com.squareup.javapoet.JavaFile;
 import lombok.SneakyThrows;
 import org.junit.Test;
-import org.swaggertools.core.run.JavaFileWriter;
-import org.swaggertools.core.run.Processor;
-import org.swaggertools.core.run.Source;
-import org.swaggertools.core.run.Target;
+import org.swaggertools.core.run.*;
 import org.swaggertools.core.source.ApiDefinitionSource;
 import org.swaggertools.core.targets.JacksonModelGenerator;
 import org.swaggertools.core.targets.ClientGenerator;
 import org.swaggertools.core.targets.ServerGenerator;
 import org.swaggertools.core.util.StreamUtils;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
