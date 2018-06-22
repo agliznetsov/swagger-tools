@@ -9,19 +9,19 @@ import java.util.Map;
 
 public class Error extends HashMap<String, String> {
     @JsonProperty("_type")
-    final String type = "Error";
+    private final String type = "Error";
 
     @JsonProperty("code")
-    Integer code;
+    private Integer code;
 
     @JsonProperty("message")
-    String message;
+    private String message;
 
     @JsonProperty("value")
-    Object value;
+    private Object value;
 
     @JsonProperty("details")
-    Map<String, Object> details = new HashMap<String, Object>();
+    private Map<String, Object> details = new HashMap<String, Object>();
 
     public String getType() {
         return type;

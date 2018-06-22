@@ -7,13 +7,13 @@ import java.util.List;
 
 public class PetList {
     @JsonProperty("_items")
-    List<Pet> items = new ArrayList<Pet>();
+    private List<Pet> items = new ArrayList<Pet>();
 
     @JsonProperty("_max")
-    Integer max;
+    private Integer max;
 
     @JsonProperty("_offset")
-    Integer offset;
+    private Integer offset;
 
     public List<Pet> getItems() {
         return items;

@@ -7,10 +7,10 @@ import java.util.List;
 
 public class CompositeClassDetails {
     @JsonProperty("description")
-    String description;
+    private String description;
 
     @JsonProperty("tags")
-    List<String> tags = new ArrayList<String>();
+    private List<String> tags = new ArrayList<String>();
 
     public String getDescription() {
         return description;

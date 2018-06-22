@@ -43,6 +43,9 @@ public abstract class AutoConfigurable<T> implements Configurable {
             config.setDefaultValue(property.defaultValue());
             config.setDescription(property.description());
             config.setRequired(property.required());
+            if (field.getType().isEnum()) {
+                config.setEnumClass((Class)field.getType());
+            }
         }
         return config;
     }
@@ -71,6 +74,8 @@ public abstract class AutoConfigurable<T> implements Configurable {
             v = Boolean.parseBoolean(value);
         } else if (field.getType() == Integer.class || field.getType() == int.class) {
             v = Integer.parseInt(value);
+        } else if (field.getType().isEnum()) {
+            v = Enum.valueOf((Class)field.getType(), value);
         }
         field.set(options, v);
     }

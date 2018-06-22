@@ -5,10 +5,10 @@ import java.lang.String;
 
 public class CompositeClass {
     @JsonProperty("name")
-    String name;
+    private String name;
 
     @JsonProperty("details")
-    CompositeClassDetails details;
+    private CompositeClassDetails details;
 
     public String getName() {
         return name;

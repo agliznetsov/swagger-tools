@@ -3,9 +3,9 @@ package org.swaggertools.core.run;
 import lombok.extern.slf4j.Slf4j;
 import org.swaggertools.core.config.Configuration;
 import org.swaggertools.core.source.ApiDefinitionSource;
-import org.swaggertools.core.target.ClientGenerator;
-import org.swaggertools.core.target.JacksonModelGenerator;
-import org.swaggertools.core.target.ServerGenerator;
+import org.swaggertools.core.targets.ClientGenerator;
+import org.swaggertools.core.targets.JacksonModelGenerator;
+import org.swaggertools.core.targets.ServerGenerator;
 
 import java.util.HashMap;
 import java.util.List;

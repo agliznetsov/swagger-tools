@@ -5,7 +5,7 @@ import java.lang.String;
 
 public class Owner {
     @JsonProperty("name")
-    String name;
+    private String name;
 
     public String getName() {
         return name;
