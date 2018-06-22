@@ -77,7 +77,7 @@ java -jar swagger-tools-cli.jar \
 - **help**: Print the list of options
 - **options**: Key/Value map of arguments for the code generator. Same as for the commandline version. 
 
-Check also a complete sample application: [demo-app](demo-app)
+Check also a complete sample application: [demo-webmvc](demo/demo-webmvc)
 
 ### Run from gradle
 
