@@ -2,7 +2,9 @@
 
 [![Build Status](https://travis-ci.org/agliznetsov/swagger-tools.svg?branch=master)](https://travis-ci.org/agliznetsov/swagger-tools)
 [![Codecov](https://img.shields.io/codecov/c/github/agliznetsov/swagger-tools.svg)](http://codecov.io/github/agliznetsov/swagger-tools)
-[![Download CLI](https://img.shields.io/maven-central/v/com.github.agliznetsov.swagger-tools/swagger-tools-cli.svg)][download-cli]
+[![Download CLI](https://img.shields.io/maven-central/v/com.github.agliznetsov.swagger-tools/swagger-tools-cli.svg)](https://repo1.maven.org/maven2/com/github/agliznetsov/swagger-tools/swagger-tools-cli)
+
+
 
 ## Overview
 
