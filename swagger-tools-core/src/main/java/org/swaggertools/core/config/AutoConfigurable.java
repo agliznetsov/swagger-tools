@@ -25,10 +25,12 @@ public abstract class AutoConfigurable<T> implements Configurable {
 
     private void discoverProperties() {
         for (Field f : options.getClass().getDeclaredFields()) {
-            f.setAccessible(true);
-            Configuration config = createConfiguration(f);
-            configurations.add(config);
-            fields.put(config.getName(), f);
+            if (!f.getName().startsWith("$")) {
+                f.setAccessible(true);
+                Configuration config = createConfiguration(f);
+                configurations.add(config);
+                fields.put(config.getName(), f);
+            }
         }
     }
 
