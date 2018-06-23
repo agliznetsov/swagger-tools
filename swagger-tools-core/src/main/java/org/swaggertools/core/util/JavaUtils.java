@@ -29,6 +29,10 @@ public class JavaUtils {
     public static MethodSpec getter(FieldSpec field) {
         String prefix = isBoolean(field.type) ? "is" : "get";
         String name = prefix + pascalCase(field.name);
+        return getter(field, name);
+    }
+
+    public static MethodSpec getter(FieldSpec field, String name) {
         return MethodSpec.methodBuilder(name)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(field.type)

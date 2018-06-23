@@ -59,6 +59,19 @@ public class GeneratorsTest {
         verifyJavaFile("/petstore/client/PetsWebClient", memoryWriter.files.get("PetsWebClient"));
     }
 
+    @Test
+    public void test_client_factory() throws Exception {
+        memoryWriter.files.clear();
+        Processor processor = new Processor();
+        processor.setSource(createSource("/petstore/openapi2.yaml"));
+
+        ClientGenerator target = createClientGenerator();
+        target.getOptions().setFactoryName("Petstore");
+        processor.setTargets(Collections.singletonList(target));
+        processor.process();
+        verifyJavaFile("/petstore/factory/Petstore", memoryWriter.files.get("Petstore"));
+    }
+
     public void testPetStore(String source) throws Exception {
         Processor processor = new Processor();
         processor.setSource(createSource(source));

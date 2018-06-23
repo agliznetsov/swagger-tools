@@ -19,11 +19,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.squareup.javapoet.TypeName.VOID;
-import static javax.lang.model.element.Modifier.FINAL;
-import static javax.lang.model.element.Modifier.PRIVATE;
-import static org.swaggertools.core.util.JavaUtils.MAP;
-import static org.swaggertools.core.util.JavaUtils.STRING;
-import static org.swaggertools.core.util.JavaUtils.getter;
+import static javax.lang.model.element.Modifier.*;
+import static org.swaggertools.core.util.JavaUtils.*;
 import static org.swaggertools.core.util.NameUtils.*;
 
 @Slf4j
@@ -32,6 +29,7 @@ public class ClientGenerator extends JavaFileGenerator<ClientGenerator.Options> 
 
     private static final ClassName REST_TEMPLATE = ClassName.get("org.springframework.web.client", "RestTemplate");
     private static final ClassName MULTI_MAP = ClassName.get("org.springframework.util", "MultiValueMap");
+    private static final ClassName LINKED_MULTI_MAP = ClassName.get("org.springframework.util", "LinkedMultiValueMap");
     private static final TypeName STRING_MULTI_MAP = ParameterizedTypeName.get(MULTI_MAP, STRING, STRING);
     private static final ClassName TYPE_REF = ClassName.get("org.springframework.core", "ParameterizedTypeReference");
     private static final ClassName RESPONSE_ENTITY = ClassName.get("org.springframework.http", "ResponseEntity");
@@ -263,34 +261,39 @@ public class ClientGenerator extends JavaFileGenerator<ClientGenerator.Options> 
 
     private class FactoryBuilder {
         private Set<String> clientNames;
-        TypeSpec.Builder builder;
+        private TypeSpec.Builder builder;
 
         public void generate() {
             clientNames = apiDefinition.getOperations().stream().map(op -> pascalCase(sanitize(op.getTag()))).collect(Collectors.toSet());
-            builder = createFactoryBuilder();
+            createFactoryBuilder();
             writer.write(JavaFile.builder(options.clientPackage, builder.build()).indent(indent).build());
         }
 
-        private TypeSpec.Builder createFactoryBuilder() {
-            TypeSpec.Builder builder = TypeSpec.classBuilder(options.factoryName)
-                    .addModifiers(Modifier.PUBLIC);
-
+        private void createFactoryBuilder() {
+            builder = TypeSpec.classBuilder(options.factoryName)
+                    .addModifiers(PUBLIC);
             createConstructor(builder);
-
-            addProperty(STRING, "rootUrl");
             addProperty(REST_TEMPLATE, "restTemplate");
+            addHeaders();
+            addProperties();
+        }
 
+        private void addProperties() {
+            for (String name : clientNames) {
+                TypeName type = ClassName.get(options.clientPackage, name + options.clientSuffix);
+                FieldSpec f = FieldSpec.builder(type, camelCase(name), FINAL, PRIVATE).build();
+                builder.addField(f);
+                builder.addMethod(getter(f, camelCase(name)));
+            }
+        }
+
+        private void addHeaders() {
             FieldSpec field = FieldSpec.builder(STRING_MULTI_MAP, "headers")
-                    .initializer("new $T()", STRING_MULTI_MAP)
+                    .addModifiers(PRIVATE, FINAL)
+                    .initializer("new $T()", ParameterizedTypeName.get(LINKED_MULTI_MAP, STRING, STRING))
                     .build();
             builder.addField(field);
             builder.addMethod(getter(field));
-
-            for (String name : clientNames) {
-                addProperty(ClassName.get(options.clientPackage, name + options.clientSuffix), camelCase(name));
-            }
-
-            return builder;
         }
 
         private void addProperty(TypeName type, String name) {
@@ -303,12 +306,11 @@ public class ClientGenerator extends JavaFileGenerator<ClientGenerator.Options> 
             MethodSpec.Builder mb = MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(REST_TEMPLATE, "restTemplate")
-                    .addParameter(STRING, "rootUrl")
-                    .addStatement("this.restTemplate = restTemplate")
-                    .addStatement("this.rootUrl = rootUrl");
+                    .addParameter(STRING, "basePath")
+                    .addStatement("this.restTemplate = restTemplate");
 
             for (String name : clientNames) {
-                mb.addStatement("$N = new $T(restTemplate, rootUrl, headers)", camelCase(name),
+                mb.addStatement("$N = new $T(restTemplate, basePath, headers)", camelCase(name),
                         ClassName.get(options.clientPackage, name + options.clientSuffix));
             }
 
@@ -316,6 +318,8 @@ public class ClientGenerator extends JavaFileGenerator<ClientGenerator.Options> 
         }
 
     }
+
+
     @Getter
     @Setter
     public static class Options {

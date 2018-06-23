@@ -9,15 +9,13 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.HttpServerErrorException;
-import org.swaggertools.demo.client.PetsClient;
+import org.swaggertools.demo.client.PetStore;
 import org.swaggertools.demo.model.Cat;
 import org.swaggertools.demo.model.Pet;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -25,13 +23,12 @@ public class PetsApiTest {
     @Autowired
     TestRestTemplate testRestTemplate;
 
-    PetsClient petsClient;
+    PetStore template;
 
     @Before
     public void setUp() throws Exception {
         testRestTemplate.getRestTemplate().setErrorHandler(new DefaultResponseErrorHandler());
-        petsClient = new PetsClient(testRestTemplate.getRestTemplate());
-        petsClient.setBasePath("/v1");
+        template = new PetStore(testRestTemplate.getRestTemplate(), "/v1");
     }
 
     @Test
@@ -43,7 +40,7 @@ public class PetsApiTest {
     @Test
     public void getOne() {
         Long id = postPet();
-        Cat cat = (Cat) petsClient.getPetById(id, true);
+        Cat cat = (Cat) template.pets().getPetById(id, true);
         assertNotNull(cat);
         assertEquals("cat", cat.getName());
         assertEquals(100, cat.getThumbnail().length);
@@ -52,7 +49,7 @@ public class PetsApiTest {
     @Test
     public void getOneWrongId() {
         try {
-            petsClient.getPetById(666L, false);
+            template.pets().getPetById(666L, false);
             fail("Exception expected");
         } catch (HttpServerErrorException e) {
             assertEquals(500, e.getStatusCode().value());
@@ -62,10 +59,10 @@ public class PetsApiTest {
     @Test
     public void update() {
         Long id = postPet();
-        Pet pet = petsClient.getPetById(id, true);
+        Pet pet = template.pets().getPetById(id, true);
         pet.setName("new name");
-        petsClient.updatePet(id, pet);
-        pet = petsClient.getPetById(id, true);
+        template.pets().updatePet(id, pet);
+        pet = template.pets().getPetById(id, true);
         assertEquals("new name", pet.getName());
     }
 
@@ -73,15 +70,15 @@ public class PetsApiTest {
     public void list() {
         postPet();
         postPet();
-        List<Pet> response = petsClient.listPets(1);
+        List<Pet> response = template.pets().listPets(1);
         assertEquals(1, response.size());
     }
 
     @Test
     public void delete() {
         Long id = postPet();
-        petsClient.deletePetById(id);
-        List<Pet> pets = petsClient.listPets(Integer.MAX_VALUE);
+        template.pets().deletePetById(id);
+        List<Pet> pets = template.pets().listPets(Integer.MAX_VALUE);
         int count = (int) pets.stream().filter(it -> it.getId().equals(id)).count();
         assertEquals(0, count);
     }
@@ -95,7 +92,7 @@ public class PetsApiTest {
 
     private Long postPet() {
         Pet pet = createPet();
-        pet = petsClient.createPet(pet);
+        pet = template.pets().createPet(pet);
         return pet.getId();
     }
 

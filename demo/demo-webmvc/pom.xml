@@ -32,6 +32,12 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.20</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -52,6 +58,7 @@
 
                                 <target.model.location>${project.build.directory}/generated-sources/swagger</target.model.location>
                                 <target.model.model-package>org.swaggertools.demo.model</target.model.model-package>
+                                <target.model.lombok>true</target.model.lombok>
 
                                 <target.server.location>${project.build.directory}/generated-sources/swagger</target.server.location>
                                 <target.server.model-package>org.swaggertools.demo.model</target.server.model-package>
@@ -60,6 +67,7 @@
                                 <target.client.location>${project.build.directory}/generated-sources/swagger</target.client.location>
                                 <target.client.model-package>org.swaggertools.demo.model</target.client.model-package>
                                 <target.client.client-package>org.swaggertools.demo.client</target.client.client-package>
+                                <target.client.factory-name>PetStore</target.client.factory-name>
                             </options>
                         </configuration>
                     </execution>
