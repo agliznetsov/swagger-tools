@@ -1,15 +1,11 @@
 package org.swaggertools.core.run;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.swaggertools.core.config.Configuration;
 import org.swaggertools.core.source.ApiDefinitionSource;
-import org.swaggertools.core.targets.ClientGenerator;
-import org.swaggertools.core.targets.JacksonModelGenerator;
-import org.swaggertools.core.targets.ServerGenerator;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,12 +18,6 @@ public class ProcessorFactory {
 
     private static final Map<String, Supplier<Target>> targets = new HashMap<>();
 
-    public static void registerTarget(String name, Supplier<Target> supplier) {
-        if (targets.putIfAbsent(name, supplier) != null) {
-            throw new IllegalArgumentException("Target " + name + " is already registered");
-        }
-    }
-
     public static Map<String, List<Configuration>> getTargets() {
         Map<String, List<Configuration>> res = new HashMap<>();
         targets.forEach((k, v) -> {
@@ -37,17 +27,29 @@ public class ProcessorFactory {
     }
 
     static {
-        registerTarget(JacksonModelGenerator.NAME, JacksonModelGenerator::new);
-        registerTarget(ClientGenerator.NAME, ClientGenerator::new);
-        registerTarget(ServerGenerator.NAME, ServerGenerator::new);
+        try {
+            ServiceLoader<Target> serviceLoader = ServiceLoader.load(Target.class);
+            for (Target target : serviceLoader) {
+                if (targets.putIfAbsent(target.getGroupName(), () -> createInstance(target.getClass())) != null) {
+                    log.error("Duplicate target names found: " + target.getGroupName());
+                }
+            }
+        } catch (ServiceConfigurationError e) {
+            log.error("Configuration error", e);
+        }
+    }
+
+    @SneakyThrows
+    private static Target createInstance(Class<? extends Target> targetClass) {
+        return targetClass.newInstance();
     }
 
     private Map<String, String> options;
-    Processor processor;
+    private Processor processor;
 
     public Processor create(Map<String, String> options) {
         this.options = options;
-        processor = new Processor();
+        this.processor = new Processor();
         setSource();
         setTargets();
         return processor;

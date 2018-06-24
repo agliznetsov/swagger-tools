@@ -4,11 +4,9 @@
 [![Codecov](https://img.shields.io/codecov/c/github/agliznetsov/swagger-tools.svg)](http://codecov.io/github/agliznetsov/swagger-tools)
 [![Download CLI](https://img.shields.io/maven-central/v/com.github.agliznetsov.swagger-tools/swagger-tools-cli.svg)](https://repo1.maven.org/maven2/com/github/agliznetsov/swagger-tools/swagger-tools-cli)
 
-
-
 ## Overview
 
-This project is mainly oriented to java code generation. Currently it only supports Spring MVC dialect.
+This project provide a set of tools to generate java code from API definition.
 
 ### Source
 
@@ -17,8 +15,8 @@ This project is mainly oriented to java code generation. Currently it only suppo
 ### Targets
 
 - Model classes, jackson annotated
-- Java client SDK, based on the Spring RestTemplate
-- Server API bindings, MVC annotated. **Not working yet!** because of the Spring issue (https://jira.spring.io/browse/SPR-11055)
+- Java client SDK, can be used for unit testing or to create java client applications
+- Server API interfaces with HTTP mapping annotations
 
 ### Run from command line  
 
@@ -46,7 +44,7 @@ java -jar swagger-tools-cli.jar \
         <plugin>
             <groupId>com.github.agliznetsov.swagger-tools</groupId>
             <artifactId>swagger-tools-maven-plugin</artifactId>
-            <version>0.1.1</version>
+            <version>0.2.0</version>
             <executions>
                 <execution>
                     <id>petstore</id>
@@ -89,7 +87,7 @@ configurations {
 }
  
 dependencies {
-   swagger 'com.github.agliznetsov.swagger-tools:swagger-tools-cli:0.1.1'
+   swagger 'com.github.agliznetsov.swagger-tools:swagger-tools-cli:0.2.0'
 }
  
 task "swagger-generate"(type: JavaExec) {
@@ -102,3 +100,11 @@ task "swagger-generate"(type: JavaExec) {
    ]
 }
 ```
+
+### Extensions
+
+Additional targets can be added via java [ServiceLoader](https://docs.oracle.com/javase/tutorial/ext/basics/spi.html):
+
+- Implement [Target](swagger-tools-core/src/main/java/org/swaggertools/core/run/Target.java) interface
+- List it in the META-INF/services
+- Add your jar file to the classpath of the CLI or maven plugin

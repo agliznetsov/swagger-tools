@@ -5,12 +5,11 @@ import lombok.SneakyThrows;
 import org.junit.Test;
 import org.swaggertools.core.run.*;
 import org.swaggertools.core.source.ApiDefinitionSource;
-import org.swaggertools.core.targets.JacksonModelGenerator;
+import org.swaggertools.core.targets.ModelGenerator;
 import org.swaggertools.core.targets.ClientGenerator;
 import org.swaggertools.core.targets.ServerGenerator;
 import org.swaggertools.core.util.StreamUtils;
 
-import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -94,8 +93,8 @@ public class GeneratorsTest {
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/server/" + k, v));
     }
 
-    private JacksonModelGenerator createModelGenerator() {
-        JacksonModelGenerator generator = new JacksonModelGenerator() {
+    private ModelGenerator createModelGenerator() {
+        ModelGenerator generator = new ModelGenerator() {
             @Override
             protected JavaFileWriter createWriter(String target) {
                 return memoryWriter;

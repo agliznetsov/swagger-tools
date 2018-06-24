@@ -25,7 +25,7 @@ import static org.swaggertools.core.util.NameUtils.pascalCase;
 import static org.swaggertools.core.util.NameUtils.sanitize;
 
 @Slf4j
-public class JacksonModelGenerator extends JavaFileGenerator<JacksonModelGenerator.Options> implements Target {
+public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> implements Target {
     public static final String NAME = "model";
 
     static final ClassName TO_STRING = ClassName.get("lombok", "ToString");
@@ -34,7 +34,7 @@ public class JacksonModelGenerator extends JavaFileGenerator<JacksonModelGenerat
     final Map<String, ModelInfo> models = new HashMap<>();
     final SchemaMapper schemaMapper = new SchemaMapper();
 
-    public JacksonModelGenerator() {
+    public ModelGenerator() {
         super(new Options());
     }
 
