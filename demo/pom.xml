@@ -12,6 +12,7 @@
     <modules>
         <module>demo-webmvc</module>
         <module>demo-webflux</module>
+        <module>demo-jersey</module>
     </modules>
 
 </project>
