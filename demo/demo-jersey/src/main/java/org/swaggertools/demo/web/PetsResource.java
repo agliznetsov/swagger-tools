@@ -1,16 +1,23 @@
 package org.swaggertools.demo.web;
 
+import org.swaggertools.demo.model.Cat;
 import org.swaggertools.demo.model.Pet;
 
+import javax.inject.Singleton;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Singleton
 public class PetsResource implements PetsApi {
     Long counter = 0L;
     Map<Long, Pet> pets = new HashMap<>();
+
+    public PetsResource() {
+        pets.put(0L, new Cat());
+    }
 
     @Override
     public List<Pet> listPets(Integer limit) {

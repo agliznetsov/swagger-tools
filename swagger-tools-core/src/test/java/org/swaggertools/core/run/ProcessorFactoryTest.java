@@ -2,7 +2,7 @@ package org.swaggertools.core.run;
 
 import org.junit.Test;
 import org.swaggertools.core.source.ApiDefinitionSource;
-import org.swaggertools.core.targets.ClientGenerator;
+import org.swaggertools.core.targets.client.ClientGenerator;
 import org.swaggertools.core.targets.ModelGenerator;
 
 import java.util.HashMap;

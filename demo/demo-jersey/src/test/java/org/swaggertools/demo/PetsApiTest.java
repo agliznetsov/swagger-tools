@@ -1,10 +1,11 @@
 package org.swaggertools.demo;
 
+import org.apache.http.impl.client.HttpClients;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.swaggertools.demo.client.HttpStatusException;
 import org.swaggertools.demo.client.PetsClient;
 import org.swaggertools.demo.model.Cat;
 import org.swaggertools.demo.model.Pet;
@@ -25,7 +26,7 @@ public class PetsApiTest extends JerseyTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        petsClient = new PetsClient(getBaseUri().toString());
+        petsClient = new PetsClient(HttpClients.createDefault(), getBaseUri().toString());
     }
 
     @Test
@@ -45,12 +46,14 @@ public class PetsApiTest extends JerseyTest {
 
     @Test
     public void getOneWrongId() {
-//        try {
+        try {
             petsClient.getPetById(666L, false);
             fail("Exception expected");
-//        } catch (HttpServerErrorException e) {
-//            assertEquals(500, e.getStatusCode().value());
-//        }
+        } catch (HttpStatusException e) {
+            assertEquals(500, e.getStatusCode());
+            assertEquals("Request failed.", e.getStatusText());
+            assertTrue(e.getResponseBody().length > 0);
+        }
     }
 
     @Test

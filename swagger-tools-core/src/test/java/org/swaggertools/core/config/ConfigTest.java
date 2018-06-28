@@ -1,7 +1,7 @@
 package org.swaggertools.core.config;
 
 import org.junit.Test;
-import org.swaggertools.core.targets.ClientGenerator;
+import org.swaggertools.core.targets.client.ClientGenerator;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class ConfigTest {
                 "  client-package                          Client classes package name\n" +
                 "  model-package                           Models package name\n" +
                 "  client-suffix                           Client classes name suffix (default: 'Client')\n" +
-                "  dialect                                 Client implementation dialect [RestTemplate,WebClient] (default: 'RestTemplate')\n" +
+                "  dialect                                 Client implementation dialect [RestTemplate,WebClient,HttpClient] (default: 'RestTemplate')\n" +
                 "  factory-name                            Client factory class name. If empty no factory is generated.\n",
                 help);
     }

@@ -47,7 +47,7 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
         JavaFileWriter writer = createWriter(options.location);
         models.values().forEach(it -> {
             addSubtypes(it);
-            writer.write(JavaFile.builder(options.modelPackage, it.typeSpec.build()).indent(indent).build());
+            writer.write(JavaFile.builder(options.modelPackage, it.typeSpec.build()).indent(INDENT).build());
         });
     }
 

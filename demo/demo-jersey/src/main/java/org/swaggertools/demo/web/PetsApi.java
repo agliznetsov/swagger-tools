@@ -10,25 +10,22 @@ import java.util.List;
 @Produces("application/json")
 public interface PetsApi {
     @GET
-    @Path("/pets")
+    @Path("")
     List<Pet> listPets(@QueryParam("limit") Integer limit);
 
     @POST
-    @Path("/pets")
-//    @ResponseStatus(HttpStatus.CREATED)
+    @Path("")
     Pet createPet(Pet requestBody);
 
     @GET
-    @Path("/pets/{petId}")
+    @Path("/{petId}")
     Pet getPetById(@PathParam("petId") Long petId, @QueryParam("details") Boolean details);
 
     @PUT
-    @Path("/pets/{petId}")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Path("/{petId}")
     void updatePet(@PathParam("petId") Long petId, Pet requestBody);
 
     @DELETE
-    @Path("/pets/{petId}")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Path("/{petId}")
     void deletePetById(@PathParam("petId") Long petId);
 }

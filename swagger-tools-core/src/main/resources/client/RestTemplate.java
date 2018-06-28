@@ -10,18 +10,16 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public abstract class RestTemplateClient {
+public abstract class BaseClient {
     protected static final ParameterizedTypeReference<Void> VOID = new ParameterizedTypeReference<Void>() {};
-    protected static final MultiValueMap<String, String> EMPTY_MAP = new LinkedMultiValueMap<>();
+    private static final Map<String, String> EMPTY_MAP = new HashMap<>();
+    private static final MultiValueMap<String, String> EMPTY_MULTI_MAP = new LinkedMultiValueMap<>();
 
     protected final RestTemplate restTemplate;
     protected String basePath = "";
-    protected MultiValueMap<String, String> headers;
+    protected Map<String, List<String>> headers;
 
     public RestTemplate getRestTemplate() {
         return restTemplate;
@@ -35,30 +33,33 @@ public abstract class RestTemplateClient {
         this.basePath = basePath;
     }
 
-    public MultiValueMap<String, String> getHeaders() {
+    public Map<String, List<String>> getHeaders() {
         return headers;
     }
 
-    public void setHeaders(MultiValueMap<String, String> headers) {
+    public void setHeaders(Map<String, List<String>> headers) {
         this.headers = headers;
     }
 
-    public RestTemplateClient(RestTemplate restTemplate) {
+    public BaseClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-    public RestTemplateClient(RestTemplate restTemplate, String basePath) {
+    public BaseClient(RestTemplate restTemplate, String basePath) {
         this.restTemplate = restTemplate;
         this.basePath = basePath;
     }
 
-    public RestTemplateClient(RestTemplate restTemplate, String basePath, MultiValueMap<String, String> headers) {
+    public BaseClient(RestTemplate restTemplate, String basePath, Map<String, List<String>> headers) {
         this.restTemplate = restTemplate;
         this.basePath = basePath;
         this.headers = headers;
     }
 
     protected MultiValueMap<String, String> createQueryParameters(Object... keyValues) {
+        if (keyValues.length == 0) {
+            return EMPTY_MULTI_MAP;
+        }
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
         for (int i = 0; i < keyValues.length; i += 2) {
             Object key = keyValues[i];
@@ -74,23 +75,22 @@ public abstract class RestTemplateClient {
         return parameters;
     }
 
-    protected Map<String, Object> createUrlVariables(Object... keyValues) {
-        Map<String, Object> parameters = new HashMap<>();
+    protected Map<String, String> createUrlVariables(Object... keyValues) {
+        if (keyValues.length == 0) {
+            return EMPTY_MAP;
+        }
+        Map<String, String> parameters = new HashMap<>();
         for (int i = 0; i < keyValues.length; i += 2) {
             Object key = keyValues[i];
             Object value = keyValues[i + 1];
             if (value != null) {
-                parameters.put(key.toString(), value);
+                parameters.put(key.toString(), value.toString());
             }
         }
         return parameters;
     }
 
-    protected <T> ResponseEntity<T> invokeAPI(String path, HttpMethod method, MultiValueMap<String, String> queryParams, Object body, ParameterizedTypeReference<T> returnType) {
-        return this.invokeAPI(path, method, new HashMap<>(), queryParams, body, returnType);
-    }
-
-    protected <T> ResponseEntity<T> invokeAPI(String path, HttpMethod method, Map<String, ?> urlVariables, MultiValueMap<String, String> queryParams, Object body, ParameterizedTypeReference<T> returnType) {
+    protected <T> ResponseEntity<T> invokeAPI(String path, String method, Map<String, String> urlVariables, MultiValueMap<String, String> queryParams, Object body, ParameterizedTypeReference<T> returnType) {
         URI baseUrl = restTemplate.getUriTemplateHandler().expand(basePath);
         URI uri = UriComponentsBuilder
                 .fromUri(baseUrl)
@@ -98,7 +98,7 @@ public abstract class RestTemplateClient {
                 .queryParams(queryParams)
                 .buildAndExpand(urlVariables)
                 .toUri();
-        RequestEntity.BodyBuilder requestBuilder = RequestEntity.method(method, uri);
+        RequestEntity.BodyBuilder requestBuilder = RequestEntity.method(HttpMethod.resolve(method), uri);
         customizeRequest(requestBuilder);
         RequestEntity<Object> requestEntity = requestBuilder.body(body);
         return restTemplate.exchange(requestEntity, returnType);
@@ -106,7 +106,9 @@ public abstract class RestTemplateClient {
 
     protected void customizeRequest(RequestEntity.BodyBuilder requestBuilder) {
         if (headers != null) {
-            headers.forEach((k, v) -> requestBuilder.header(k, v.toArray(new String[0])));
+            for(Map.Entry<String, List<String>> e : headers.entrySet()) {
+                requestBuilder.header(e.getKey(), e.getValue().toArray(new String[0]));
+            }
         }
     }
 }

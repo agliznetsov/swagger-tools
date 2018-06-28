@@ -6,7 +6,8 @@ import org.junit.Test;
 import org.swaggertools.core.run.*;
 import org.swaggertools.core.source.ApiDefinitionSource;
 import org.swaggertools.core.targets.ModelGenerator;
-import org.swaggertools.core.targets.ClientGenerator;
+import org.swaggertools.core.targets.client.ClientDialect;
+import org.swaggertools.core.targets.client.ClientGenerator;
 import org.swaggertools.core.targets.ServerGenerator;
 import org.swaggertools.core.util.StreamUtils;
 
@@ -45,13 +46,13 @@ public class GeneratorsTest {
     }
 
     @Test
-    public void test_client_reactive() throws Exception {
+    public void test_client_WebClient() throws Exception {
         memoryWriter.files.clear();
         Processor processor = new Processor();
         processor.setSource(createSource("/petstore/openapi.yaml"));
 
         ClientGenerator target = createClientGenerator();
-        target.getOptions().setDialect(ClientGenerator.ClientDialect.WebClient);
+        target.getOptions().setDialect(ClientDialect.WebClient);
         target.getOptions().setClientSuffix("WebClient");
         processor.setTargets(Collections.singletonList(target));
         processor.process();

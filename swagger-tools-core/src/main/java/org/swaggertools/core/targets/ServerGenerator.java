@@ -55,7 +55,7 @@ public class ServerGenerator extends JavaFileGenerator<ServerGenerator.Options> 
             );
         }
         JavaFileWriter writer = createWriter(options.location);
-        writer.write(JavaFile.builder(options.apiPackage, apiInfo.api.build()).indent(indent).build());
+        writer.write(JavaFile.builder(options.apiPackage, apiInfo.api.build()).indent(INDENT).build());
     }
 
     private void processOperation(Operation operation) {
