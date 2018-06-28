@@ -14,9 +14,16 @@ This project provide a set of tools to generate java code from API definition.
 
 ### Targets
 
-- Model classes, jackson annotated
-- Java client SDK, can be used for unit testing or to create java client applications
-- Server API interfaces with HTTP mapping annotations
+- Model classes. Supported dialects:
+    - Jackson2
+- Java client SDK, can be used for unit testing or to create java client applications. Supported dialects:
+    -  Spring RestTemplate
+    -  Spring WebClient
+    -  Apache HttpClient
+- Server API interfaces with HTTP mapping annotations. Supported dialects:
+    - Spring WebMVC
+    - Spring Webflux
+    - JAX-RS
 
 ### Run from command line  
 

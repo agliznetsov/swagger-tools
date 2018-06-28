@@ -91,9 +91,10 @@
                                 <target.model.location>${project.build.directory}/generated-sources/swagger</target.model.location>
                                 <target.model.model-package>org.swaggertools.demo.model</target.model.model-package>
 
-                                <!--<target.server.location>${project.build.directory}/generated-sources/swagger</target.server.location>-->
-                                <!--<target.server.model-package>org.swaggertools.demo.model</target.server.model-package>-->
-                                <!--<target.server.api-package>org.swaggertools.demo.web</target.server.api-package>-->
+                                <target.server.location>${project.build.directory}/generated-sources/swagger</target.server.location>
+                                <target.server.model-package>org.swaggertools.demo.model</target.server.model-package>
+                                <target.server.api-package>org.swaggertools.demo.web</target.server.api-package>
+                                <target.server.dialect>JaxRS</target.server.dialect>
 
                                 <target.client.location>${project.build.directory}/generated-sources/swagger</target.client.location>
                                 <target.client.model-package>org.swaggertools.demo.model</target.client.model-package>

@@ -26,7 +26,8 @@ public class PetsApiTest extends JerseyTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        petsClient = new PetsClient(HttpClients.createDefault(), getBaseUri().toString());
+        String baseUrl = getBaseUri().toString() + "v1";
+        petsClient = new PetsClient(HttpClients.createDefault(), baseUrl);
     }
 
     @Test

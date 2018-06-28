@@ -5,10 +5,11 @@ import lombok.SneakyThrows;
 import org.junit.Test;
 import org.swaggertools.core.run.*;
 import org.swaggertools.core.source.ApiDefinitionSource;
-import org.swaggertools.core.targets.ModelGenerator;
+import org.swaggertools.core.targets.model.ModelGenerator;
 import org.swaggertools.core.targets.client.ClientDialect;
 import org.swaggertools.core.targets.client.ClientGenerator;
-import org.swaggertools.core.targets.ServerGenerator;
+import org.swaggertools.core.targets.server.ServerDialect;
+import org.swaggertools.core.targets.server.ServerGenerator;
 import org.swaggertools.core.util.StreamUtils;
 
 import java.net.URL;
@@ -43,6 +44,19 @@ public class GeneratorsTest {
         processor.setTargets(Collections.singletonList(target));
         processor.process();
         verifyJavaFile("/petstore/server/PetsApiReactive", memoryWriter.files.get("PetsApi"));
+    }
+
+    @Test
+    public void test_server_jaxrs() throws Exception {
+        memoryWriter.files.clear();
+        Processor processor = new Processor();
+        processor.setSource(createSource("/petstore/openapi.yaml"));
+
+        ServerGenerator target = createServerGenerator();
+        target.getOptions().setDialect(ServerDialect.JaxRS);
+        processor.setTargets(Collections.singletonList(target));
+        processor.process();
+        verifyJavaFile("/petstore/server/PetsApiJaxrs", memoryWriter.files.get("PetsApi"));
     }
 
     @Test

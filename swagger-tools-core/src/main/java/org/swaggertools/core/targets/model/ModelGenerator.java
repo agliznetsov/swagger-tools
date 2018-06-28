@@ -1,4 +1,4 @@
-package org.swaggertools.core.targets;
+package org.swaggertools.core.targets.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -11,6 +11,8 @@ import org.swaggertools.core.config.ConfigurationProperty;
 import org.swaggertools.core.model.*;
 import org.swaggertools.core.run.JavaFileWriter;
 import org.swaggertools.core.run.Target;
+import org.swaggertools.core.targets.JavaFileGenerator;
+import org.swaggertools.core.targets.SchemaMapper;
 import org.swaggertools.core.util.NameUtils;
 
 import javax.lang.model.element.Modifier;
