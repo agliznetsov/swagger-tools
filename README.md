@@ -10,6 +10,8 @@ This project provide a set of tools to generate java code from API definition.
 ### Source
 
 - Swagger 2.0 or OpenAPI 3.0 API definition in json/yaml format 
+- Extensions
+    - **x-ignore** attribute to exclude operations from the code generation process  
 
 ### Targets
 
