@@ -5,12 +5,13 @@ import lombok.SneakyThrows;
 import org.junit.Test;
 import org.swaggertools.core.run.*;
 import org.swaggertools.core.source.ApiDefinitionSource;
-import org.swaggertools.core.targets.JacksonModelGenerator;
-import org.swaggertools.core.targets.ClientGenerator;
-import org.swaggertools.core.targets.ServerGenerator;
+import org.swaggertools.core.targets.model.ModelGenerator;
+import org.swaggertools.core.targets.client.ClientDialect;
+import org.swaggertools.core.targets.client.ClientGenerator;
+import org.swaggertools.core.targets.server.ServerDialect;
+import org.swaggertools.core.targets.server.ServerGenerator;
 import org.swaggertools.core.util.StreamUtils;
 
-import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,17 +47,43 @@ public class GeneratorsTest {
     }
 
     @Test
-    public void test_client_reactive() throws Exception {
+    public void test_server_jaxrs() throws Exception {
+        memoryWriter.files.clear();
+        Processor processor = new Processor();
+        processor.setSource(createSource("/petstore/openapi.yaml"));
+
+        ServerGenerator target = createServerGenerator();
+        target.getOptions().setDialect(ServerDialect.JaxRS);
+        processor.setTargets(Collections.singletonList(target));
+        processor.process();
+        verifyJavaFile("/petstore/server/PetsApiJaxrs", memoryWriter.files.get("PetsApi"));
+    }
+
+    @Test
+    public void test_client_WebClient() throws Exception {
         memoryWriter.files.clear();
         Processor processor = new Processor();
         processor.setSource(createSource("/petstore/openapi.yaml"));
 
         ClientGenerator target = createClientGenerator();
-        target.getOptions().setDialect(ClientGenerator.ClientDialect.WebClient);
+        target.getOptions().setDialect(ClientDialect.WebClient);
         target.getOptions().setClientSuffix("WebClient");
         processor.setTargets(Collections.singletonList(target));
         processor.process();
         verifyJavaFile("/petstore/client/PetsWebClient", memoryWriter.files.get("PetsWebClient"));
+    }
+
+    @Test
+    public void test_client_factory() throws Exception {
+        memoryWriter.files.clear();
+        Processor processor = new Processor();
+        processor.setSource(createSource("/petstore/openapi2.yaml"));
+
+        ClientGenerator target = createClientGenerator();
+        target.getOptions().setFactoryName("Petstore");
+        processor.setTargets(Collections.singletonList(target));
+        processor.process();
+        verifyJavaFile("/petstore/factory/Petstore", memoryWriter.files.get("Petstore"));
     }
 
     public void testPetStore(String source) throws Exception {
@@ -81,8 +108,8 @@ public class GeneratorsTest {
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/server/" + k, v));
     }
 
-    private JacksonModelGenerator createModelGenerator() {
-        JacksonModelGenerator generator = new JacksonModelGenerator() {
+    private ModelGenerator createModelGenerator() {
+        ModelGenerator generator = new ModelGenerator() {
             @Override
             protected JavaFileWriter createWriter(String target) {
                 return memoryWriter;

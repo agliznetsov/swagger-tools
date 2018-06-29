@@ -1,20 +1,23 @@
 package org.swaggertools.core.run;
 
 import org.junit.Test;
-import org.swaggertools.core.config.Configuration;
-import org.swaggertools.core.model.ApiDefinition;
 import org.swaggertools.core.source.ApiDefinitionSource;
-import org.swaggertools.core.targets.JacksonModelGenerator;
-import org.swaggertools.core.targets.ClientGenerator;
+import org.swaggertools.core.targets.client.ClientGenerator;
+import org.swaggertools.core.targets.model.ModelGenerator;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class ProcessorFactoryTest {
+
+    @Test
+    public void test_service_loader() {
+        assertEquals(3, ProcessorFactory.getTargets().size());
+    }
+
     @Test
     public void create_default() {
         Map<String, String> options = new HashMap<>();
@@ -33,28 +36,13 @@ public class ProcessorFactoryTest {
 
         assertEquals(2, processor.getTargets().size());
 
-        JacksonModelGenerator model = (JacksonModelGenerator) processor.getTargets().get(1);
+        ModelGenerator model = (ModelGenerator) processor.getTargets().get(1);
         assertEquals("/target", model.getOptions().getLocation());
         assertEquals("com.example.model", model.getOptions().getModelPackage());
         assertEquals(false, model.getOptions().isInitializeCollections());
 
         ClientGenerator client = (ClientGenerator) processor.getTargets().get(0);
         assertEquals("/target", client.getOptions().getLocation());
-    }
-
-    @Test
-    public void create_from_class() {
-        ProcessorFactory.registerTarget("abc", MyTarget::new);
-
-        Map<String, String> options = new HashMap<>();
-        options.put("source.location", "/src/file");
-        options.put("target.abc.location", "/target");
-
-        ProcessorFactory factory = new ProcessorFactory();
-        Processor processor = factory.create(options);
-        assertEquals(1, processor.getTargets().size());
-        MyTarget myTarget = (MyTarget) processor.getTargets().get(0);
-        assertEquals("/target",  myTarget.configValues.get("location"));
     }
 
     @Test
@@ -83,26 +71,4 @@ public class ProcessorFactoryTest {
         }
     }
 
-    public static class MyTarget implements Target {
-        public Map<String, String> configValues;
-
-        @Override
-        public void accept(ApiDefinition apiDefinition) {
-        }
-
-        @Override
-        public String getGroupName() {
-            return "abc";
-        }
-
-        @Override
-        public List<Configuration> getConfigurations() {
-            return null;
-        }
-
-        @Override
-        public void configure(Map<String, String> configValues) {
-            this.configValues = configValues;
-        }
-    }
 }

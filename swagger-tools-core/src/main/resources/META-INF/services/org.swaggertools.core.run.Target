@@ -1,0 +1,3 @@
+org.swaggertools.core.targets.model.ModelGenerator
+org.swaggertools.core.targets.server.ServerGenerator
+org.swaggertools.core.targets.client.ClientGenerator
