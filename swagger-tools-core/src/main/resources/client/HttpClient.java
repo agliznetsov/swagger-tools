@@ -174,6 +174,9 @@ public abstract class BaseClient {
                 }
             }
         }
+        if (requestCustomizer != null) {
+            requestCustomizer.accept(requestBuilder);
+        }
     }
 
 }

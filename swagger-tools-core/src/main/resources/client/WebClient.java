@@ -120,5 +120,8 @@ public abstract class BaseClient {
         if (headers != null) {
             headers.forEach((k, v) -> request.header(k, v.toArray(new String[0])));
         }
+        if (requestCustomizer != null) {
+            requestCustomizer.accept(request);
+        }
     }
 }

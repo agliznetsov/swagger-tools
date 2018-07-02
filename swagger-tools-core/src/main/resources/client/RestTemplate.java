@@ -120,6 +120,9 @@ public abstract class BaseClient {
                 requestBuilder.header(e.getKey(), e.getValue().toArray(new String[0]));
             }
         }
+        if (requestCustomizer != null) {
+            requestCustomizer.accept(requestBuilder);
+        }
     }
 
 }
