@@ -13,6 +13,7 @@ import org.swaggertools.core.run.JavaFileWriter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static com.squareup.javapoet.TypeName.VOID;
 
@@ -33,6 +34,11 @@ public class WebClientBuilder extends ClientBuilder {
     @Override
     protected ClassName getClientClassName() {
         return WEB_CLIENT;
+    }
+
+    @Override
+    protected TypeName getRequestBuilderClassName() {
+        return ParameterizedTypeName.get(ClassName.get(Consumer.class), ClassName.get("org.springframework.web.reactive.function.client.WebClient", "RequestBodySpec"));
     }
 
     @Override

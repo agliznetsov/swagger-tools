@@ -27,7 +27,7 @@ public class ClientGenerator extends JavaFileGenerator<ClientOptions> {
         ClientBuilder clientBuilder = createClientBuilder(apiDefinition, writer);
         clientBuilder.generate();
         if (options.factoryName != null && !options.factoryName.isEmpty()) {
-            new FactoryBuilder(apiDefinition, writer, options, clientBuilder.getClientClassName()).generate();
+            new FactoryBuilder(apiDefinition, writer, options, clientBuilder.getClientClassName(), clientBuilder.getRequestBuilderClassName()).generate();
         }
     }
 

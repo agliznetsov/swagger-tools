@@ -6,6 +6,7 @@ import org.swaggertools.core.run.JavaFileWriter;
 
 import javax.lang.model.element.Modifier;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static javax.lang.model.element.Modifier.*;
@@ -21,14 +22,16 @@ class FactoryBuilder {
     private final JavaFileWriter writer;
     private final ClientOptions options;
     private final TypeName clientType;
+    private final TypeName requestBuilderType;
     private Set<String> clientNames;
     private TypeSpec.Builder builder;
 
-    public FactoryBuilder(ApiDefinition apiDefinition, JavaFileWriter writer, ClientOptions options, TypeName clientType) {
+    public FactoryBuilder(ApiDefinition apiDefinition, JavaFileWriter writer, ClientOptions options, TypeName clientType, TypeName requestBuilderType) {
         this.apiDefinition = apiDefinition;
         this.writer = writer;
         this.options = options;
         this.clientType = clientType;
+        this.requestBuilderType = requestBuilderType;
     }
 
     public void generate() {
@@ -43,7 +46,18 @@ class FactoryBuilder {
         createConstructor(builder);
         addProperty(clientType, "client");
         addHeaders();
+        addRequestCustomizer();
         addProperties();
+    }
+
+    private void addRequestCustomizer() {
+        MethodSpec.Builder method = MethodSpec.methodBuilder("setRequestCustomizer")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(requestBuilderType, "requestCustomizer");
+        for (String name : clientNames) {
+            method.addStatement("$N.setRequestCustomizer(requestCustomizer)", camelCase(name));
+        }
+        builder.addMethod(method.build());
     }
 
     private void addProperties() {

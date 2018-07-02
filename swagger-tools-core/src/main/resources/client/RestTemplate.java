@@ -11,6 +11,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.*;
+import java.util.function.Consumer;
 
 public abstract class BaseClient {
     protected static final ParameterizedTypeReference<Void> VOID = new ParameterizedTypeReference<Void>() {};
@@ -20,6 +21,22 @@ public abstract class BaseClient {
     protected final RestTemplate restTemplate;
     protected String basePath = "";
     protected Map<String, List<String>> headers;
+    protected Consumer<RequestEntity.BodyBuilder> requestCustomizer;
+
+    public BaseClient(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    public BaseClient(RestTemplate restTemplate, String basePath) {
+        this.restTemplate = restTemplate;
+        this.basePath = basePath;
+    }
+
+    public BaseClient(RestTemplate restTemplate, String basePath, Map<String, List<String>> headers) {
+        this.restTemplate = restTemplate;
+        this.basePath = basePath;
+        this.headers = headers;
+    }
 
     public RestTemplate getRestTemplate() {
         return restTemplate;
@@ -41,19 +58,12 @@ public abstract class BaseClient {
         this.headers = headers;
     }
 
-    public BaseClient(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public Consumer<RequestEntity.BodyBuilder> getRequestCustomizer() {
+        return requestCustomizer;
     }
 
-    public BaseClient(RestTemplate restTemplate, String basePath) {
-        this.restTemplate = restTemplate;
-        this.basePath = basePath;
-    }
-
-    public BaseClient(RestTemplate restTemplate, String basePath, Map<String, List<String>> headers) {
-        this.restTemplate = restTemplate;
-        this.basePath = basePath;
-        this.headers = headers;
+    public void setRequestCustomizer(Consumer<RequestEntity.BodyBuilder> requestCustomizer) {
+        this.requestCustomizer = requestCustomizer;
     }
 
     protected MultiValueMap<String, String> createQueryParameters(Object... keyValues) {
@@ -111,4 +121,5 @@ public abstract class BaseClient {
             }
         }
     }
+
 }

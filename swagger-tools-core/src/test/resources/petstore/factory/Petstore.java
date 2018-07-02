@@ -4,6 +4,8 @@ import java.lang.String;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import org.springframework.http.RequestEntity.BodyBuilder;
 import org.springframework.web.client.RestTemplate;
 
 public class Petstore {
@@ -27,6 +29,11 @@ public class Petstore {
 
     public Map<String, List<String>> getHeaders() {
         return headers;
+    }
+
+    public void setRequestCustomizer(Consumer<BodyBuilder> requestCustomizer) {
+        pets.setRequestCustomizer(requestCustomizer);
+        owners.setRequestCustomizer(requestCustomizer);
     }
 
     public PetsClient pets() {

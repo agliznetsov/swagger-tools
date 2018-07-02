@@ -13,6 +13,7 @@ import org.swaggertools.core.run.JavaFileWriter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class RestTemplateBuilder extends ClientBuilder {
     private static final ClassName REST_TEMPLATE = ClassName.get("org.springframework.web.client", "RestTemplate");
@@ -31,6 +32,11 @@ public class RestTemplateBuilder extends ClientBuilder {
     @Override
     protected ClassName getClientClassName() {
         return REST_TEMPLATE;
+    }
+
+    @Override
+    protected TypeName getRequestBuilderClassName() {
+        return ParameterizedTypeName.get(ClassName.get(Consumer.class), ClassName.get("org.springframework.http.RequestEntity", "BodyBuilder"));
     }
 
     @Override

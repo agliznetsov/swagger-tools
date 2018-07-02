@@ -11,12 +11,14 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.apache.http.client.methods.RequestBuilder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.function.Consumer;
 
 public abstract class BaseClient {
     protected static final TypeReference<Void> VOID = new TypeReference<Void>() {
@@ -27,6 +29,7 @@ public abstract class BaseClient {
     private String basePath = "";
     private Map<String, List<String>> headers;
     private ObjectMapper objectMapper = new ObjectMapper();
+    protected Consumer<RequestBuilder> requestCustomizer;
 
     public BaseClient(CloseableHttpClient httpClient) {
         this.httpClient = httpClient;
@@ -57,6 +60,14 @@ public abstract class BaseClient {
 
     public void setHeaders(Map<String, List<String>> headers) {
         this.headers = headers;
+    }
+
+    public Consumer<RequestBuilder> getRequestCustomizer() {
+        return requestCustomizer;
+    }
+
+    public void setRequestCustomizer(Consumer<RequestBuilder> requestCustomizer) {
+        this.requestCustomizer = requestCustomizer;
     }
 
     protected Map<String, Collection<String>> createQueryParameters(Object... keyValues) {

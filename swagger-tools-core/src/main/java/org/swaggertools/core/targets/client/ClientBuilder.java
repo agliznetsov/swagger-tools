@@ -144,6 +144,8 @@ abstract class ClientBuilder {
 
     protected abstract ClassName getClientClassName();
 
+    protected abstract TypeName getRequestBuilderClassName();
+
     protected abstract void addMethodBody(MethodSpec.Builder builder, Operation operation);
 
 }

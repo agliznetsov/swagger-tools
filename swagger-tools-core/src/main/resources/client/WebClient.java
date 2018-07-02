@@ -5,11 +5,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public abstract class BaseClient {
     protected static final ParameterizedTypeReference<Void> VOID = new ParameterizedTypeReference<Void>() {};
@@ -19,6 +21,7 @@ public abstract class BaseClient {
     protected final WebClient webClient;
     protected String basePath = "";
     protected Map<String, List<String>> headers;
+    protected Consumer<RequestBodySpec> requestCustomizer;
 
     public BaseClient(WebClient webClient) {
         this.webClient = webClient;
@@ -53,6 +56,14 @@ public abstract class BaseClient {
 
     public void setHeaders(Map<String, List<String>> headers) {
         this.headers = headers;
+    }
+
+    public Consumer<RequestBodySpec> getRequestCustomizer() {
+        return requestCustomizer;
+    }
+
+    public void setRequestCustomizer(Consumer<RequestBodySpec> requestCustomizer) {
+        this.requestCustomizer = requestCustomizer;
     }
 
     protected MultiValueMap<String, String> createQueryParameters(Object... keyValues) {

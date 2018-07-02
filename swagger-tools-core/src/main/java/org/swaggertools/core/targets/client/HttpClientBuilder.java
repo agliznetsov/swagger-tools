@@ -15,6 +15,7 @@ import org.swaggertools.core.util.StreamUtils;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class HttpClientBuilder extends ClientBuilder {
     private static final ClassName TYPE_REF = ClassName.get("com.fasterxml.jackson.core.type", "TypeReference");
@@ -32,6 +33,11 @@ public class HttpClientBuilder extends ClientBuilder {
     @Override
     protected ClassName getClientClassName() {
         return HTTP_CLIENT;
+    }
+
+    @Override
+    protected TypeName getRequestBuilderClassName() {
+        return ParameterizedTypeName.get(ClassName.get(Consumer.class), ClassName.get("org.apache.http.client.methods", "RequestBuilder"));
     }
 
     @Override
