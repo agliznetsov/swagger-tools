@@ -47,4 +47,8 @@ public interface PetsApi {
     @GET
     @Path("/pets/{petId}/body")
     String getPetBody(@PathParam("petId") Long petId);
+
+    @GET
+    @Path("/pets/{petId}/thumbnail")
+    byte[] getPetThumbnail(@PathParam("petId") Long petId);
 }

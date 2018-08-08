@@ -47,4 +47,7 @@ public interface PetsApi {
 
     @GetMapping("/pets/{petId}/body")
     String getPetBody(@PathVariable(name = "petId", required = true) Long petId);
+
+    @GetMapping("/pets/{petId}/thumbnail")
+    byte[] getPetThumbnail(@PathVariable(name = "petId", required = true) Long petId);
 }

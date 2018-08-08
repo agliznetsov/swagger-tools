@@ -177,6 +177,27 @@ paths:
               schema:
                 type: string
 
+  '/pets/{petId}/thumbnail':
+    get:
+      tags:
+        - pets
+      operationId: getPetThumbnail
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+
 components:
   parameters:
     petId:

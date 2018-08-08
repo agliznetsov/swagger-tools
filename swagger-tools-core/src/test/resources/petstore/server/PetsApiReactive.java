@@ -49,4 +49,7 @@ public interface PetsApi {
 
     @GetMapping("/pets/{petId}/body")
     Mono<String> getPetBody(@PathVariable(name = "petId", required = true) Long petId);
+
+    @GetMapping("/pets/{petId}/thumbnail")
+    Mono<byte[]> getPetThumbnail(@PathVariable(name = "petId", required = true) Long petId);
 }

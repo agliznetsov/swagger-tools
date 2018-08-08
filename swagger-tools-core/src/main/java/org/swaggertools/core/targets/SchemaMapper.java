@@ -1,5 +1,6 @@
 package org.swaggertools.core.targets;
 
+import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
@@ -73,6 +74,8 @@ public class SchemaMapper {
             case STRING:
                 Class clazz = stringFormats.get(format);
                 return clazz != null ? TypeName.get(clazz) : STRING;
+            case FILE:
+                return ArrayTypeName.of(TypeName.BYTE);
         }
         throw new IllegalArgumentException("Unknown type: " + schema.getType() + ":" + schema.getFormat());
     }

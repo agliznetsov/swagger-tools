@@ -64,4 +64,10 @@ public class PetsClient extends BaseClient {
         ResponseEntity<String> response = invokeAPI("/pets/{petId}/body", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, typeRef);
         return response.getBody();
     }
+
+    public byte[] getPetThumbnail(Long petId) {
+        ParameterizedTypeReference<byte[]> typeRef = new ParameterizedTypeReference<byte[]>(){};
+        ResponseEntity<byte[]> response = invokeAPI("/pets/{petId}/thumbnail", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, typeRef);
+        return response.getBody();
+    }
 }

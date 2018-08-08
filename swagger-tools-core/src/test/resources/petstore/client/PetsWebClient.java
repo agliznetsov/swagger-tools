@@ -59,4 +59,9 @@ public class PetsWebClient extends BaseClient {
         ParameterizedTypeReference<String> typeRef = new ParameterizedTypeReference<String>(){};
         return invokeAPI("/pets/{petId}/body", "GET", createUrlVariables("petId", petId), createQueryParameters(), null).bodyToMono(typeRef);
     }
+
+    public Mono<byte[]> getPetThumbnail(Long petId) {
+        ParameterizedTypeReference<byte[]> typeRef = new ParameterizedTypeReference<byte[]>(){};
+        return invokeAPI("/pets/{petId}/thumbnail", "GET", createUrlVariables("petId", petId), createQueryParameters(), null).bodyToMono(typeRef);
+    }
 }
