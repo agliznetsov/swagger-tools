@@ -51,7 +51,7 @@ abstract class ServerBuilder {
     }
 
     private void processOperation(Operation operation) {
-        String methodName = camelCase(sanitize(operation.getOperationId()));
+        String methodName = camelCase(javaIdentifier(operation.getOperationId()));
         MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
 
@@ -75,7 +75,7 @@ abstract class ServerBuilder {
     }
 
     private TypeSpec.Builder createApiBuilder(String tag) {
-        String name = pascalCase(sanitize(tag) + options.apiSuffix);
+        String name = pascalCase(javaIdentifier(tag) + options.apiSuffix);
         return TypeSpec.interfaceBuilder(name)
                 .addModifiers(Modifier.PUBLIC);
     }

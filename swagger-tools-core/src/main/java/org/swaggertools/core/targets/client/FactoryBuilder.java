@@ -35,7 +35,7 @@ class FactoryBuilder {
     }
 
     public void generate() {
-        clientNames = apiDefinition.getOperations().stream().map(op -> pascalCase(sanitize(op.getTag()))).collect(Collectors.toSet());
+        clientNames = apiDefinition.getOperations().stream().map(op -> pascalCase(javaIdentifier(op.getTag()))).collect(Collectors.toSet());
         createFactoryBuilder();
         writer.write(JavaFile.builder(options.clientPackage, builder.build()).indent(INDENT).build());
     }

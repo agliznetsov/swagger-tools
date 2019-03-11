@@ -6,7 +6,27 @@ import java.util.stream.Collectors;
 
 public class NameUtils {
     public static String sanitize(String name) {
-        return name.replace("_", "").replace(" ", "");
+        return name.replace("_", "");
+    }
+
+    public static String javaIdentifier(String name) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < name.length(); i++) {
+            char ch = name.charAt(i);
+            if (sb.length() == 0) {
+                if (Character.isJavaIdentifierStart(ch)) {
+                    sb.append(ch);
+                }
+            } else {
+                if (Character.isJavaIdentifierPart(ch)) {
+                    sb.append(ch);
+                }
+            }
+        }
+        if (sb.length() == 0) {
+            throw new IllegalArgumentException("Invalid java identifier: " + name);
+        }
+        return sb.toString();
     }
 
     public static String pascalCase(String name) {

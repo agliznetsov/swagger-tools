@@ -232,6 +232,8 @@ public class SwaggerMapper {
             return schema;
         } else if (property instanceof ObjectProperty) {
             return mapObjectProperty(className, propertyName, (ObjectProperty) property);
+        } else if (property instanceof UntypedProperty) {
+            return null;
         } else {
             PrimitiveSchema schema = new PrimitiveSchema();
             schema.setType(PrimitiveType.fromSwaggerValue(property.getType()));

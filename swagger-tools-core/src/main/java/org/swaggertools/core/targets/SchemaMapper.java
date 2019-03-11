@@ -20,6 +20,7 @@ import java.util.UUID;
 import static com.squareup.javapoet.TypeName.*;
 import static org.swaggertools.core.util.AssertUtils.notNull;
 import static org.swaggertools.core.util.JavaUtils.*;
+import static org.swaggertools.core.util.NameUtils.javaIdentifier;
 
 public class SchemaMapper {
     @Getter
@@ -55,7 +56,7 @@ public class SchemaMapper {
         } else {
             if (schema.getName() != null) {
                 notNull(modelPackage, "modelPackage is not set");
-                return ClassName.get(modelPackage, schema.getName());
+                return ClassName.get(modelPackage, javaIdentifier(schema.getName()));
             } else {
                 return OBJECT;
             }

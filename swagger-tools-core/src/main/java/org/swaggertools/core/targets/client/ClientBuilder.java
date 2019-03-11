@@ -52,7 +52,7 @@ abstract class ClientBuilder {
     }
 
     protected void processOperation(Operation operation) {
-        String methodName = camelCase(sanitize(operation.getOperationId()));
+        String methodName = camelCase(javaIdentifier(operation.getOperationId()));
         MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName).addModifiers(Modifier.PUBLIC);
 
         addMethodParameters(builder, operation);
@@ -110,7 +110,7 @@ abstract class ClientBuilder {
     }
 
     protected TypeSpec.Builder newClientBuilder(String tag) {
-        String name = pascalCase(sanitize(tag) + options.clientSuffix);
+        String name = pascalCase(javaIdentifier(tag) + options.clientSuffix);
         ClassName clientClass = getClientClassName();
         String clientName = NameUtils.camelCase(clientClass.simpleName());
         return TypeSpec.classBuilder(name)

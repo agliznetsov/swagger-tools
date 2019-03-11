@@ -23,8 +23,7 @@ import java.util.Map;
 
 import static com.squareup.javapoet.TypeName.*;
 import static org.swaggertools.core.util.JavaUtils.*;
-import static org.swaggertools.core.util.NameUtils.pascalCase;
-import static org.swaggertools.core.util.NameUtils.sanitize;
+import static org.swaggertools.core.util.NameUtils.*;
 
 @Slf4j
 public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> implements Target {
@@ -78,14 +77,15 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
     @SneakyThrows
     private void createModel(Schema schema) {
         TypeSpec.Builder typeSpec = null;
+        String schemaName = javaIdentifier(schema.getName());
 
         if (schema instanceof PrimitiveSchema) {
             PrimitiveSchema primitiveSchema = (PrimitiveSchema) schema;
             if (primitiveSchema.getEnumValues() != null) {
-                typeSpec = createEnum(schema.getName(), primitiveSchema);
+                typeSpec = createEnum(schemaName, primitiveSchema);
             }
         } else if (schema instanceof ArraySchema) {
-            typeSpec = TypeSpec.classBuilder(schema.getName())
+            typeSpec = TypeSpec.classBuilder(schemaName)
                     .addModifiers(Modifier.PUBLIC)
                     .superclass(schemaMapper.getType(schema, true));
         } else if (schema instanceof ObjectSchema) {
@@ -93,18 +93,20 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
         }
 
         if (typeSpec != null) {
-            ModelInfo info = getModel(schema.getName());
+            ModelInfo info = getModel(schemaName);
             info.typeSpec = typeSpec;
             info.schema = schema;
         }
     }
 
     private TypeSpec.Builder createClass(ObjectSchema schema) {
-        TypeSpec.Builder typeSpec = TypeSpec.classBuilder(schema.getName()).addModifiers(Modifier.PUBLIC);
+        String schemaName = javaIdentifier(schema.getName());
+        TypeSpec.Builder typeSpec = TypeSpec.classBuilder(schemaName).addModifiers(Modifier.PUBLIC);
         if (schema.getSuperSchema() != null) {
-            ClassName superClass = ClassName.get(options.modelPackage, schema.getSuperSchema());
+            String superName = javaIdentifier(schema.getSuperSchema());
+            ClassName superClass = ClassName.get(options.modelPackage, superName);
             typeSpec.superclass(superClass);
-            getModel(schema.getSuperSchema()).subTypes.add(schema.getName());
+            getModel(superName).subTypes.add(schemaName);
         } else if (schema.getAdditionalProperties() != null) {
             Schema valueSchema = schema.getAdditionalProperties();
             TypeName valueType = valueSchema != null ? schemaMapper.getType(valueSchema, false) : OBJECT;
@@ -138,7 +140,7 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
         if (schema.getProperties() != null) {
             schema.getProperties().forEach((property) -> {
                 if (property.getSchema().getEnumValues() != null) {
-                    String enumName = pascalCase(property.getName() + "Enum");
+                    String enumName = pascalCase(javaIdentifier(property.getName()) + "Enum");
                     TypeSpec enumSpec = createEnum(enumName, (PrimitiveSchema) property.getSchema()).build();
                     ClassName typeName = ClassName.get(options.modelPackage, model.build().name, enumName);
                     model.addType(enumSpec);
@@ -160,18 +162,18 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
     }
 
     private FieldSpec field(String name, TypeName type, Schema schema) {
-        FieldSpec.Builder builder = FieldSpec.builder(type, sanitize(name))
+        FieldSpec.Builder builder = FieldSpec.builder(type, sanitize(javaIdentifier(name)))
                 .addModifiers(Modifier.PRIVATE)
                 .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
                         .addMember("value", "$S", name)
                         .build()
                 );
 
-        if (schema.isReadOnly()) {
-            builder.addModifiers(Modifier.FINAL);
-        }
-
         if (schema.getDefaultValue() != null) {
+            if (schema.isReadOnly()) {
+                builder.addModifiers(Modifier.FINAL);
+            }
+            
             if (schema.getEnumValues() != null) {
                 builder.initializer("$T.$L", type, NameUtils.upperCase(schema.getDefaultValue()));
             } else if (type == STRING) {

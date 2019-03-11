@@ -19,4 +19,10 @@ public class NameUtilsTest {
         assertEquals("one", spinalCase("one"));
         assertEquals("one-two", spinalCase("oneTwo"));
     }
+
+    @Test
+    public void java_identifier() {
+        assertEquals("TheName", javaIdentifier("-The Name!"));
+        assertEquals("Name2", javaIdentifier("1Name2"));
+    }
 }

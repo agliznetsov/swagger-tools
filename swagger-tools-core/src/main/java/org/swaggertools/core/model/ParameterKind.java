@@ -1,5 +1,5 @@
 package org.swaggertools.core.model;
 
 public enum ParameterKind {
-    PATH, QUERY, BODY
+    QUERY, HEADER, PATH, FORMDATA, BODY
 }
