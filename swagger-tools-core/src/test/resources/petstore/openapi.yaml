@@ -55,6 +55,7 @@ paths:
       tags:
         - pets
       requestBody:
+        x-name: pet
         content:
           application/json:
             schema:

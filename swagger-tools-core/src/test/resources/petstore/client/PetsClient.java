@@ -31,9 +31,9 @@ public class PetsClient extends BaseClient {
         return response.getBody();
     }
 
-    public Pet createPet(Pet requestBody) {
+    public Pet createPet(Pet pet) {
         ParameterizedTypeReference<Pet> typeRef = new ParameterizedTypeReference<Pet>(){};
-        ResponseEntity<Pet> response = invokeAPI("/pets", "POST", createUrlVariables(), createQueryParameters(), requestBody, typeRef);
+        ResponseEntity<Pet> response = invokeAPI("/pets", "POST", createUrlVariables(), createQueryParameters(), pet, typeRef);
         return response.getBody();
     }
 

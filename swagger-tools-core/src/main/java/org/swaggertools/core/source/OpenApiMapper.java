@@ -24,6 +24,7 @@ import static org.swaggertools.core.util.AssertUtils.notNull;
 public class OpenApiMapper {
     private static final String JSON = "application/json";
     private static final String X_IGNORE = "x-ignore";
+    private static final String X_NAME = "x-name";
     private static final String X_BASE_PATH = "x-base-path";
 
     static final Pattern REF_PATTERN = Pattern.compile("#/components/(.+)/(.+)");
@@ -109,7 +110,11 @@ public class OpenApiMapper {
                 MediaType mediaType = requestBody.getContent().get(JSON);
                 if (mediaType != null && mediaType.getSchema() != null) {
                     Parameter res = new Parameter();
-                    res.setName("requestBody");
+                    if (requestBody.getExtensions() != null && requestBody.getExtensions().get(X_NAME) != null) {
+                        res.setName(requestBody.getExtensions().get(X_NAME).toString());
+                    } else {
+                        res.setName("requestBody");
+                    }
                     res.setKind(ParameterKind.BODY);
                     res.setRequired(true);
                     res.setSchema(mapSchema(null, mediaType.getSchema()));

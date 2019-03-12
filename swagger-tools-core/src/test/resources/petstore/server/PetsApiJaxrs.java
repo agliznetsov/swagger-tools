@@ -26,7 +26,7 @@ public interface PetsApi {
 
     @POST
     @Path("/pets")
-    Pet createPet(Pet requestBody);
+    Pet createPet(Pet pet);
 
     @GET
     @Path("/pets/{petId}")

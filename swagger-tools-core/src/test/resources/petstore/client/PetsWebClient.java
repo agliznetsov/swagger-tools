@@ -30,9 +30,9 @@ public class PetsWebClient extends BaseClient {
         return invokeAPI("/pets", "GET", createUrlVariables(), createQueryParameters("limit", limit), null).bodyToMono(typeRef);
     }
 
-    public Mono<Pet> createPet(Pet requestBody) {
+    public Mono<Pet> createPet(Pet pet) {
         ParameterizedTypeReference<Pet> typeRef = new ParameterizedTypeReference<Pet>(){};
-        return invokeAPI("/pets", "POST", createUrlVariables(), createQueryParameters(), requestBody).bodyToMono(typeRef);
+        return invokeAPI("/pets", "POST", createUrlVariables(), createQueryParameters(), pet).bodyToMono(typeRef);
     }
 
     public Mono<Pet> getPetById(Long petId, Boolean details) {

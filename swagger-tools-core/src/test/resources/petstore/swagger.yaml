@@ -41,7 +41,7 @@ paths:
       tags:
         - pets
       parameters:
-        - name: requestBody
+        - name: pet
           in: body
           schema:
             $ref: '#/definitions/Pet-'

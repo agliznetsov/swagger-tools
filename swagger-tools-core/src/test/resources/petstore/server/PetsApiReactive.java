@@ -28,7 +28,7 @@ public interface PetsApi {
 
     @PostMapping("/pets")
     @ResponseStatus(HttpStatus.CREATED)
-    Mono<Pet> createPet(@RequestBody Pet requestBody);
+    Mono<Pet> createPet(@RequestBody Pet pet);
 
     @GetMapping("/pets/{petId}")
     Mono<Pet> getPetById(@PathVariable(name = "petId", required = true) Long petId,
