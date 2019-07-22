@@ -44,7 +44,7 @@
             <plugin>
                 <groupId>com.github.agliznetsov.swagger-tools</groupId>
                 <artifactId>swagger-tools-maven-plugin</artifactId>
-                <version>0.2.2</version>
+                <version>0.3.0</version>
                 <executions>
                     <execution>
                         <id>petstore</id>
