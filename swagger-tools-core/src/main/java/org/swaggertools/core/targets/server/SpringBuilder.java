@@ -45,6 +45,7 @@ public class SpringBuilder extends ServerBuilder {
 
     @Override
     protected void annotateParameter(ParameterSpec.Builder paramBuilder, Parameter parameter) {
+        super.annotateParameter(paramBuilder, parameter);
         AnnotationSpec.Builder anno;
         if (parameter.getKind() == ParameterKind.BODY) {
             anno = AnnotationSpec.builder(REQUEST_BODY);

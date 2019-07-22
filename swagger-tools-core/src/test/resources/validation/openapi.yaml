@@ -1,0 +1,71 @@
+openapi: "3.0.1"
+info:
+  version: 1.0.0
+  title: Data validation
+  license:
+    name: MIT
+x-base-path: /v1
+paths:
+  /orders:
+    post:
+      operationId: createOrder
+      tags:
+        - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+      responses:
+        '204':
+          description: Created
+
+components:
+
+  schemas:
+
+    Order:
+      type: object
+      required:
+        - id
+        - name
+        - customer
+      properties:
+        id:
+          type: string
+          pattern: "id.+"
+        name:
+          type: string
+          minLength: 3
+          maxLength: 10
+        mumber:
+          type: integer
+          minimum: 1
+          maximum: 10
+        description:
+          type: string
+        customer:
+          $ref: "#/components/schemas/Customer"
+        items:
+          type: array
+          minLength: 1
+          items:
+            $ref: "#/components/schemas/Item"
+
+    Customer:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 3
+
+    Item:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 3

@@ -86,6 +86,28 @@ public class GeneratorsTest {
         verifyJavaFile("/petstore/factory/Petstore", memoryWriter.files.get("Petstore"));
     }
 
+    @Test
+    public void testValidation() throws Exception {
+        Processor processor = new Processor();
+        processor.setSource(createSource("/validation/openapi.yaml"));
+
+        ModelGenerator modelGenerator = createModelGenerator();
+        modelGenerator.getOptions().setValidation(true);
+        processor.setTargets(Collections.singletonList(modelGenerator));
+        processor.process();
+        assertEquals(3, memoryWriter.files.size());
+        memoryWriter.files.forEach((k, v) -> verifyJavaFile("/validation/model/" + k, v));
+
+        memoryWriter.files.clear();
+        ServerGenerator serverGenerator = createServerGenerator();
+        serverGenerator.getOptions().setValidation(true);
+        processor.setTargets(Collections.singletonList(serverGenerator));
+        processor.process();
+        assertEquals(1, memoryWriter.files.size());
+        memoryWriter.files.forEach((k, v) -> verifyJavaFile("/validation/server/" + k, v));
+    }
+
+
     public void testPetStore(String source) throws Exception {
         Processor processor = new Processor();
         processor.setSource(createSource(source));

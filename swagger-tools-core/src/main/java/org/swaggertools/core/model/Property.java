@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class Property {
-    String name;
-    Schema schema;
+	boolean required;
+	String name;
+	Schema schema;
 }

@@ -16,6 +16,13 @@ import org.swaggertools.core.targets.SchemaMapper;
 import org.swaggertools.core.util.NameUtils;
 
 import javax.lang.model.element.Modifier;
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -153,7 +160,7 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
     }
 
     private void addProperty(TypeSpec.Builder model, Property property, TypeName propertyType) {
-        FieldSpec field = field(property.getName(), propertyType, property.getSchema());
+        FieldSpec field = field(property, propertyType, property.getSchema());
         model.addField(field);
         model.addMethod(getter(field));
         if (!property.getSchema().isReadOnly()) {
@@ -161,7 +168,9 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
         }
     }
 
-    private FieldSpec field(String name, TypeName type, Schema schema) {
+    private FieldSpec field(Property property, TypeName type, Schema schema) {
+        String name = property.getName();
+
         FieldSpec.Builder builder = FieldSpec.builder(type, sanitize(javaIdentifier(name)))
                 .addModifiers(Modifier.PRIVATE)
                 .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
@@ -189,7 +198,64 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
             builder.initializer("new $T()", schemaMapper.getType(schema, true));
         }
 
+        if (options.validation) {
+            addValidation(builder, property, schema);
+        }
+
         return builder.build();
+    }
+
+    private void addValidation(FieldSpec.Builder builder, Property property, Schema schema) {
+        if (property.isRequired()) {
+            builder.addAnnotation(NotNull.class);
+        }
+        if (schema instanceof PrimitiveSchema) {
+            PrimitiveSchema s = (PrimitiveSchema) schema;
+            if (s.getMaximum() != null) {
+                builder.addAnnotation(AnnotationSpec.builder(Max.class)
+                        .addMember("value", "$L", s.getMaximum())
+                        .build()
+                );
+            }
+            if (s.getMinimum() != null) {
+                builder.addAnnotation(AnnotationSpec.builder(Min.class)
+                        .addMember("value", "$L", s.getMaximum())
+                        .build()
+                );
+            }
+            if (s.getPattern() != null) {
+                builder.addAnnotation(AnnotationSpec.builder(Pattern.class)
+                        .addMember("regexp", "$S", s.getPattern())
+                        .build()
+                );
+            }
+            if (s.getMaxLength() != null || s.getMinLength() != null) {
+                AnnotationSpec.Builder ann = AnnotationSpec.builder(Size.class);
+                if (s.getMaxLength() != null) {
+                    ann.addMember("max", "$L", s.getMaxLength());
+                }
+                if (s.getMinLength() != null) {
+                    ann.addMember("min", "$L", s.getMinLength());
+                }
+                builder.addAnnotation(ann.build());
+            }
+        }
+        if (schema instanceof ObjectSchema || schema instanceof ArraySchema) {
+            builder.addAnnotation(Valid.class);
+        }
+        if (schema instanceof ArraySchema) {
+            ArraySchema s = (ArraySchema) schema;
+            if (s.getMaxLength() != null || s.getMinLength() != null) {
+                AnnotationSpec.Builder ann = AnnotationSpec.builder(Size.class);
+                if (s.getMaxLength() != null) {
+                    ann.addMember("max", "$L", s.getMaxLength());
+                }
+                if (s.getMinLength() != null) {
+                    ann.addMember("min", "$L", s.getMinLength());
+                }
+                builder.addAnnotation(ann.build());
+            }
+        }
     }
 
     @Override
@@ -214,6 +280,8 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
         boolean initializeCollections = true;
         @ConfigurationProperty(description = "Annotate model classes with lombok to generate equals/hashCode/toString", defaultValue = "false")
         boolean lombok = false;
+        @ConfigurationProperty(description = "Annotate model properties with javax.validation.constraints.*", defaultValue = "false")
+        boolean validation = false;
     }
 
 }

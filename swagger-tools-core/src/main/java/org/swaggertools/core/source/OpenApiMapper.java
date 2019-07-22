@@ -178,6 +178,11 @@ public class OpenApiMapper {
             res.setEnumValues(new LinkedList<>());
             schema.getEnum().forEach(it -> res.getEnumValues().add(it.toString()));
         }
+        res.setMaximum(schema.getMaximum());
+        res.setMinimum(schema.getMinimum());
+        res.setMaxLength(schema.getMaxLength());
+        res.setMinLength(schema.getMinLength());
+        res.setPattern(schema.getPattern());
         return res;
     }
 
@@ -190,7 +195,10 @@ public class OpenApiMapper {
         }
         if (schema.getProperties() != null) {
             res.setProperties(new LinkedList<>());
-            schema.getProperties().forEach((k, v) -> res.getProperties().add(mapProperty(name, k, v)));
+            schema.getProperties().forEach((k, v) -> {
+                boolean required = schema.getRequired() != null && schema.getRequired().contains(k);
+                res.getProperties().add(mapProperty(name, k, required, v));
+            });
         }
         if (schema.getDiscriminator() != null) {
             res.setDiscriminator(schema.getDiscriminator().getPropertyName());
@@ -204,6 +212,8 @@ public class OpenApiMapper {
         if (items != null) {
             res.setItemsSchema(mapSchema(null, items));
         }
+        res.setMaxLength(schema.getMaxLength());
+        res.setMinLength(schema.getMinLength());
         return res;
     }
 
@@ -218,7 +228,10 @@ public class OpenApiMapper {
                         res.setProperties(new LinkedList<>());
                     }
                     Map<String, io.swagger.v3.oas.models.media.Schema> properties = s.getProperties();
-                    properties.forEach((k, v) -> res.getProperties().add(mapProperty(name, k, v)));
+                    properties.forEach((k, v) -> {
+                        boolean required = schema.getRequired() != null && schema.getRequired().contains(k);
+                        res.getProperties().add(mapProperty(name, k, required, v));
+                    });
                 }
             }
             return res;
@@ -227,9 +240,10 @@ public class OpenApiMapper {
         }
     }
 
-    private Property mapProperty(String className, String propertyName, io.swagger.v3.oas.models.media.Schema schema) {
+    private Property mapProperty(String className, String propertyName, boolean required, io.swagger.v3.oas.models.media.Schema schema) {
         Property res = new Property();
         res.setName(propertyName);
+        res.setRequired(required);
         if (className != null && schema.getProperties() != null && !schema.getProperties().isEmpty()) {
             String name = className + NameUtils.pascalCase(propertyName);
             res.setSchema(new ObjectSchema(name));

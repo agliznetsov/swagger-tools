@@ -43,6 +43,7 @@ public class JaxRsBuilder extends ServerBuilder {
 
     @Override
     protected void annotateParameter(ParameterSpec.Builder paramBuilder, Parameter parameter) {
+        super.annotateParameter(paramBuilder, parameter);
         if (parameter.getKind() != ParameterKind.BODY) {
             ClassName inType = parameter.getKind() == ParameterKind.PATH ? PATH_VARIABLE : REQUEST_PARAM;
             AnnotationSpec.Builder anno = AnnotationSpec.builder(inType)

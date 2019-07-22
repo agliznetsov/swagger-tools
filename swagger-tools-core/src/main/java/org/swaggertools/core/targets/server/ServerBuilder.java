@@ -1,5 +1,6 @@
 package org.swaggertools.core.targets.server;
 
+import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
@@ -7,10 +8,13 @@ import com.squareup.javapoet.TypeSpec;
 import org.swaggertools.core.model.ApiDefinition;
 import org.swaggertools.core.model.Operation;
 import org.swaggertools.core.model.Parameter;
+import org.swaggertools.core.model.ParameterKind;
 import org.swaggertools.core.run.JavaFileWriter;
 import org.swaggertools.core.targets.SchemaMapper;
 
 import javax.lang.model.element.Modifier;
+import javax.validation.Valid;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,7 +45,13 @@ abstract class ServerBuilder {
 
     protected abstract void annotateMethod(MethodSpec.Builder builder, Operation operation);
 
-    protected abstract void annotateParameter(ParameterSpec.Builder paramBuilder, Parameter parameter);
+    protected void annotateParameter(ParameterSpec.Builder paramBuilder, Parameter parameter) {
+        if (options.isValidation()) {
+            if (parameter.getKind() == ParameterKind.BODY) {
+                paramBuilder.addAnnotation(AnnotationSpec.builder(Valid.class).build());
+            }
+        }
+    }
 
     protected abstract void addResponse(MethodSpec.Builder builder, Operation operationInfo);
 

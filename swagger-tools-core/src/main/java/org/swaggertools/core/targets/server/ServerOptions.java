@@ -17,4 +17,6 @@ public class ServerOptions {
     boolean reactive = false;
     @ConfigurationProperty(description = "Implementation dialect [Spring/JaxRS]", defaultValue = "Spring")
     ServerDialect dialect = ServerDialect.Spring;
+    @ConfigurationProperty(description = "Annotate method parameters with javax.validation.constraints.Valid", defaultValue = "false")
+    boolean validation = false;
 }
