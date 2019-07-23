@@ -12,14 +12,13 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.0.5.RELEASE</version>
+        <version>2.1.6.RELEASE</version>
     </parent>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
-        <spring.version>5.1.0.RELEASE</spring.version>
     </properties>
 
     <dependencies>
@@ -35,7 +34,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.20</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -45,7 +43,7 @@
             <plugin>
                 <groupId>com.github.agliznetsov.swagger-tools</groupId>
                 <artifactId>swagger-tools-maven-plugin</artifactId>
-                <version>0.3.0</version>
+                <version>0.3.1</version>
                 <executions>
                     <execution>
                         <id>petstore</id>
@@ -59,10 +57,12 @@
                                 <target.model.location>${project.build.directory}/generated-sources/swagger</target.model.location>
                                 <target.model.model-package>org.swaggertools.demo.model</target.model.model-package>
                                 <target.model.lombok>true</target.model.lombok>
+                                <target.model.validation>true</target.model.validation>
 
                                 <target.server.location>${project.build.directory}/generated-sources/swagger</target.server.location>
                                 <target.server.model-package>org.swaggertools.demo.model</target.server.model-package>
                                 <target.server.api-package>org.swaggertools.demo.web</target.server.api-package>
+                                <target.server.validation>true</target.server.validation>
 
                                 <target.client.location>${project.build.directory}/generated-sources/swagger</target.client.location>
                                 <target.client.model-package>org.swaggertools.demo.model</target.client.model-package>

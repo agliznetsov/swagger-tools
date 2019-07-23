@@ -6,8 +6,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.swaggertools.demo.client.PetStore;
 import org.swaggertools.demo.model.Cat;
@@ -28,13 +30,21 @@ public class PetsApiTest {
     @Before
     public void setUp() throws Exception {
         testRestTemplate.getRestTemplate().setErrorHandler(new DefaultResponseErrorHandler());
-        template = new PetStore(testRestTemplate.getRestTemplate(), "/v1");
+        template = new PetStore(testRestTemplate.getRestTemplate(), "/");
     }
 
     @Test
     public void create() {
         Long id = postPet();
         assertNotNull(id);
+    }
+
+    @Test(expected = HttpClientErrorException.class)
+    public void test_validation() {
+        Cat cat = new Cat();
+        cat.setName(null);
+        cat.setPrice(-1.0);
+        Pet pet = template.pets().createPet(cat);
     }
 
     @Test
@@ -86,6 +96,7 @@ public class PetsApiTest {
     private Pet createPet() {
         Cat cat = new Cat();
         cat.setName("cat");
+        cat.setPrice(1.0);
         cat.setThumbnail(new byte[100]);
         return cat;
     }

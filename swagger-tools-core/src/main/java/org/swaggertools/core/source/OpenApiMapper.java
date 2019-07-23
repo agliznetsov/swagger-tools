@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.swaggertools.core.util.AssertUtils.notEmpty;
 import static org.swaggertools.core.util.AssertUtils.notNull;
@@ -136,9 +137,11 @@ public class OpenApiMapper {
                         response = resolveRef(response.get$ref());
                     }
                     if (response.getContent() != null) {
+                        //First try to use JSON response
                         MediaType mediaType = response.getContent().get(JSON);
                         if (mediaType == null) {
-                            mediaType = response.getContent().values().iterator().next();
+                            //Otherwise take the first defined content
+                            mediaType = response.getContent().values().stream().findFirst().orElse(null);
                         }
                         if (mediaType != null) {
                             info.setResponseSchema(mapSchema(null, mediaType.getSchema()));

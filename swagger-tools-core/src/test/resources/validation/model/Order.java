@@ -30,7 +30,7 @@ public class Order {
 
     @JsonProperty("mumber")
     @Max(10)
-    @Min(10)
+    @Min(1)
     private Integer mumber;
 
     @JsonProperty("description")

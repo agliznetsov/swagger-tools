@@ -219,7 +219,7 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
             }
             if (s.getMinimum() != null) {
                 builder.addAnnotation(AnnotationSpec.builder(Min.class)
-                        .addMember("value", "$L", s.getMaximum())
+                        .addMember("value", "$L", s.getMinimum())
                         .build()
                 );
             }
