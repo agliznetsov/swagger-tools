@@ -65,7 +65,7 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
             AnnotationSpec typeInfo = AnnotationSpec.builder(JsonTypeInfo.class)
                     .addMember("use", "$L", "JsonTypeInfo.Id.NAME")
                     .addMember("property", "$S", schema.getDiscriminator())
-                    .addMember("visible", "$L", "true")
+                    .addMember("visible", "$L", "false")
                     .build();
 
             AnnotationSpec.Builder subTypesBuilder = AnnotationSpec.builder(JsonSubTypes.class);
@@ -146,14 +146,16 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
     private void addProperties(TypeSpec.Builder model, ObjectSchema schema) {
         if (schema.getProperties() != null) {
             schema.getProperties().forEach((property) -> {
-                if (property.getSchema().getEnumValues() != null) {
-                    String enumName = pascalCase(javaIdentifier(property.getName()) + "Enum");
-                    TypeSpec enumSpec = createEnum(enumName, (PrimitiveSchema) property.getSchema()).build();
-                    ClassName typeName = ClassName.get(options.modelPackage, model.build().name, enumName);
-                    model.addType(enumSpec);
-                    addProperty(model, property, typeName);
-                } else {
-                    addProperty(model, property, schemaMapper.getType(property.getSchema(), false));
+                if (!property.getName().equals(schema.getDiscriminator())) {
+                    if (property.getSchema().getEnumValues() != null) {
+                        String enumName = pascalCase(javaIdentifier(property.getName()) + "Enum");
+                        TypeSpec enumSpec = createEnum(enumName, (PrimitiveSchema) property.getSchema()).build();
+                        ClassName typeName = ClassName.get(options.modelPackage, model.build().name, enumName);
+                        model.addType(enumSpec);
+                        addProperty(model, property, typeName);
+                    } else {
+                        addProperty(model, property, schemaMapper.getType(property.getSchema(), false));
+                    }
                 }
             });
         }

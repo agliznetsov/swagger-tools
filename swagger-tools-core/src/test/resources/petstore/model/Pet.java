@@ -15,16 +15,13 @@ import java.util.UUID;
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         property = "_type",
-        visible = true
+        visible = false
 )
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Cat.class, name = "Cat"),
         @JsonSubTypes.Type(value = Dog.class, name = "Dog")
 })
 public class Pet {
-    @JsonProperty("_type")
-    private String type;
-
     @JsonProperty("id")
     private Long id = 0L;
 
@@ -54,14 +51,6 @@ public class Pet {
 
     @JsonProperty("thumbnail")
     private byte[] thumbnail;
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
 
     public Long getId() {
         return id;
