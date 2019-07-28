@@ -47,9 +47,15 @@ public interface PetsApi {
     Mono<Pet> updatePetRefById(@PathVariable(name = "petId", required = true) Long petId,
             @RequestBody Pet requestBody);
 
-    @GetMapping("/pets/{petId}/body")
+    @GetMapping(
+            value = "/pets/{petId}/body",
+            produces = "text/plain"
+    )
     Mono<String> getPetBody(@PathVariable(name = "petId", required = true) Long petId);
 
-    @GetMapping("/pets/{petId}/thumbnail")
+    @GetMapping(
+            value = "/pets/{petId}/thumbnail",
+            produces = "image/jpeg"
+    )
     Mono<byte[]> getPetThumbnail(@PathVariable(name = "petId", required = true) Long petId);
 }

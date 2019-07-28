@@ -71,6 +71,10 @@ public class SwaggerMapper {
             operation.getParameters().forEach(it -> res.getParameters().add(mapParameter(it)));
         }
         addResponse(res, operation.getResponses());
+        if (operation.getProduces() != null && !operation.getProduces().isEmpty()) {
+            String mediaType = operation.getProduces().get(0);
+            res.setResponseMediaType(mediaType);
+        }
         return res;
     }
 

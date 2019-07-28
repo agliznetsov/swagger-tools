@@ -39,6 +39,12 @@ public class JaxRsBuilder extends ServerBuilder {
                 .addMember("value", "$S", operation.getPath())
                 .build()
         );
+        if (operation.getResponseMediaType() != null) {
+            builder.addAnnotation(AnnotationSpec.builder(PRODUCES)
+                    .addMember("value", "$S", operation.getResponseMediaType())
+                    .build()
+            );
+        }
     }
 
     @Override

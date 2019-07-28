@@ -15,4 +15,5 @@ public class Operation {
     final List<Parameter> parameters = new LinkedList<>();
     Schema responseSchema;
     HttpStatus responseStatus;
+    String responseMediaType;
 }

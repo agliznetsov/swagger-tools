@@ -37,10 +37,12 @@ public class SpringBuilder extends ServerBuilder {
     @Override
     protected void annotateMethod(MethodSpec.Builder builder, Operation operation) {
         String mappingName = pascalCase(operation.getMethod().name().toLowerCase()) + "Mapping";
-        builder.addAnnotation(AnnotationSpec.builder(ClassName.get(SPRING_ANNOTATIONS, mappingName))
-                .addMember("value", "$S", operation.getPath())
-                .build()
-        );
+        AnnotationSpec.Builder ab = AnnotationSpec.builder(ClassName.get(SPRING_ANNOTATIONS, mappingName));
+        ab.addMember("value", "$S", operation.getPath());
+        if (operation.getResponseMediaType() != null) {
+            ab.addMember("produces", "$S", operation.getResponseMediaType());
+        }
+        builder.addAnnotation(ab.build());
     }
 
     @Override

@@ -141,7 +141,11 @@ public class OpenApiMapper {
                         MediaType mediaType = response.getContent().get(JSON);
                         if (mediaType == null) {
                             //Otherwise take the first defined content
-                            mediaType = response.getContent().values().stream().findFirst().orElse(null);
+                            Map.Entry<String, MediaType> firstResponse = response.getContent().entrySet().stream().findFirst().orElse(null);
+                            if (firstResponse != null) {
+                                mediaType = firstResponse.getValue();
+                                info.setResponseMediaType(firstResponse.getKey());
+                            }
                         }
                         if (mediaType != null) {
                             info.setResponseSchema(mapSchema(null, mediaType.getSchema()));

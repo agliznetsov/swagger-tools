@@ -45,9 +45,15 @@ public interface PetsApi {
     Pet updatePetRefById(@PathVariable(name = "petId", required = true) Long petId,
             @RequestBody Pet requestBody);
 
-    @GetMapping("/pets/{petId}/body")
+    @GetMapping(
+            value = "/pets/{petId}/body",
+            produces = "text/plain"
+    )
     String getPetBody(@PathVariable(name = "petId", required = true) Long petId);
 
-    @GetMapping("/pets/{petId}/thumbnail")
+    @GetMapping(
+            value = "/pets/{petId}/thumbnail",
+            produces = "image/jpeg"
+    )
     byte[] getPetThumbnail(@PathVariable(name = "petId", required = true) Long petId);
 }
