@@ -75,19 +75,20 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /pets/{petId}:
+    parameters:
+      - name: petId
+        in: path
+        required: true
+        description: The id of the pet to retrieve
+        schema:
+          type: integer
+          format: int64
     get:
       summary: Info for a specific pet
       operationId: getPetById
       tags:
         - pets
       parameters:
-        - name: petId
-          in: path
-          required: true
-          description: The id of the pet to retrieve
-          schema:
-            type: integer
-            format: int64
         - name: details
           in: query
           required: false
@@ -118,14 +119,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Pet'
-      parameters:
-        - name: petId
-          in: path
-          required: true
-          description: The id of the pet to retrieve
-          schema:
-            type: integer
-            format: int64
       responses:
         '204':
           description: OK
@@ -134,13 +127,6 @@ paths:
       operationId: deletePetById
       tags:
         - pets
-      parameters:
-        - name: petId
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
       responses:
         '204':
           description: Deleted

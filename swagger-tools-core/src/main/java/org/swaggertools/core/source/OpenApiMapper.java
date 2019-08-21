@@ -46,7 +46,7 @@ public class OpenApiMapper {
         }
 
         if (openAPI.getPaths() != null) {
-            openAPI.getPaths().forEach((path, pathItem) -> pathItem.readOperationsMap().forEach((k, v) -> processOperation(path, k, v)));
+            openAPI.getPaths().forEach((path, pathItem) -> pathItem.readOperationsMap().forEach((k, v) -> processOperation(path, pathItem, k, v)));
         }
         if (openAPI.getComponents() != null && openAPI.getComponents().getSchemas() != null) {
             openAPI.getComponents().getSchemas().forEach(this::processSchema);
@@ -60,8 +60,9 @@ public class OpenApiMapper {
         apiDefinition.getSchemas().put(name, res);
     }
 
-    private void processOperation(String path, PathItem.HttpMethod method, io.swagger.v3.oas.models.Operation operation) {
-        Operation operationInfo = mapOperation(operation);
+    private void processOperation(String path, PathItem pathItem, PathItem.HttpMethod method,
+                                  io.swagger.v3.oas.models.Operation operation) {
+        Operation operationInfo = mapOperation(pathItem, operation);
         if (operationInfo != null) {
             operationInfo.setPath(path);
             operationInfo.setMethod(HttpMethod.valueOf(method.name()));
@@ -69,7 +70,7 @@ public class OpenApiMapper {
         }
     }
 
-    protected Operation mapOperation(io.swagger.v3.oas.models.Operation operation) {
+    protected Operation mapOperation(PathItem pathItem, io.swagger.v3.oas.models.Operation operation) {
         if (operation.getExtensions() != null && operation.getExtensions().get(X_IGNORE) != null) {
             return null;
         }
@@ -79,6 +80,9 @@ public class OpenApiMapper {
         Operation res = new Operation();
         res.setOperationId(operation.getOperationId());
         res.setTag(operation.getTags().get(0));
+        if (pathItem.getParameters() != null) {
+            pathItem.getParameters().forEach(it -> res.getParameters().add(mapParameter(it)));
+        }
         if (operation.getParameters() != null) {
             operation.getParameters().forEach(it -> res.getParameters().add(mapParameter(it)));
         }
