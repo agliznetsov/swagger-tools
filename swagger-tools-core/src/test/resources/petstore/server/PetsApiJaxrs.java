@@ -15,6 +15,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.sse.Sse;
+import javax.ws.rs.sse.SseEventSink;
 
 @Path("/v1")
 @Consumes("application/json")
@@ -53,4 +56,10 @@ public interface PetsApi {
     @Path("/pets/{petId}/thumbnail")
     @Produces("image/jpeg")
     byte[] getPetThumbnail(@PathParam("petId") Long petId);
+
+    @GET
+    @Path("/pets/{petId}/events")
+    @Produces("text/event-stream")
+    void getPetEvents(@PathParam("petId") Long petId, @Context SseEventSink sseEventSink,
+            @Context Sse sse);
 }

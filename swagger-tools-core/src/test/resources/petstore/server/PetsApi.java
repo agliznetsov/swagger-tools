@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping("/v1")
@@ -56,4 +57,10 @@ public interface PetsApi {
             produces = "image/jpeg"
     )
     byte[] getPetThumbnail(@PathVariable(name = "petId", required = true) Long petId);
+
+    @GetMapping(
+            value = "/pets/{petId}/events",
+            produces = "text/event-stream"
+    )
+    SseEmitter getPetEvents(@PathVariable(name = "petId", required = true) Long petId);
 }

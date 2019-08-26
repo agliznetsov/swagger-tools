@@ -1,11 +1,16 @@
 package org.swaggertools.demo.web;
 
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.swaggertools.demo.model.Pet;
+
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +54,16 @@ public class PetsController implements PetsApi {
         getPet(petId);
         pets.remove(petId);
         return Mono.empty();
+    }
+
+    @Override
+    public Flux<ServerSentEvent> getPetEvents(Long petId) {
+        return Flux.interval(Duration.ofSeconds(1))
+                .map(sequence -> ServerSentEvent.<String> builder()
+                        .id(String.valueOf(sequence))
+                        .event("periodic-event")
+                        .data("SSE - " + LocalTime.now().toString())
+                        .build());
     }
 
     private Pet getPet(Long petId) {

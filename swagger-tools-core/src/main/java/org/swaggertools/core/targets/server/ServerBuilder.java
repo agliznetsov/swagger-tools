@@ -23,6 +23,8 @@ import static org.swaggertools.core.util.NameUtils.*;
 
 abstract class ServerBuilder {
 
+    protected static final String EVENT_STREAM = "text/event-stream";
+
     private final Map<String, TypeSpec.Builder> apis = new HashMap<>();
     protected final SchemaMapper schemaMapper = new SchemaMapper();
     protected final ApiDefinition apiDefinition;
@@ -55,12 +57,12 @@ abstract class ServerBuilder {
 
     protected abstract void addResponse(MethodSpec.Builder builder, Operation operationInfo);
 
-    private void writeApi(TypeSpec.Builder builder) {
+    protected void writeApi(TypeSpec.Builder builder) {
         annotateClass(builder);
         writer.write(JavaFile.builder(options.apiPackage, builder.build()).indent(INDENT).build());
     }
 
-    private void processOperation(Operation operation) {
+    protected void processOperation(Operation operation) {
         String methodName = camelCase(javaIdentifier(operation.getOperationId()));
         MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT);
@@ -72,7 +74,7 @@ abstract class ServerBuilder {
         getApi(operation.getTag()).addMethod(builder.build());
     }
 
-    private void addParameters(MethodSpec.Builder builder, Operation operationInfo) {
+    protected void addParameters(MethodSpec.Builder builder, Operation operationInfo) {
         operationInfo.getParameters().forEach(p -> {
             ParameterSpec.Builder paramBuilder = ParameterSpec.builder(schemaMapper.getType(p.getSchema(), false), p.getName());
             annotateParameter(paramBuilder, p);

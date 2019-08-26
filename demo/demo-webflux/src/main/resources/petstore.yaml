@@ -109,6 +109,26 @@ paths:
         '204':
           description: Deleted
 
+  '/pets/{petId}/events':
+    get:
+      tags:
+        - pets
+      operationId: getPetEvents
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          type: integer
+          format: int64
+      produces:
+        - text/event-stream
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+
+
 definitions:
 
   Pet:
@@ -155,35 +175,35 @@ definitions:
   Cat:  ## "Cat" will be used as the discriminator value
     description: A representation of a cat
     allOf:
-    - $ref: '#/definitions/Pet'
-    - type: object
-      properties:
-        huntingSkill:
-          type: string
-          description: The measured skill for hunting
-          default: lazy
-          enum:
-          - clueless
-          - lazy
-          - adventurous
-          - aggressive
-      required:
-      - huntingSkill
+      - $ref: '#/definitions/Pet'
+      - type: object
+        properties:
+          huntingSkill:
+            type: string
+            description: The measured skill for hunting
+            default: lazy
+            enum:
+              - clueless
+              - lazy
+              - adventurous
+              - aggressive
+        required:
+          - huntingSkill
 
   Dog:  ## "Dog" will be used as the discriminator value
     description: A representation of a dog
     allOf:
-    - $ref: '#/definitions/Pet'
-    - type: object
-      properties:
-        packSize:
-          type: integer
-          format: int32
-          description: the size of the pack the dog is from
-          default: 0
-          minimum: 0
-      required:
-      - packSize
+      - $ref: '#/definitions/Pet'
+      - type: object
+        properties:
+          packSize:
+            type: integer
+            format: int32
+            description: the size of the pack the dog is from
+            default: 0
+            minimum: 0
+        required:
+          - packSize
 
   Owner:
     properties:

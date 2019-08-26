@@ -4,6 +4,14 @@ import org.swaggertools.demo.model.Cat;
 import org.swaggertools.demo.model.Pet;
 
 import javax.inject.Singleton;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.sse.OutboundSseEvent;
+import javax.ws.rs.sse.Sse;
+import javax.ws.rs.sse.SseEventSink;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +57,24 @@ public class PetsResource implements PetsApi {
     public void deletePetById(Long petId) {
         getPet(petId);
         pets.remove(petId);
+    }
+
+    @Override
+    public void getPetEvents(Long petId, SseEventSink sseEventSink, Sse sse) {
+        try(SseEventSink sink = sseEventSink){
+            sink.send(sse.newEvent("data"));
+            sink.send(sse.newEvent("MyEventName","more data"));
+
+            OutboundSseEvent event = sse.newEventBuilder().
+                    id("EventId").
+                    name("EventName").
+                    data("Data").
+                    reconnectDelay(10000).
+                    comment("Anything i wanna comment here!").
+                    build();
+
+            sink.send(event);
+        }
     }
 
     private Pet getPet(Long petId) {

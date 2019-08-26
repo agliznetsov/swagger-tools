@@ -129,6 +129,27 @@ paths:
           description: Deleted
           content: {}
 
+  '/pets/{petId}/events':
+    get:
+      tags:
+        - pets
+      operationId: getPetEvents
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+
 components:
   schemas:
 
