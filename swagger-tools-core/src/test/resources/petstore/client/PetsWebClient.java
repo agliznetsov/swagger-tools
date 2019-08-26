@@ -9,7 +9,9 @@ import java.lang.Void;
 import java.util.List;
 import java.util.Map;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public class PetsWebClient extends BaseClient {
@@ -63,5 +65,10 @@ public class PetsWebClient extends BaseClient {
     public Mono<byte[]> getPetThumbnail(Long petId) {
         ParameterizedTypeReference<byte[]> typeRef = new ParameterizedTypeReference<byte[]>(){};
         return invokeAPI("/pets/{petId}/thumbnail", "GET", createUrlVariables("petId", petId), createQueryParameters(), null).bodyToMono(typeRef);
+    }
+
+    public Flux<ServerSentEvent> getPetEvents(Long petId) {
+        ParameterizedTypeReference<ServerSentEvent> typeRef = new ParameterizedTypeReference<ServerSentEvent>(){};
+        return invokeAPI("/pets/{petId}/events", "GET", createUrlVariables("petId", petId), createQueryParameters(), null).bodyToFlux(typeRef);
     }
 }

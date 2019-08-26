@@ -23,7 +23,7 @@ import static org.swaggertools.core.util.NameUtils.*;
 abstract class ClientBuilder {
 
     private static final TypeName HEADERS = ParameterizedTypeName.get(MAP, STRING, ParameterizedTypeName.get(LIST, STRING));
-    private static final String EVENT_STREAM = "text/event-stream";
+    protected static final String EVENT_STREAM = "text/event-stream";
 
     protected SchemaMapper schemaMapper = new SchemaMapper();
     protected Map<String, TypeSpec.Builder> clients = new HashMap<>();
@@ -53,18 +53,14 @@ abstract class ClientBuilder {
     }
 
     protected void processOperation(Operation operation) {
-        if (EVENT_STREAM.equals(operation.getResponseMediaType())) {
-            //TODO: implement
-        } else {
-            String methodName = camelCase(javaIdentifier(operation.getOperationId()));
-            MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName).addModifiers(Modifier.PUBLIC);
+        String methodName = camelCase(javaIdentifier(operation.getOperationId()));
+        MethodSpec.Builder builder = MethodSpec.methodBuilder(methodName).addModifiers(Modifier.PUBLIC);
 
-            addMethodParameters(builder, operation);
-            addMethodResponse(builder, operation);
-            addMethodBody(builder, operation);
+        addMethodParameters(builder, operation);
+        addMethodResponse(builder, operation);
+        addMethodBody(builder, operation);
 
-            getClient(operation.getTag()).addMethod(builder.build());
-        }
+        getClient(operation.getTag()).addMethod(builder.build());
     }
 
 

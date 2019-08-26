@@ -20,7 +20,9 @@ import static com.squareup.javapoet.TypeName.VOID;
 public class WebClientBuilder extends ClientBuilder {
     private static final ClassName TYPE_REF = ClassName.get("org.springframework.core", "ParameterizedTypeReference");
     private static final ClassName MONO = ClassName.get("reactor.core.publisher", "Mono");
+    private static final ClassName FLUX = ClassName.get("reactor.core.publisher", "Flux");
     private static final ClassName WEB_CLIENT = ClassName.get("org.springframework.web.reactive.function.client", "WebClient");
+    private static final ClassName SERVER_SENT_EVENT = ClassName.get("org.springframework.http.codec", "ServerSentEvent");
 
     public WebClientBuilder(ApiDefinition apiDefinition, JavaFileWriter writer, ClientOptions options) {
         super(apiDefinition, writer, options);
@@ -49,17 +51,28 @@ public class WebClientBuilder extends ClientBuilder {
     }
 
     protected void createTypeRef(MethodSpec.Builder builder, Operation operation) {
-        if (operation.getResponseSchema() != null) {
-            TypeName typeRef = ParameterizedTypeName.get(TYPE_REF, schemaMapper.getType(operation.getResponseSchema(), false));
+        if (EVENT_STREAM.equals(operation.getResponseMediaType())) {
+            TypeName typeRef = ParameterizedTypeName.get(TYPE_REF, SERVER_SENT_EVENT);
             builder.addStatement("$T typeRef = new $T(){}", typeRef, typeRef);
         } else {
-            builder.addStatement("$T typeRef = VOID", TYPE_REF);
+            if (operation.getResponseSchema() != null) {
+                TypeName typeRef = ParameterizedTypeName
+                        .get(TYPE_REF, schemaMapper.getType(operation.getResponseSchema(), false));
+                builder.addStatement("$T typeRef = new $T(){}", typeRef, typeRef);
+            } else {
+                builder.addStatement("$T typeRef = VOID", TYPE_REF);
+            }
         }
     }
 
     private void invokeApi(MethodSpec.Builder builder, Operation operation) {
         List<Object> args = new LinkedList<>();
-        String format = "return invokeAPI($S, $S, $L, $L, $L).bodyToMono(typeRef)";
+        String format = "return invokeAPI($S, $S, $L, $L, $L)";
+        if (EVENT_STREAM.equals(operation.getResponseMediaType())) {
+            format += ".bodyToFlux(typeRef)";
+        } else {
+            format += ".bodyToMono(typeRef)";
+        }
         args.add(operation.getPath());
         args.add(operation.getMethod().name());
         args.add(createUrlVariables(operation));
@@ -71,11 +84,15 @@ public class WebClientBuilder extends ClientBuilder {
 
     @Override
     protected void addMethodResponse(MethodSpec.Builder builder, Operation operation) {
-        if (operation.getResponseSchema() != null) {
-            TypeName type = schemaMapper.getType(operation.getResponseSchema(), false);
-            builder.returns(ParameterizedTypeName.get(MONO, type));
+        if (EVENT_STREAM.equals(operation.getResponseMediaType())) {
+            builder.returns(ParameterizedTypeName.get(FLUX, SERVER_SENT_EVENT));
         } else {
-            builder.returns(ParameterizedTypeName.get(MONO, VOID.box()));
+            if (operation.getResponseSchema() != null) {
+                TypeName type = schemaMapper.getType(operation.getResponseSchema(), false);
+                builder.returns(ParameterizedTypeName.get(MONO, type));
+            } else {
+                builder.returns(ParameterizedTypeName.get(MONO, VOID.box()));
+            }
         }
     }
 }

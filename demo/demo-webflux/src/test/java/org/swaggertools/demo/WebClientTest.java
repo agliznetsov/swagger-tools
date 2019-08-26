@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -13,11 +14,17 @@ import org.swaggertools.demo.client.PetsClient;
 import org.swaggertools.demo.model.Cat;
 import org.swaggertools.demo.model.Pet;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -85,6 +92,18 @@ public class WebClientTest {
         List<Pet> pets = petsClient.listPets(Integer.MAX_VALUE).block();
         int count = (int) pets.stream().filter(it -> it.getId().equals(id)).count();
         assertEquals(0, count);
+    }
+
+    @Test
+    public void events() throws Exception {
+        Flux<ServerSentEvent> stream = petsClient.getPetEvents(1L);
+        List<String> events = new ArrayList<>();
+        Disposable disposable = stream.subscribe(e -> {
+            events.add(e.data().toString());
+        });
+        Thread.sleep(500);
+        disposable.dispose();
+        assertTrue(events.size() > 0);
     }
 
     private Pet createPet() {

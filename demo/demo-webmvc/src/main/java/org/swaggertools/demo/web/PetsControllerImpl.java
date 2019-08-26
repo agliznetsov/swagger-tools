@@ -56,14 +56,15 @@ public class PetsControllerImpl implements PetsApi {
         ExecutorService sseMvcExecutor = Executors.newSingleThreadExecutor();
         sseMvcExecutor.execute(() -> {
             try {
-                for (int i = 0; true; i++) {
+                for (int i = 0; i < 5; i++) {
                     SseEmitter.SseEventBuilder event = SseEmitter.event()
                             .data("SSE MVC - " + LocalTime.now().toString())
                             .id(String.valueOf(i))
                             .name("sse event - mvc");
                     emitter.send(event);
-                    Thread.sleep(1000);
+                    Thread.sleep(100);
                 }
+                emitter.complete();
             } catch (Exception ex) {
                 emitter.completeWithError(ex);
             }

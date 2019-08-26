@@ -58,11 +58,10 @@ public class PetsController implements PetsApi {
 
     @Override
     public Flux<ServerSentEvent> getPetEvents(Long petId) {
-        return Flux.interval(Duration.ofSeconds(1))
+        return Flux.interval(Duration.ofMillis(100))
                 .map(sequence -> ServerSentEvent.<String> builder()
                         .id(String.valueOf(sequence))
-                        .event("periodic-event")
-                        .data("SSE - " + LocalTime.now().toString())
+                        .data("{\"id\": " + sequence + "}")
                         .build());
     }
 

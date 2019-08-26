@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 
 public class PetsClient extends BaseClient {
@@ -69,5 +70,9 @@ public class PetsClient extends BaseClient {
         ParameterizedTypeReference<byte[]> typeRef = new ParameterizedTypeReference<byte[]>(){};
         ResponseEntity<byte[]> response = invokeAPI("/pets/{petId}/thumbnail", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, typeRef);
         return response.getBody();
+    }
+
+    public void getPetEvents(Long petId, ResponseExtractor responseExtractor) {
+        executeAPI("/pets/{petId}/events", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, responseExtractor);
     }
 }

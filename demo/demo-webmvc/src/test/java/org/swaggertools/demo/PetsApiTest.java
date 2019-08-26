@@ -15,10 +15,16 @@ import org.swaggertools.demo.client.PetStore;
 import org.swaggertools.demo.model.Cat;
 import org.swaggertools.demo.model.Pet;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class PetsApiTest {
@@ -91,6 +97,21 @@ public class PetsApiTest {
         List<Pet> pets = template.pets().listPets(Integer.MAX_VALUE);
         int count = (int) pets.stream().filter(it -> it.getId().equals(id)).count();
         assertEquals(0, count);
+    }
+
+    @Test
+    public void events() {
+        template.pets().getPetEvents(1L, (response) -> {
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(response.getBody()));
+            String line;
+            try {
+                while ((line = bufferedReader.readLine()) != null) {
+                    log.info(line);
+                }
+            } catch (IOException e) {
+            }
+            return response;
+        });
     }
 
     private Pet createPet() {

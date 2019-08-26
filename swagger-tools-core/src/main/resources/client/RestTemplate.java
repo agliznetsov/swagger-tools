@@ -6,6 +6,8 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -112,6 +114,19 @@ public abstract class BaseClient {
         customizeRequest(requestBuilder);
         RequestEntity<Object> requestEntity = requestBuilder.body(body);
         return restTemplate.exchange(requestEntity, returnType);
+    }
+
+    protected <T> T executeAPI(String path, String method, Map<String, String> urlVariables, MultiValueMap<String, String> queryParams, RequestCallback requestCallback, ResponseExtractor<T> responseExtractor) {
+        URI baseUrl = restTemplate.getUriTemplateHandler().expand(basePath);
+        URI uri = UriComponentsBuilder
+                .fromUri(baseUrl)
+                .path(path)
+                .queryParams(queryParams)
+                .buildAndExpand(urlVariables)
+                .toUri();
+        RequestEntity.BodyBuilder requestBuilder = RequestEntity.method(HttpMethod.resolve(method), uri);
+        customizeRequest(requestBuilder);
+        return restTemplate.execute(uri, HttpMethod.resolve(method), requestCallback, responseExtractor);
     }
 
     protected void customizeRequest(RequestEntity.BodyBuilder requestBuilder) {
