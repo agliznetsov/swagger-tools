@@ -52,6 +52,7 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
         log.info("Generating model in {}/{}", options.location, options.modelPackage);
         schemaMapper.setModelPackage(options.modelPackage);
         apiDefinition.getSchemas().values().forEach(this::createModel);
+        apiDefinition.getSchemas().values().forEach(this::setRootClass);
         JavaFileWriter writer = createWriter(options.location);
         models.values().forEach(it -> {
             addSubtypes(it);
@@ -80,7 +81,6 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
             modelInfo.typeSpec.addAnnotation(subTypesBuilder.build());
         }
     }
-
     @SneakyThrows
     private void createModel(Schema schema) {
         TypeSpec.Builder typeSpec = null;
@@ -111,9 +111,7 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
         TypeSpec.Builder typeSpec = TypeSpec.classBuilder(schemaName).addModifiers(Modifier.PUBLIC);
         if (schema.getSuperSchema() != null) {
             String superName = javaIdentifier(schema.getSuperSchema());
-            ClassName superClass = ClassName.get(options.modelPackage, superName);
-            typeSpec.superclass(superClass);
-            getModel(superName).subTypes.add(schemaName);
+            typeSpec.superclass(ClassName.get(options.modelPackage, superName));
         } else if (schema.getAdditionalProperties() != null) {
             Schema valueSchema = schema.getAdditionalProperties();
             TypeName valueType = valueSchema != null ? schemaMapper.getType(valueSchema, false) : OBJECT;
@@ -124,6 +122,26 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
         }
         addProperties(typeSpec, schema);
         return typeSpec;
+    }
+
+    private void setRootClass(Schema schema) {
+        if (schema instanceof ObjectSchema) {
+            ObjectSchema objectSchema = (ObjectSchema)schema;
+            if (objectSchema.getSuperSchema() != null) {
+                String schemaName = javaIdentifier(schema.getName());
+                ModelInfo rootModel = findRootModel(objectSchema.getSuperSchema());
+                rootModel.subTypes.add(schemaName);
+            }
+        }
+    }
+    private ModelInfo findRootModel(String schemaName) {
+        String superName = javaIdentifier(schemaName);
+        ModelInfo model = getModel(superName);
+        ObjectSchema schema = (ObjectSchema) model.schema;
+        if (schema != null && schema.getSuperSchema() != null) {
+            return findRootModel(schema.getSuperSchema());
+        }
+        return model;
     }
 
     private TypeSpec.Builder createEnum(String name, PrimitiveSchema schema) {
