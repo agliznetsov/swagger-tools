@@ -6,7 +6,7 @@
 
     <groupId>com.github.agliznetsov.swagger-tools</groupId>
     <artifactId>swagger-tools</artifactId>
-    <version>0.4.1</version>
+    <version>0.4.2</version>
     <packaging>pom</packaging>
 
     <name>swagger-tools</name>
