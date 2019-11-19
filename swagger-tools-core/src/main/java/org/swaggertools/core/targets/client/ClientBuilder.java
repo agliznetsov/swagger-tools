@@ -95,7 +95,7 @@ abstract class ClientBuilder {
 
     protected void addMethodParameters(MethodSpec.Builder builder, Operation operation) {
         operation.getParameters().forEach(p -> {
-            ParameterSpec param = ParameterSpec.builder(schemaMapper.getType(p.getSchema(), false), p.getName()).build();
+            ParameterSpec param = ParameterSpec.builder(schemaMapper.getType(p.getSchema(), false), camelCase(javaIdentifier(p.getName()))).build();
             builder.addParameter(param);
         });
     }

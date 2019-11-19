@@ -76,7 +76,7 @@ abstract class ServerBuilder {
 
     protected void addParameters(MethodSpec.Builder builder, Operation operationInfo) {
         operationInfo.getParameters().forEach(p -> {
-            ParameterSpec.Builder paramBuilder = ParameterSpec.builder(schemaMapper.getType(p.getSchema(), false), p.getName());
+            ParameterSpec.Builder paramBuilder = ParameterSpec.builder(schemaMapper.getType(p.getSchema(), false), camelCase(javaIdentifier(p.getName())));
             annotateParameter(paramBuilder, p);
             builder.addParameter(paramBuilder.build());
         });
