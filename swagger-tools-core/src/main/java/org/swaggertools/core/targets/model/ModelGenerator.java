@@ -38,6 +38,8 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
 
     static final ClassName TO_STRING = ClassName.get("lombok", "ToString");
     static final ClassName EQUALS = ClassName.get("lombok", "EqualsAndHashCode");
+    static final ClassName ALL_ARGS_CONSTRUCTOR = ClassName.get("lombok", "AllArgsConstructor");
+    static final ClassName NO_ARGS_CONSTRUCTOR = ClassName.get("lombok", "NoArgsConstructor");
 
     final Map<String, ModelInfo> models = new HashMap<>();
     final SchemaMapper schemaMapper = new SchemaMapper();
@@ -119,6 +121,9 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
         }
         if (options.lombok) {
             typeSpec.addAnnotation(TO_STRING).addAnnotation(EQUALS);
+            if (schema.getProperties() != null && !schema.getProperties().isEmpty()) {
+                typeSpec.addAnnotation(ALL_ARGS_CONSTRUCTOR).addAnnotation(NO_ARGS_CONSTRUCTOR);
+            }
         }
         addProperties(typeSpec, schema);
         return typeSpec;
