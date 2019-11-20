@@ -4,10 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.squareup.javapoet.*;
-import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.swaggertools.core.config.ConfigurationProperty;
 import org.swaggertools.core.model.*;
 import org.swaggertools.core.run.JavaFileWriter;
 import org.swaggertools.core.run.Target;
@@ -33,56 +31,64 @@ import static org.swaggertools.core.util.JavaUtils.*;
 import static org.swaggertools.core.util.NameUtils.*;
 
 @Slf4j
-public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> implements Target {
+public class ModelGenerator extends JavaFileGenerator<ModelOptions> implements Target {
     public static final String NAME = "model";
 
     static final ClassName TO_STRING = ClassName.get("lombok", "ToString");
     static final ClassName EQUALS = ClassName.get("lombok", "EqualsAndHashCode");
+    static final ClassName BUILDER = ClassName.get("lombok", "Builder");
     static final ClassName ALL_ARGS_CONSTRUCTOR = ClassName.get("lombok", "AllArgsConstructor");
     static final ClassName NO_ARGS_CONSTRUCTOR = ClassName.get("lombok", "NoArgsConstructor");
 
     final Map<String, ModelInfo> models = new HashMap<>();
-    final SchemaMapper schemaMapper = new SchemaMapper();
+    final SchemaMapper schemaMapper;
 
     public ModelGenerator() {
-        super(new Options());
+        super(new ModelOptions());
+        schemaMapper = new SchemaMapper(options);
     }
 
     @Override
     public void accept(ApiDefinition apiDefinition) {
         validateConfiguration();
-        log.info("Generating model in {}/{}", options.location, options.modelPackage);
-        schemaMapper.setModelPackage(options.modelPackage);
+        log.info("Generating model in {}/{}", options.location, options.getModelPackage());
         apiDefinition.getSchemas().values().forEach(this::createModel);
         apiDefinition.getSchemas().values().forEach(this::setRootClass);
         JavaFileWriter writer = createWriter(options.location);
         models.values().forEach(it -> {
             addSubtypes(it);
-            writer.write(JavaFile.builder(options.modelPackage, it.typeSpec.build()).indent(INDENT).build());
+            writer.write(JavaFile.builder(options.getModelPackage(), it.typeSpec.build()).indent(INDENT).build());
         });
     }
 
     private void addSubtypes(ModelInfo modelInfo) {
-        if (!modelInfo.subTypes.isEmpty()) {
-            ObjectSchema schema = (ObjectSchema) modelInfo.schema;
-            AnnotationSpec typeInfo = AnnotationSpec.builder(JsonTypeInfo.class)
-                    .addMember("use", "$L", "JsonTypeInfo.Id.NAME")
-                    .addMember("property", "$S", schema.getDiscriminator())
-                    .addMember("visible", "$L", "false")
-                    .build();
+        if (modelInfo.schema instanceof ObjectSchema) {
+            if (!modelInfo.subTypes.isEmpty()) {
+                ObjectSchema schema = (ObjectSchema) modelInfo.schema;
+                AnnotationSpec typeInfo = AnnotationSpec.builder(JsonTypeInfo.class)
+                        .addMember("use", "$L", "JsonTypeInfo.Id.NAME")
+                        .addMember("property", "$S", schema.getDiscriminator())
+                        .addMember("visible", "$L", "false")
+                        .build();
 
-            AnnotationSpec.Builder subTypesBuilder = AnnotationSpec.builder(JsonSubTypes.class);
-            for (String className : modelInfo.subTypes) {
-                subTypesBuilder.addMember("value", "$L", AnnotationSpec.builder(JsonSubTypes.Type.class)
-                        .addMember("value", "$L", className + ".class")
-                        .addMember("name", "$S", className)
-                        .build());
+                AnnotationSpec.Builder subTypesBuilder = AnnotationSpec.builder(JsonSubTypes.class);
+                for (String className : modelInfo.subTypes) {
+                    subTypesBuilder.addMember("value", "$L", AnnotationSpec.builder(JsonSubTypes.Type.class)
+                            .addMember("value", "$L", className + ".class")
+                            .addMember("name", "$S", className)
+                            .build());
+                }
+
+                modelInfo.typeSpec.addAnnotation(typeInfo);
+                modelInfo.typeSpec.addAnnotation(subTypesBuilder.build());
+            } else {
+                if (options.lombok) {
+                    modelInfo.typeSpec.addAnnotation(BUILDER);
+                }
             }
-
-            modelInfo.typeSpec.addAnnotation(typeInfo);
-            modelInfo.typeSpec.addAnnotation(subTypesBuilder.build());
         }
     }
+
     @SneakyThrows
     private void createModel(Schema schema) {
         TypeSpec.Builder typeSpec = null;
@@ -113,7 +119,7 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
         TypeSpec.Builder typeSpec = TypeSpec.classBuilder(schemaName).addModifiers(Modifier.PUBLIC);
         if (schema.getSuperSchema() != null) {
             String superName = javaIdentifier(schema.getSuperSchema());
-            typeSpec.superclass(ClassName.get(options.modelPackage, superName));
+            typeSpec.superclass(ClassName.get(options.getModelPackage(), superName));
         } else if (schema.getAdditionalProperties() != null) {
             Schema valueSchema = schema.getAdditionalProperties();
             TypeName valueType = valueSchema != null ? schemaMapper.getType(valueSchema, false) : OBJECT;
@@ -173,7 +179,7 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
                     if (property.getSchema().getEnumValues() != null) {
                         String enumName = pascalCase(javaIdentifier(property.getName()) + "Enum");
                         TypeSpec enumSpec = createEnum(enumName, (PrimitiveSchema) property.getSchema()).build();
-                        ClassName typeName = ClassName.get(options.modelPackage, model.build().name, enumName);
+                        ClassName typeName = ClassName.get(options.getModelPackage(), model.build().name, enumName);
                         model.addType(enumSpec);
                         addProperty(model, property, typeName);
                     } else {
@@ -293,20 +299,6 @@ public class ModelGenerator extends JavaFileGenerator<ModelGenerator.Options> im
         public TypeSpec.Builder typeSpec;
         public Schema schema;
         public List<String> subTypes = new LinkedList<>();
-    }
-
-    @Data
-    public static class Options {
-        @ConfigurationProperty(description = "Model classes target directory", required = true)
-        String location;
-        @ConfigurationProperty(description = "Models package name", required = true)
-        String modelPackage;
-        @ConfigurationProperty(description = "Initialize collection fields with empty collection", defaultValue = "true")
-        boolean initializeCollections = true;
-        @ConfigurationProperty(description = "Annotate model classes with lombok to generate equals/hashCode/toString", defaultValue = "false")
-        boolean lombok = false;
-        @ConfigurationProperty(description = "Annotate model properties with javax.validation.constraints.*", defaultValue = "false")
-        boolean validation = false;
     }
 
 }

@@ -3,18 +3,16 @@ package org.swaggertools.core.targets.client;
 import lombok.Getter;
 import lombok.Setter;
 import org.swaggertools.core.config.ConfigurationProperty;
+import org.swaggertools.core.targets.SchemaOptions;
 
 @Getter
 @Setter
-public class ClientOptions {
+public class ClientOptions extends SchemaOptions {
     @ConfigurationProperty(description = "Server classes target directory", required = true)
     String location;
 
     @ConfigurationProperty(description = "Client classes package name", required = true)
     String clientPackage;
-
-    @ConfigurationProperty(description = "Models package name", required = true)
-    String modelPackage;
 
     @ConfigurationProperty(description = "Client classes name suffix", defaultValue = "Client")
     String clientSuffix = "Client";

@@ -25,7 +25,7 @@ abstract class ClientBuilder {
     private static final TypeName HEADERS = ParameterizedTypeName.get(MAP, STRING, ParameterizedTypeName.get(LIST, STRING));
     protected static final String EVENT_STREAM = "text/event-stream";
 
-    protected SchemaMapper schemaMapper = new SchemaMapper();
+    protected SchemaMapper schemaMapper;
     protected Map<String, TypeSpec.Builder> clients = new HashMap<>();
     protected final ApiDefinition apiDefinition;
     protected final JavaFileWriter writer;
@@ -35,7 +35,7 @@ abstract class ClientBuilder {
         this.apiDefinition = apiDefinition;
         this.writer = writer;
         this.options = options;
-        this.schemaMapper.setModelPackage(this.options.modelPackage);
+        this.schemaMapper = new SchemaMapper(options);
     }
 
     public void generate() {
