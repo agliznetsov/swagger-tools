@@ -6,6 +6,7 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import org.swaggertools.core.model.ArraySchema;
 import org.swaggertools.core.model.ObjectSchema;
 import org.swaggertools.core.model.PrimitiveSchema;
@@ -26,13 +27,11 @@ public class SchemaMapper {
     @Getter
     protected final Map<String, Class> stringFormats = new HashMap<>();
 
-    @Getter
-    @Setter
-    protected String modelPackage;
+    private SchemaOptions options;
 
-    public SchemaMapper() {
+    public SchemaMapper(SchemaOptions schemaOptions) {
+        this.options = schemaOptions;
         stringFormats.put("date", LocalDate.class);
-        stringFormats.put("date-time", OffsetDateTime.class);
         stringFormats.put("uuid", UUID.class);
         stringFormats.put("binary", byte[].class);
     }
@@ -55,8 +54,8 @@ public class SchemaMapper {
             return ParameterizedTypeName.get(superClass, STRING, valueType);
         } else {
             if (schema.getName() != null) {
-                notNull(modelPackage, "modelPackage is not set");
-                return ClassName.get(modelPackage, javaIdentifier(schema.getName()));
+                notNull(options.getModelPackage(), "modelPackage is not set");
+                return ClassName.get(options.getModelPackage(), javaIdentifier(schema.getName()));
             } else {
                 return OBJECT;
             }
@@ -73,12 +72,25 @@ public class SchemaMapper {
             case BOOLEAN:
                 return BOOLEAN.box();
             case STRING:
-                Class clazz = stringFormats.get(format);
-                return clazz != null ? TypeName.get(clazz) : STRING;
+                if ("date-time".equals(format)) {
+                    return TypeName.get(getDateTimeClass());
+                } else {
+                    Class clazz = stringFormats.get(format);
+                    return clazz != null ? TypeName.get(clazz) : STRING;
+                }
             case FILE:
                 return ArrayTypeName.of(TypeName.BYTE);
         }
         throw new IllegalArgumentException("Unknown type: " + schema.getType() + ":" + schema.getFormat());
+    }
+
+    @SneakyThrows
+    private Class getDateTimeClass() {
+        if (options.getDateTimeClass() == null) {
+            return OffsetDateTime.class;
+        } else {
+            return Class.forName(options.getDateTimeClass());
+        }
     }
 
     private TypeName getArrayType(ArraySchema schema, boolean concrete) {

@@ -26,7 +26,7 @@ abstract class ServerBuilder {
     protected static final String EVENT_STREAM = "text/event-stream";
 
     private final Map<String, TypeSpec.Builder> apis = new HashMap<>();
-    protected final SchemaMapper schemaMapper = new SchemaMapper();
+    protected final SchemaMapper schemaMapper;
     protected final ApiDefinition apiDefinition;
     protected final JavaFileWriter writer;
     protected final ServerOptions options;
@@ -35,10 +35,10 @@ abstract class ServerBuilder {
         this.apiDefinition = apiDefinition;
         this.writer = writer;
         this.options = options;
+        this.schemaMapper = new SchemaMapper(options);
     }
 
     public void generate() {
-        schemaMapper.setModelPackage(options.modelPackage);
         apiDefinition.getOperations().forEach(this::processOperation);
         apis.forEach((k, v) -> writeApi(v));
     }
@@ -76,7 +76,7 @@ abstract class ServerBuilder {
 
     protected void addParameters(MethodSpec.Builder builder, Operation operationInfo) {
         operationInfo.getParameters().forEach(p -> {
-            ParameterSpec.Builder paramBuilder = ParameterSpec.builder(schemaMapper.getType(p.getSchema(), false), p.getName());
+            ParameterSpec.Builder paramBuilder = ParameterSpec.builder(schemaMapper.getType(p.getSchema(), false), camelCase(javaIdentifier(p.getName())));
             annotateParameter(paramBuilder, p);
             builder.addParameter(paramBuilder.build());
         });

@@ -151,7 +151,7 @@ public class OpenApiMapper {
                                 info.setResponseMediaType(firstResponse.getKey());
                             }
                         }
-                        if (mediaType != null) {
+                        if (mediaType != null && mediaType.getSchema() != null) {
                             info.setResponseSchema(mapSchema(null, mediaType.getSchema()));
                         }
                     }

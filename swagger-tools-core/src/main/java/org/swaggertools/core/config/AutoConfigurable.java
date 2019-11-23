@@ -1,13 +1,11 @@
 package org.swaggertools.core.config;
 
 import lombok.SneakyThrows;
+import org.swaggertools.core.targets.SchemaOptions;
 import org.swaggertools.core.util.NameUtils;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class AutoConfigurable<T> implements Configurable {
     protected final T options;
@@ -24,7 +22,10 @@ public abstract class AutoConfigurable<T> implements Configurable {
     }
 
     private void discoverProperties() {
-        for (Field f : options.getClass().getDeclaredFields()) {
+        Set<Field> declaredFields = new HashSet<>();
+        declaredFields.addAll(Arrays.asList(options.getClass().getSuperclass().getDeclaredFields()));
+        declaredFields.addAll(Arrays.asList(options.getClass().getDeclaredFields()));
+        for (Field f : declaredFields) {
             if (!f.getName().startsWith("$")) {
                 f.setAccessible(true);
                 Configuration config = createConfiguration(f);
