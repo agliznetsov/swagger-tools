@@ -6,7 +6,17 @@ import java.lang.Object;
 import java.lang.String;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@ToString
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Error extends HashMap<String, String> {
     @JsonProperty("_type")
     private final String type = "Error";

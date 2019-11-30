@@ -4,7 +4,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.String;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@ToString
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class CompositeClassDetails {
     @JsonProperty("description")
     private String description;
