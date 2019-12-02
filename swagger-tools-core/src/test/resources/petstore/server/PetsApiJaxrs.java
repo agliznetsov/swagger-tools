@@ -25,7 +25,8 @@ import javax.ws.rs.sse.SseEventSink;
 public interface PetsApi {
     @GET
     @Path("/pets")
-    List<Pet> listPets(@QueryParam("limit") Integer limit);
+    List<Pet> listPets(@QueryParam("limit") Integer limit,
+            @QueryParam("Offset-Value") Integer offsetValue);
 
     @POST
     @Path("/pets")

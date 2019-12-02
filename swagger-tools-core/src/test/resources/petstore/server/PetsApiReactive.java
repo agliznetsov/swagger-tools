@@ -26,7 +26,8 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1")
 public interface PetsApi {
     @GetMapping("/pets")
-    Mono<List<Pet>> listPets(@RequestParam(name = "limit", required = false) Integer limit);
+    Mono<List<Pet>> listPets(@RequestParam(name = "limit", required = false) Integer limit,
+            @RequestParam(name = "Offset-Value", required = false) Integer offsetValue);
 
     @PostMapping("/pets")
     @ResponseStatus(HttpStatus.CREATED)

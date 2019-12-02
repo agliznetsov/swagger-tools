@@ -28,6 +28,11 @@ paths:
           required: false
           type: integer
           format: int32
+        - name: "Offset-Value"
+          in: query
+          required: false
+          type: integer
+          format: int32
       responses:
         '200':
           description: An paged array of pets

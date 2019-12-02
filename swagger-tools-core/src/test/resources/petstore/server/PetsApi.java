@@ -23,7 +23,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequestMapping("/v1")
 public interface PetsApi {
     @GetMapping("/pets")
-    List<Pet> listPets(@RequestParam(name = "limit", required = false) Integer limit);
+    List<Pet> listPets(@RequestParam(name = "limit", required = false) Integer limit,
+            @RequestParam(name = "Offset-Value", required = false) Integer offsetValue);
 
     @PostMapping("/pets")
     @ResponseStatus(HttpStatus.CREATED)
