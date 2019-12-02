@@ -225,6 +225,7 @@ public class OpenApiMapper {
         }
         res.setMaxLength(schema.getMaxLength());
         res.setMinLength(schema.getMinLength());
+        res.setUniqueItems(schema.getUniqueItems());
         return res;
     }
 

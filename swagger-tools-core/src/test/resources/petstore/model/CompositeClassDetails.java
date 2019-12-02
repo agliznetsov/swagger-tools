@@ -2,8 +2,8 @@ package com.example;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.String;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -20,7 +20,7 @@ public class CompositeClassDetails {
     private String description;
 
     @JsonProperty("tags")
-    private List<String> tags = new ArrayList<String>();
+    private Set<String> tags = new HashSet<String>();
 
     public String getDescription() {
         return description;
@@ -30,11 +30,11 @@ public class CompositeClassDetails {
         this.description = description;
     }
 
-    public List<String> getTags() {
+    public Set<String> getTags() {
         return tags;
     }
 
-    public void setTags(List<String> tags) {
+    public void setTags(Set<String> tags) {
         this.tags = tags;
     }
 }

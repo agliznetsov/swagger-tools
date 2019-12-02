@@ -5,7 +5,6 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.SneakyThrows;
 import org.swaggertools.core.model.ArraySchema;
 import org.swaggertools.core.model.ObjectSchema;
@@ -94,7 +93,13 @@ public class SchemaMapper {
     }
 
     private TypeName getArrayType(ArraySchema schema, boolean concrete) {
-        ClassName superClass = concrete ? ARRAY_LIST : LIST;
+        ClassName superClass;
+        if (schema.getUniqueItems() != null && schema.getUniqueItems()) {
+            superClass = concrete ? HASH_SET : SET;
+        } else {
+            superClass = concrete ? ARRAY_LIST : LIST;
+        }
+
         if (schema.getItemsSchema() != null) {
             TypeName itemType = getType(schema.getItemsSchema(), false);
             return ParameterizedTypeName.get(superClass, itemType);
