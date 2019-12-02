@@ -2,8 +2,6 @@ package com.example;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.String;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -15,12 +13,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Customer {
+public class AnimalImpl extends Animal {
     @JsonProperty("name")
-    @NotNull
-    @Size(
-            min = 3
-    )
     private String name;
 
     public String getName() {

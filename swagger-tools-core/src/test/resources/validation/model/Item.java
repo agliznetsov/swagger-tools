@@ -4,7 +4,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.String;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@ToString
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Item {
     @JsonProperty("name")
     @NotNull

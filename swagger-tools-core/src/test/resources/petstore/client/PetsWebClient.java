@@ -27,9 +27,9 @@ public class PetsWebClient extends BaseClient {
         super(webClient, basePath, headers);
     }
 
-    public Mono<List<Pet>> listPets(Integer limit) {
+    public Mono<List<Pet>> listPets(Integer limit, Integer offsetValue) {
         ParameterizedTypeReference<List<Pet>> typeRef = new ParameterizedTypeReference<List<Pet>>(){};
-        return invokeAPI("/pets", "GET", createUrlVariables(), createQueryParameters("limit", limit), null).bodyToMono(typeRef);
+        return invokeAPI("/pets", "GET", createUrlVariables(), createQueryParameters("limit", limit, "Offset-Value", offsetValue), null).bodyToMono(typeRef);
     }
 
     public Mono<Pet> createPet(Pet pet) {

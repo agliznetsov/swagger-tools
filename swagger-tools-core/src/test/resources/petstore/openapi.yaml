@@ -29,6 +29,12 @@ paths:
           schema:
             type: integer
             format: int32
+        - name: "Offset-Value"
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
       responses:
         '200':
           description: An paged array of pets
@@ -373,3 +379,20 @@ components:
               type: array
               items:
                 type: string
+              uniqueItems: true
+
+    Animal:
+      type: object
+      discriminator:
+        propertyName: '@type'
+      properties:
+        '@type':
+          type: string
+
+    AnimalImpl:
+      allOf:
+        - $ref: '#/components/schemas/Animal'
+        - type: object
+          properties:
+            name:
+              type: string

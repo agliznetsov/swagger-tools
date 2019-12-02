@@ -139,6 +139,7 @@ public class GeneratorsTest {
         };
         generator.getOptions().setModelPackage("com.example");
         generator.getOptions().setLocation("/target");
+        generator.getOptions().setLombok(true);
         return generator;
     }
 

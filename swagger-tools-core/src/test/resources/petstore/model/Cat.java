@@ -1,7 +1,17 @@
 package com.example;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@ToString
+@EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Cat extends Pet {
     @JsonProperty("huntingSkill")
     private HuntingSkillEnum huntingSkill = HuntingSkillEnum.LAZY;

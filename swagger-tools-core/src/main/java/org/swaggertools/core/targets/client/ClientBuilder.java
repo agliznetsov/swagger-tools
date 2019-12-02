@@ -72,7 +72,7 @@ abstract class ClientBuilder {
                 names.add("$S");
                 names.add("$L");
                 args.add(p.getName());
-                args.add(p.getName());
+                args.add(p.getJavaIdentifier());
             }
         });
         CodeBlock cb = CodeBlock.builder().add("createUrlVariables(" + String.join(", ", names) + ")", args.toArray()).build();
@@ -87,7 +87,7 @@ abstract class ClientBuilder {
                 names.add("$S");
                 names.add("$L");
                 args.add(p.getName());
-                args.add(p.getName());
+                args.add(p.getJavaIdentifier());
             }
         });
         return CodeBlock.builder().add("createQueryParameters(" + String.join(", ", names) + ")", args.toArray()).build();
@@ -95,7 +95,7 @@ abstract class ClientBuilder {
 
     protected void addMethodParameters(MethodSpec.Builder builder, Operation operation) {
         operation.getParameters().forEach(p -> {
-            ParameterSpec param = ParameterSpec.builder(schemaMapper.getType(p.getSchema(), false), camelCase(javaIdentifier(p.getName()))).build();
+            ParameterSpec param = ParameterSpec.builder(schemaMapper.getType(p.getSchema(), false), p.getJavaIdentifier()).build();
             builder.addParameter(param);
         });
     }

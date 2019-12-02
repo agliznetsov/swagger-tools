@@ -127,8 +127,11 @@ public class ModelGenerator extends JavaFileGenerator<ModelOptions> implements T
         }
         if (options.lombok) {
             typeSpec.addAnnotation(TO_STRING).addAnnotation(EQUALS);
-            if (schema.getProperties() != null && !schema.getProperties().isEmpty()) {
-                typeSpec.addAnnotation(ALL_ARGS_CONSTRUCTOR).addAnnotation(NO_ARGS_CONSTRUCTOR);
+            if (schema.getProperties() != null) {
+                long propsCount = schema.getProperties().stream().filter(it -> !it.getName().equals(schema.getDiscriminator())).count();
+                if (propsCount > 0) {
+                    typeSpec.addAnnotation(ALL_ARGS_CONSTRUCTOR).addAnnotation(NO_ARGS_CONSTRUCTOR);
+                }
             }
         }
         addProperties(typeSpec, schema);

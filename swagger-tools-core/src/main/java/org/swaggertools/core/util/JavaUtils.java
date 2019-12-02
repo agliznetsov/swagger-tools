@@ -6,10 +6,7 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 
 import javax.lang.model.element.Modifier;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.squareup.javapoet.TypeName.BOOLEAN;
 import static org.swaggertools.core.util.NameUtils.pascalCase;
@@ -17,6 +14,8 @@ import static org.swaggertools.core.util.NameUtils.pascalCase;
 public class JavaUtils {
     public static final TypeName STRING = TypeName.get(String.class);
     public static final ClassName LIST = ClassName.get(List.class);
+    public static final ClassName SET = ClassName.get(Set.class);
+    public static final ClassName HASH_SET = ClassName.get(HashSet.class);
     public static final ClassName ARRAY_LIST = ClassName.get(ArrayList.class);
     public static final ClassName MAP = ClassName.get(Map.class);
     public static final ClassName HASH_MAP = ClassName.get(HashMap.class);

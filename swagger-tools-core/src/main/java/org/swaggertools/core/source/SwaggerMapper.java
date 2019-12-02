@@ -156,6 +156,9 @@ public class SwaggerMapper {
         if (items != null) {
             schema.setItemsSchema(mapPropertySchema(null, null, items));
         }
+        schema.setUniqueItems(model.getUniqueItems());
+        schema.setMaxLength(model.getMaxLength());
+        schema.setMinLength(model.getMinLength());
         return schema;
     }
 
@@ -224,11 +227,15 @@ public class SwaggerMapper {
             schema.setName(((RefProperty) property).getSimpleRef());
             return schema;
         } else if (property instanceof ArrayProperty) {
+            ArrayProperty arrayProperty = (ArrayProperty) property;
             ArraySchema schema = new ArraySchema();
-            io.swagger.models.properties.Property items = ((ArrayProperty) property).getItems();
+            io.swagger.models.properties.Property items = arrayProperty.getItems();
             if (items != null) {
                 schema.setItemsSchema(mapPropertySchema(null, null, items));
             }
+            schema.setMinLength(arrayProperty.getMinItems());
+            schema.setMaxLength(arrayProperty.getMaxItems());
+            schema.setUniqueItems(arrayProperty.getUniqueItems());
             return schema;
         } else if (property instanceof MapProperty) {
             ObjectSchema schema = new ObjectSchema();

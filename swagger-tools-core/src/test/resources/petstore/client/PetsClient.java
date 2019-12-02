@@ -26,9 +26,9 @@ public class PetsClient extends BaseClient {
         super(restTemplate, basePath, headers);
     }
 
-    public List<Pet> listPets(Integer limit) {
+    public List<Pet> listPets(Integer limit, Integer offsetValue) {
         ParameterizedTypeReference<List<Pet>> typeRef = new ParameterizedTypeReference<List<Pet>>(){};
-        ResponseEntity<List<Pet>> response = invokeAPI("/pets", "GET", createUrlVariables(), createQueryParameters("limit", limit), null, typeRef);
+        ResponseEntity<List<Pet>> response = invokeAPI("/pets", "GET", createUrlVariables(), createQueryParameters("limit", limit, "Offset-Value", offsetValue), null, typeRef);
         return response.getBody();
     }
 
