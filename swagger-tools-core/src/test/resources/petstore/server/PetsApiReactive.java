@@ -8,6 +8,7 @@ import java.lang.String;
 import java.lang.Void;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -67,4 +68,8 @@ public interface PetsApi {
             produces = "text/event-stream"
     )
     Flux<ServerSentEvent> getPetEvents(@PathVariable(name = "petId", required = true) Long petId);
+
+    @GetMapping("/pets/{petId}/details")
+    Mono<ResponseEntity<Pet>> getPetDetails(
+            @PathVariable(name = "petId", required = true) Long petId);
 }

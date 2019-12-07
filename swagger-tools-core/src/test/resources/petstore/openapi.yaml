@@ -211,6 +211,27 @@ paths:
               schema:
                 type: string
 
+  '/pets/{petId}/details':
+    get:
+      tags:
+        - pets
+      operationId: getPetDetails
+      x-response-entity: true
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+
 components:
   parameters:
     petId:
@@ -230,12 +251,12 @@ components:
             $ref: '#/components/schemas/Pet'
 
   responses:
-      PetResponse:
-        description: Expected response to a valid request
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Pet'
+    PetResponse:
+      description: Expected response to a valid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Pet'
 
   schemas:
 
@@ -284,35 +305,35 @@ components:
     Cat:  ## "Cat" will be used as the discriminator value
       description: A representation of a cat
       allOf:
-      - $ref: '#/components/schemas/Pet'
-      - type: object
-        properties:
-          huntingSkill:
-            type: string
-            description: The measured skill for hunting
-            default: lazy
-            enum:
-            - clueless
-            - lazy
-            - adventurous
-            - aggressive
-        required:
-        - huntingSkill
+        - $ref: '#/components/schemas/Pet'
+        - type: object
+          properties:
+            huntingSkill:
+              type: string
+              description: The measured skill for hunting
+              default: lazy
+              enum:
+                - clueless
+                - lazy
+                - adventurous
+                - aggressive
+          required:
+            - huntingSkill
 
     Dog:  ## "Dog" will be used as the discriminator value
       description: A representation of a dog
       allOf:
-      - $ref: '#/components/schemas/Pet'
-      - type: object
-        properties:
-          packSize:
-            type: integer
-            format: int32
-            description: the size of the pack the dog is from
-            default: 0
-            minimum: 0
-        required:
-        - packSize
+        - $ref: '#/components/schemas/Pet'
+        - type: object
+          properties:
+            packSize:
+              type: integer
+              format: int32
+              description: the size of the pack the dog is from
+              default: 0
+              minimum: 0
+          required:
+            - packSize
 
     Owner:
       properties:

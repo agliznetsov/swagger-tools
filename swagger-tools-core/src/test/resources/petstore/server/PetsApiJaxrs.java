@@ -63,4 +63,8 @@ public interface PetsApi {
     @Produces("text/event-stream")
     void getPetEvents(@PathParam("petId") Long petId, @Context SseEventSink sseEventSink,
             @Context Sse sse);
+
+    @GET
+    @Path("/pets/{petId}/details")
+    Pet getPetDetails(@PathParam("petId") Long petId);
 }

@@ -75,4 +75,10 @@ public class PetsClient extends BaseClient {
     public void getPetEvents(Long petId, ResponseExtractor responseExtractor) {
         executeAPI("/pets/{petId}/events", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, responseExtractor);
     }
+
+    public ResponseEntity<Pet> getPetDetails(Long petId) {
+        ParameterizedTypeReference<Pet> typeRef = new ParameterizedTypeReference<Pet>(){};
+        ResponseEntity<Pet> response = invokeAPI("/pets/{petId}/details", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, typeRef);
+        return response;
+    }
 }

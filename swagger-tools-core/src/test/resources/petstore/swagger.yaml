@@ -183,6 +183,24 @@ paths:
           schema:
             type: string
 
+  '/pets/{petId}/details':
+    get:
+      tags:
+        - pets
+      operationId: getPetDetails
+      x-response-entity: true
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Expected response to a valid request
+          schema:
+            $ref: "#/definitions/Pet-"
+
 parameters:
   petId:
     name: petId

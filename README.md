@@ -14,6 +14,7 @@ This project provide a set of tools to generate java code from API definition.
     - **x-ignore** to exclude operations from the code generation process  
     - **x-name** to specify OpenAPI 3 requestBody parameter name
     - **x-base-path** to specify OpenAPI 3 API base path
+    - **x-response-entity** to make Client/Server return Spring ResponseEntity object
 
 ### Targets
 

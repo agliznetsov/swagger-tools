@@ -102,8 +102,12 @@ abstract class ClientBuilder {
 
     protected void addMethodResponse(MethodSpec.Builder builder, Operation operation) {
         if (operation.getResponseSchema() != null) {
-            builder.returns(schemaMapper.getType(operation.getResponseSchema(), false));
+            builder.returns(getReturnType(operation));
         }
+    }
+
+    protected TypeName getReturnType(Operation operation) {
+        return schemaMapper.getType(operation.getResponseSchema(), false);
     }
 
     protected TypeSpec.Builder getClient(String tag) {

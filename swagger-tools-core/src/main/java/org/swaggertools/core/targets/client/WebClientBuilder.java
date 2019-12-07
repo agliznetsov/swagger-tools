@@ -23,6 +23,7 @@ public class WebClientBuilder extends ClientBuilder {
     private static final ClassName FLUX = ClassName.get("reactor.core.publisher", "Flux");
     private static final ClassName WEB_CLIENT = ClassName.get("org.springframework.web.reactive.function.client", "WebClient");
     private static final ClassName SERVER_SENT_EVENT = ClassName.get("org.springframework.http.codec", "ServerSentEvent");
+    private static final ClassName CLIENT_RESPONSE = ClassName.get("org.springframework.web.reactive.function.client", "ClientResponse");
 
     public WebClientBuilder(ApiDefinition apiDefinition, JavaFileWriter writer, ClientOptions options) {
         super(apiDefinition, writer, options);
@@ -69,9 +70,11 @@ public class WebClientBuilder extends ClientBuilder {
         List<Object> args = new LinkedList<>();
         String format = "return invokeAPI($S, $S, $L, $L, $L)";
         if (EVENT_STREAM.equals(operation.getResponseMediaType())) {
-            format += ".bodyToFlux(typeRef)";
+            format += ".flatMapMany(e -> e.bodyToFlux(typeRef))";
         } else {
-            format += ".bodyToMono(typeRef)";
+            if (!operation.isResponseEntity()) {
+                format += ".flatMap(e -> e.bodyToMono(typeRef))";
+            }
         }
         args.add(operation.getPath());
         args.add(operation.getMethod().name());
@@ -87,11 +90,15 @@ public class WebClientBuilder extends ClientBuilder {
         if (EVENT_STREAM.equals(operation.getResponseMediaType())) {
             builder.returns(ParameterizedTypeName.get(FLUX, SERVER_SENT_EVENT));
         } else {
-            if (operation.getResponseSchema() != null) {
-                TypeName type = schemaMapper.getType(operation.getResponseSchema(), false);
-                builder.returns(ParameterizedTypeName.get(MONO, type));
+            if (operation.isResponseEntity()) {
+                builder.returns(ParameterizedTypeName.get(MONO, CLIENT_RESPONSE));
             } else {
-                builder.returns(ParameterizedTypeName.get(MONO, VOID.box()));
+                if (operation.getResponseSchema() != null) {
+                    TypeName type = schemaMapper.getType(operation.getResponseSchema(), false);
+                    builder.returns(ParameterizedTypeName.get(MONO, type));
+                } else {
+                    builder.returns(ParameterizedTypeName.get(MONO, VOID.box()));
+                }
             }
         }
     }

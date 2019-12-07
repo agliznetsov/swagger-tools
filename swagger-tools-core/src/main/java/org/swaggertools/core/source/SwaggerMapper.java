@@ -17,11 +17,12 @@ import org.swaggertools.core.util.NameUtils;
 import java.util.LinkedList;
 import java.util.Map;
 
+import static org.swaggertools.core.model.Extensions.X_IGNORE;
+import static org.swaggertools.core.model.Extensions.X_RESPONSE_ENTITY;
 import static org.swaggertools.core.util.AssertUtils.notEmpty;
 import static org.swaggertools.core.util.AssertUtils.notNull;
 
 public class SwaggerMapper {
-    private static final String X_IGNORE = "x-ignore";
 
     ObjectMapper objectMapper;
     Swagger swagger;
@@ -75,7 +76,18 @@ public class SwaggerMapper {
             String mediaType = operation.getProduces().get(0);
             res.setResponseMediaType(mediaType);
         }
+        res.setResponseEntity(isResponseEntity(operation));
         return res;
+    }
+
+    private boolean isResponseEntity(io.swagger.models.Operation operation) {
+        if (operation.getVendorExtensions() != null) {
+            Object value = operation.getVendorExtensions().get(X_RESPONSE_ENTITY);
+            if (value != null) {
+                return "true".equals(value.toString());
+            }
+        }
+        return false;
     }
 
     private Parameter mapParameter(io.swagger.models.parameters.Parameter parameter) {

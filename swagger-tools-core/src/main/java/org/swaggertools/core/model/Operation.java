@@ -16,4 +16,5 @@ public class Operation {
     Schema responseSchema;
     HttpStatus responseStatus;
     String responseMediaType;
+    boolean responseEntity;
 }

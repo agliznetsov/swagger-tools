@@ -19,14 +19,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.swaggertools.core.model.Extensions.*;
 import static org.swaggertools.core.util.AssertUtils.notEmpty;
 import static org.swaggertools.core.util.AssertUtils.notNull;
 
 public class OpenApiMapper {
     private static final String JSON = "application/json";
-    private static final String X_IGNORE = "x-ignore";
-    private static final String X_NAME = "x-name";
-    private static final String X_BASE_PATH = "x-base-path";
 
     static final Pattern REF_PATTERN = Pattern.compile("#/components/(.+)/(.+)");
 
@@ -91,7 +89,18 @@ public class OpenApiMapper {
             res.getParameters().add(body);
         }
         addResponse(res, operation.getResponses());
+        res.setResponseEntity(isResponseEntity(operation));
         return res;
+    }
+
+    private boolean isResponseEntity(io.swagger.v3.oas.models.Operation operation) {
+        if (operation.getExtensions() != null) {
+            Object value = operation.getExtensions().get(X_RESPONSE_ENTITY);
+            if (value != null) {
+                return "true".equals(value.toString());
+            }
+        }
+        return false;
     }
 
     private Parameter mapParameter(io.swagger.v3.oas.models.parameters.Parameter parameter) {

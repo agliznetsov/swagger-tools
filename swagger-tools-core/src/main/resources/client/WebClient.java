@@ -4,8 +4,10 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
+import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -100,7 +102,7 @@ public abstract class BaseClient {
         return parameters;
     }
 
-    protected WebClient.ResponseSpec invokeAPI(String path, String method, Map<String, String> urlVariables, MultiValueMap<String, String> queryParams, Object body) {
+    protected Mono<ClientResponse> invokeAPI(String path, String method, Map<String, String> urlVariables, MultiValueMap<String, String> queryParams, Object body) {
         WebClient.RequestBodySpec request1 = webClient
                 .method(HttpMethod.resolve(method))
                 .uri(builder -> builder
@@ -113,7 +115,7 @@ public abstract class BaseClient {
             request1.syncBody(body);
         }
         WebClient.RequestBodySpec request = request1;
-        return request.retrieve();
+        return request.exchange();
     }
 
     protected void customizeRequest(WebClient.RequestBodySpec request) {

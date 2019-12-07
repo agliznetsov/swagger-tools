@@ -17,6 +17,7 @@ public class SpringBuilder extends ServerBuilder {
     private static final ClassName PATH_VARIABLE = ClassName.get(SPRING_ANNOTATIONS, "PathVariable");
     private static final ClassName RESPONSE_STATUS = ClassName.get(SPRING_ANNOTATIONS, "ResponseStatus");
     private static final ClassName HTTP_STATUS = ClassName.get("org.springframework.http", "HttpStatus");
+    private static final ClassName RESPONSE_ENTITY = ClassName.get("org.springframework.http", "ResponseEntity");
     private static final ClassName MONO = ClassName.get("reactor.core.publisher", "Mono");
     private static final ClassName FLUX = ClassName.get("reactor.core.publisher", "Flux");
     private static final ClassName SSE_EMITTER = ClassName.get("org.springframework.web.servlet.mvc.method.annotation", "SseEmitter");
@@ -70,26 +71,35 @@ public class SpringBuilder extends ServerBuilder {
 
     @Override
     protected void addResponse(MethodSpec.Builder builder, Operation operationInfo) {
+        TypeName type = VOID;
         if (options.reactive) {
             if (EVENT_STREAM.equals(operationInfo.getResponseMediaType())) {
-                builder.returns(ParameterizedTypeName.get(FLUX, SERVER_SENT_EVENT));
+                type = ParameterizedTypeName.get(FLUX, SERVER_SENT_EVENT);
             } else {
                 if (operationInfo.getResponseSchema() != null) {
-                    TypeName type = schemaMapper.getType(operationInfo.getResponseSchema(), false);
-                    builder.returns(ParameterizedTypeName.get(MONO, type));
+                    type = schemaMapper.getType(operationInfo.getResponseSchema(), false);
                 } else {
-                    builder.returns(ParameterizedTypeName.get(MONO, VOID.box()));
+                    type = VOID.box();
                 }
+                if (operationInfo.isResponseEntity()) {
+                    type = ParameterizedTypeName.get(RESPONSE_ENTITY, type);
+                }
+                type = ParameterizedTypeName.get(MONO, type);
             }
         } else {
             if (EVENT_STREAM.equals(operationInfo.getResponseMediaType())) {
-                builder.returns(SSE_EMITTER);
+                type = SSE_EMITTER;
             } else {
                 if (operationInfo.getResponseSchema() != null) {
-                    builder.returns(schemaMapper.getType(operationInfo.getResponseSchema(), false));
+                    type = schemaMapper.getType(operationInfo.getResponseSchema(), false);
+                    if (operationInfo.isResponseEntity()) {
+                        type = ParameterizedTypeName.get(RESPONSE_ENTITY, type);
+                    }
                 }
             }
         }
+
+        builder.returns(type);
 
         if (operationInfo.getResponseStatus() != null && operationInfo.getResponseStatus() != HttpStatus.OK) {
             String statusName = operationInfo.getResponseStatus().name();

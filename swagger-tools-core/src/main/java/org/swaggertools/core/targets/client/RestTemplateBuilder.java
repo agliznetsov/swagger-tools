@@ -77,6 +77,16 @@ public class RestTemplateBuilder extends ClientBuilder {
         }
     }
 
+    @Override
+    protected TypeName getReturnType(Operation operation) {
+        TypeName type = super.getReturnType(operation);
+        if (operation.isResponseEntity()) {
+            return ParameterizedTypeName.get(RESPONSE_ENTITY, type);
+        } else {
+            return type;
+        }
+    }
+
     private void invokeApi(MethodSpec.Builder builder, Operation operation) {
         String format = "";
         List<Object> args = new LinkedList<>();
@@ -96,7 +106,11 @@ public class RestTemplateBuilder extends ClientBuilder {
         builder.addStatement(format, args.toArray());
 
         if (operation.getResponseSchema() != null) {
-            builder.addStatement("return response.getBody()");
+            if (operation.isResponseEntity()) {
+                builder.addStatement("return response");
+            } else {
+                builder.addStatement("return response.getBody()");
+            }
         }
     }
 
