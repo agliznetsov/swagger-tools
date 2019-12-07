@@ -2,6 +2,7 @@ package com.example;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -13,5 +14,8 @@ import lombok.ToString;
         visible = false
 )
 @JsonSubTypes(@JsonSubTypes.Type(value = AnimalImpl.class, name = "AnimalImpl"))
+@Builder(
+        builderMethodName = "animalBuilder"
+)
 public class Animal {
 }

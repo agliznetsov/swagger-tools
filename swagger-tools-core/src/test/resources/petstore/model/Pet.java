@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -29,6 +30,9 @@ import lombok.ToString;
         @JsonSubTypes.Type(value = Cat.class, name = "Cat"),
         @JsonSubTypes.Type(value = Dog.class, name = "Dog")
 })
+@Builder(
+        builderMethodName = "petBuilder"
+)
 public class Pet {
     @JsonProperty("id")
     private Long id = 0L;

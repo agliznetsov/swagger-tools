@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.squareup.javapoet.*;
+import lombok.Builder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.swaggertools.core.model.*;
@@ -63,7 +64,11 @@ public class ModelGenerator extends JavaFileGenerator<ModelOptions> implements T
 
     private void addSubtypes(ModelInfo modelInfo) {
         if (modelInfo.schema instanceof ObjectSchema) {
-            if (!modelInfo.subTypes.isEmpty()) {
+            if (modelInfo.subTypes.isEmpty()) {
+                if (options.lombok) {
+                    modelInfo.typeSpec.addAnnotation(BUILDER);
+                }
+            } else {
                 ObjectSchema schema = (ObjectSchema) modelInfo.schema;
                 AnnotationSpec typeInfo = AnnotationSpec.builder(JsonTypeInfo.class)
                         .addMember("use", "$L", "JsonTypeInfo.Id.NAME")
@@ -81,9 +86,12 @@ public class ModelGenerator extends JavaFileGenerator<ModelOptions> implements T
 
                 modelInfo.typeSpec.addAnnotation(typeInfo);
                 modelInfo.typeSpec.addAnnotation(subTypesBuilder.build());
-            } else {
+
                 if (options.lombok) {
-                    modelInfo.typeSpec.addAnnotation(BUILDER);
+                    String schemaName = camelCase(javaIdentifier(schema.getName()));
+                    modelInfo.typeSpec.addAnnotation(AnnotationSpec.builder(BUILDER)
+                            .addMember("builderMethodName", "$S", schemaName + "Builder")
+                            .build());
                 }
             }
         }
