@@ -2,6 +2,7 @@ package org.swaggertools.core;
 
 import com.squareup.javapoet.JavaFile;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Test;
 import org.swaggertools.core.run.*;
 import org.swaggertools.core.source.ApiDefinitionSource;
@@ -12,6 +13,8 @@ import org.swaggertools.core.targets.server.ServerDialect;
 import org.swaggertools.core.targets.server.ServerGenerator;
 import org.swaggertools.core.util.StreamUtils;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -93,6 +96,8 @@ public class GeneratorsTest {
 
         ModelGenerator modelGenerator = createModelGenerator();
         modelGenerator.getOptions().setValidation(true);
+        modelGenerator.getOptions().setLombokUniqueBuilder(true);
+        modelGenerator.getOptions().setLombokSuperBuilder(true);
         processor.setTargets(Collections.singletonList(modelGenerator));
         processor.process();
         assertEquals(3, memoryWriter.files.size());
@@ -179,6 +184,10 @@ public class GeneratorsTest {
 
     @SneakyThrows
     private void verifyJavaFile(String path, String java) {
+//        String filePath = "swagger-tools-core/src/test/resources" + path + ".java";
+//        FileOutputStream out = new FileOutputStream(new File(filePath));
+//        out.write(java.getBytes());
+//        out.close();
         String expected = StreamUtils.copyToString(getClass().getResourceAsStream(path + ".java"));
         assertEquals(normalize(expected), normalize(java));
     }

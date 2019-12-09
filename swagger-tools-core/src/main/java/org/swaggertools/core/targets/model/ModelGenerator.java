@@ -38,6 +38,7 @@ public class ModelGenerator extends JavaFileGenerator<ModelOptions> implements T
     static final ClassName TO_STRING = ClassName.get("lombok", "ToString");
     static final ClassName EQUALS = ClassName.get("lombok", "EqualsAndHashCode");
     static final ClassName BUILDER = ClassName.get("lombok", "Builder");
+    static final ClassName SUPER_BUILDER = ClassName.get("lombok.experimental", "SuperBuilder");
     static final ClassName ALL_ARGS_CONSTRUCTOR = ClassName.get("lombok", "AllArgsConstructor");
     static final ClassName NO_ARGS_CONSTRUCTOR = ClassName.get("lombok", "NoArgsConstructor");
 
@@ -64,11 +65,7 @@ public class ModelGenerator extends JavaFileGenerator<ModelOptions> implements T
 
     private void addSubtypes(ModelInfo modelInfo) {
         if (modelInfo.schema instanceof ObjectSchema) {
-            if (modelInfo.subTypes.isEmpty()) {
-                if (options.lombok) {
-                    modelInfo.typeSpec.addAnnotation(BUILDER);
-                }
-            } else {
+            if (!modelInfo.subTypes.isEmpty()) {
                 ObjectSchema schema = (ObjectSchema) modelInfo.schema;
                 AnnotationSpec typeInfo = AnnotationSpec.builder(JsonTypeInfo.class)
                         .addMember("use", "$L", "JsonTypeInfo.Id.NAME")
@@ -86,13 +83,6 @@ public class ModelGenerator extends JavaFileGenerator<ModelOptions> implements T
 
                 modelInfo.typeSpec.addAnnotation(typeInfo);
                 modelInfo.typeSpec.addAnnotation(subTypesBuilder.build());
-
-                if (options.lombok) {
-                    String schemaName = camelCase(javaIdentifier(schema.getName()));
-                    modelInfo.typeSpec.addAnnotation(AnnotationSpec.builder(BUILDER)
-                            .addMember("builderMethodName", "$S", schemaName + "Builder")
-                            .build());
-                }
             }
         }
     }
@@ -134,13 +124,19 @@ public class ModelGenerator extends JavaFileGenerator<ModelOptions> implements T
             typeSpec.superclass(ParameterizedTypeName.get(HASH_MAP, STRING, valueType));
         }
         if (options.lombok) {
-            typeSpec.addAnnotation(TO_STRING).addAnnotation(EQUALS);
+            typeSpec.addAnnotation(TO_STRING).addAnnotation(EQUALS).addAnnotation(NO_ARGS_CONSTRUCTOR);
             if (schema.getProperties() != null) {
                 long propsCount = schema.getProperties().stream().filter(it -> !it.getName().equals(schema.getDiscriminator())).count();
                 if (propsCount > 0) {
-                    typeSpec.addAnnotation(ALL_ARGS_CONSTRUCTOR).addAnnotation(NO_ARGS_CONSTRUCTOR);
+                    typeSpec.addAnnotation(ALL_ARGS_CONSTRUCTOR);
                 }
             }
+            ClassName builderName = options.lombokSuperBuilder ? SUPER_BUILDER : BUILDER;
+            AnnotationSpec.Builder builder = AnnotationSpec.builder(builderName);
+            if (options.lombokUniqueBuilder) {
+                builder.addMember("builderMethodName", "$S", camelCase(schemaName) + "Builder");
+            }
+            typeSpec.addAnnotation(builder.build());
         }
         addProperties(typeSpec, schema);
         return typeSpec;

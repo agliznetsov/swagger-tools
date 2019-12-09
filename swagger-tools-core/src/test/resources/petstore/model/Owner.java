@@ -10,8 +10,8 @@ import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Owner {
     @JsonProperty("name")

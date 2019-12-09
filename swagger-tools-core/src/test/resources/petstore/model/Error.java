@@ -14,8 +14,8 @@ import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Error extends HashMap<String, String> {
     @JsonProperty("_type")

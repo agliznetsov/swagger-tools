@@ -12,16 +12,18 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 @ToString
 @EqualsAndHashCode
-@AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@AllArgsConstructor
+@SuperBuilder(
+        builderMethodName = "orderBuilder"
+)
 public class Order {
     @JsonProperty("id")
     @NotNull

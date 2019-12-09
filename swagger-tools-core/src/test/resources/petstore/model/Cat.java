@@ -9,8 +9,8 @@ import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Cat extends Pet {
     @JsonProperty("huntingSkill")

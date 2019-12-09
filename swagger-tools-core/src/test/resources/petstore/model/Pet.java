@@ -19,8 +19,9 @@ import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         property = "_type",
@@ -30,9 +31,6 @@ import lombok.ToString;
         @JsonSubTypes.Type(value = Cat.class, name = "Cat"),
         @JsonSubTypes.Type(value = Dog.class, name = "Dog")
 })
-@Builder(
-        builderMethodName = "petBuilder"
-)
 public class Pet {
     @JsonProperty("id")
     private Long id = 0L;
