@@ -130,7 +130,7 @@ public class OpenApiMapper {
                         res.setName("requestBody");
                     }
                     res.setKind(ParameterKind.BODY);
-                    res.setRequired(true);
+                    res.setRequired(requestBody.getRequired() == null ? true : requestBody.getRequired());
                     res.setSchema(mapSchema(null, mediaType.getSchema()));
                     return res;
                 }

@@ -54,7 +54,7 @@ public class SpringBuilder extends ServerBuilder {
         super.annotateParameter(paramBuilder, parameter);
         AnnotationSpec.Builder anno;
         if (parameter.getKind() == ParameterKind.BODY) {
-            anno = AnnotationSpec.builder(REQUEST_BODY);
+            anno = AnnotationSpec.builder(REQUEST_BODY).addMember("required", "$L", parameter.isRequired());
         } else {
             ClassName inType = parameter.getKind() == ParameterKind.PATH ? PATH_VARIABLE : REQUEST_PARAM;
             anno = AnnotationSpec.builder(inType)

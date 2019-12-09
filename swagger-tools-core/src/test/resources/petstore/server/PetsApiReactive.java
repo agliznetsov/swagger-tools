@@ -32,7 +32,7 @@ public interface PetsApi {
 
     @PostMapping("/pets")
     @ResponseStatus(HttpStatus.CREATED)
-    Mono<Pet> createPet(@RequestBody Pet pet);
+    Mono<Pet> createPet(@RequestBody(required = true) Pet pet);
 
     @GetMapping("/pets/{petId}")
     Mono<Pet> getPetById(@PathVariable(name = "petId", required = true) Long petId,
@@ -41,7 +41,7 @@ public interface PetsApi {
     @PutMapping("/pets/{petId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     Mono<Void> updatePet(@PathVariable(name = "petId", required = true) Long petId,
-            @RequestBody Pet requestBody);
+            @RequestBody(required = true) Pet requestBody);
 
     @DeleteMapping("/pets/{petId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -49,7 +49,7 @@ public interface PetsApi {
 
     @PutMapping("/pets-ref/{petId}")
     Mono<Pet> updatePetRefById(@PathVariable(name = "petId", required = true) Long petId,
-            @RequestBody Pet requestBody);
+            @RequestBody(required = true) Pet requestBody);
 
     @GetMapping(
             value = "/pets/{petId}/body",

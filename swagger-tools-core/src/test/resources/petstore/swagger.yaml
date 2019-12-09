@@ -48,6 +48,7 @@ paths:
       parameters:
         - name: pet
           in: body
+          required: true
           schema:
             $ref: '#/definitions/Pet-'
       responses:
@@ -94,6 +95,7 @@ paths:
           format: int64
         - name: requestBody
           in: body
+          required: true
           schema:
             $ref: '#/definitions/Pet-'
       responses:
@@ -212,6 +214,7 @@ parameters:
   Pet:
     name: requestBody
     in: body
+    required: true
     schema:
       $ref: '#/definitions/Pet-'
 

@@ -29,7 +29,7 @@ public interface PetsApi {
 
     @PostMapping("/pets")
     @ResponseStatus(HttpStatus.CREATED)
-    Pet createPet(@RequestBody Pet pet);
+    Pet createPet(@RequestBody(required = true) Pet pet);
 
     @GetMapping("/pets/{petId}")
     Pet getPetById(@PathVariable(name = "petId", required = true) Long petId,
@@ -38,7 +38,7 @@ public interface PetsApi {
     @PutMapping("/pets/{petId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void updatePet(@PathVariable(name = "petId", required = true) Long petId,
-            @RequestBody Pet requestBody);
+            @RequestBody(required = true) Pet requestBody);
 
     @DeleteMapping("/pets/{petId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -46,7 +46,7 @@ public interface PetsApi {
 
     @PutMapping("/pets-ref/{petId}")
     Pet updatePetRefById(@PathVariable(name = "petId", required = true) Long petId,
-            @RequestBody Pet requestBody);
+            @RequestBody(required = true) Pet requestBody);
 
     @GetMapping(
             value = "/pets/{petId}/body",

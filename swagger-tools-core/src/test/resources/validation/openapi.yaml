@@ -12,6 +12,7 @@ paths:
       tags:
         - orders
       requestBody:
+        required: false
         content:
           application/json:
             schema:

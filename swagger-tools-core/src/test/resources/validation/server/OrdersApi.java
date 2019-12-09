@@ -14,5 +14,5 @@ import org.springframework.web.bind.annotation.RestController;
 public interface OrdersApi {
     @PostMapping("/orders")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void createOrder(@Valid @RequestBody Order requestBody);
+    void createOrder(@Valid @RequestBody(required = false) Order requestBody);
 }
