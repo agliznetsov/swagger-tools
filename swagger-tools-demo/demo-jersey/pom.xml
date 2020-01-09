@@ -3,17 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>com.github.agliznetsov.swagger-tools</groupId>
     <artifactId>demo-jersey</artifactId>
-    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.0.2.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <artifactId>swagger-tools-demo</artifactId>
+        <groupId>com.github.agliznetsov.swagger-tools</groupId>
+        <version>0.5.4</version>
     </parent>
 
     <properties>
@@ -24,21 +20,31 @@
         <slf4jVersion>1.7.25</slf4jVersion>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- Import dependency management from Spring Boot -->
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>2.2.2.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${slf4jVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>${slf4jVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-            <version>${slf4jVersion}</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -77,7 +83,7 @@
             <plugin>
                 <groupId>com.github.agliznetsov.swagger-tools</groupId>
                 <artifactId>swagger-tools-maven-plugin</artifactId>
-                <version>0.4.2</version>
+                <version>${project.version}</version>
                 <executions>
                     <execution>
                         <id>petstore</id>
@@ -105,13 +111,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>org.swaggertools.demo.App</mainClass>
-                </configuration>
             </plugin>
         </plugins>
     </build>

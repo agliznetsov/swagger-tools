@@ -187,6 +187,7 @@
         <module>swagger-tools-core</module>
         <module>swagger-tools-cli</module>
         <module>swagger-tools-maven-plugin</module>
+        <module>swagger-tools-demo</module>
     </modules>
 
 </project>
