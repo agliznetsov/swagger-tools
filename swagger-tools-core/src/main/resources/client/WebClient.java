@@ -1,14 +1,21 @@
 package {{package}};
 
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MimeType;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClient.RequestBodySpec;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+
 import reactor.core.publisher.Mono;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -103,18 +110,17 @@ public abstract class BaseClient {
     }
 
     protected Mono<ClientResponse> invokeAPI(String path, String method, Map<String, String> urlVariables, MultiValueMap<String, String> queryParams, Object body) {
-        WebClient.RequestBodySpec request1 = webClient
+        WebClient.RequestBodySpec request = webClient
                 .method(HttpMethod.resolve(method))
                 .uri(builder -> builder
                         .path(basePath + path)
                         .queryParams(queryParams)
                         .build(urlVariables)
                 );
-        customizeRequest(request1);
+        customizeRequest(request);
         if (body != null) {
-            request1.syncBody(body);
+            request.syncBody(body);
         }
-        WebClient.RequestBodySpec request = request1;
         return request.exchange();
     }
 
@@ -125,5 +131,37 @@ public abstract class BaseClient {
         if (requestCustomizer != null) {
             requestCustomizer.accept(request);
         }
+    }
+
+    protected  <R> Mono<? extends R> mapResponse(ClientResponse clientResponse, ParameterizedTypeReference<R> typeRef) {
+        if (clientResponse.statusCode().isError()) {
+            return createResponseException(clientResponse);
+        } else {
+            return clientResponse.bodyToMono(typeRef);
+        }
+    }
+
+    protected Mono createResponseException(ClientResponse response) {
+        return DataBufferUtils.join(response.body(BodyExtractors.toDataBuffers()))
+                .map(dataBuffer -> {
+                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                    dataBuffer.read(bytes);
+                    DataBufferUtils.release(dataBuffer);
+                    return bytes;
+                })
+                .defaultIfEmpty(new byte[0])
+                .flatMap(bodyBytes -> {
+                    String msg = String.format("ClientResponse has erroneous status code: %d %s", response.statusCode().value(),
+                            response.statusCode().getReasonPhrase());
+                    Charset charset = response.headers().contentType()
+                            .map(MimeType::getCharset)
+                            .orElse(StandardCharsets.ISO_8859_1);
+                    return Mono.error(new WebClientResponseException(msg,
+                            response.statusCode().value(),
+                            response.statusCode().getReasonPhrase(),
+                            response.headers().asHttpHeaders(),
+                            bodyBytes,
+                            charset));
+                });
     }
 }

@@ -43,7 +43,7 @@
             <plugin>
                 <groupId>com.github.agliznetsov.swagger-tools</groupId>
                 <artifactId>swagger-tools-maven-plugin</artifactId>
-                <version>0.4.2</version>
+                <version>0.5.4</version>
                 <executions>
                     <execution>
                         <id>petstore</id>
@@ -56,7 +56,7 @@
 
                                 <target.model.location>${project.build.directory}/generated-sources/swagger</target.model.location>
                                 <target.model.model-package>org.swaggertools.demo.model</target.model.model-package>
-                                <target.model.lombok>true</target.model.lombok>
+                                <target.model.lombok>false</target.model.lombok>
                                 <target.model.validation>true</target.model.validation>
 
                                 <target.server.location>${project.build.directory}/generated-sources/swagger</target.server.location>

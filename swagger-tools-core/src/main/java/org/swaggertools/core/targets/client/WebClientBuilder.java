@@ -73,7 +73,7 @@ public class WebClientBuilder extends ClientBuilder {
             format += ".flatMapMany(e -> e.bodyToFlux(typeRef))";
         } else {
             if (!operation.isResponseEntity()) {
-                format += ".flatMap(e -> e.bodyToMono(typeRef))";
+                format += ".flatMap(e -> mapResponse(e, typeRef))";
             }
         }
         args.add(operation.getPath());
