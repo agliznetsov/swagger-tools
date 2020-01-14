@@ -33,9 +33,13 @@ public class PetsController implements PetsApi {
 
     @Override
     public Mono<Pet> createPet(@RequestBody Pet requestBody) {
+        savePet(requestBody);
+        return Mono.just(requestBody);
+    }
+
+    private void savePet(@RequestBody Pet requestBody) {
         requestBody.setId(++counter);
         pets.put(requestBody.getId(), requestBody);
-        return Mono.just(requestBody);
     }
 
     @Override
@@ -54,6 +58,12 @@ public class PetsController implements PetsApi {
         getPet(petId);
         pets.remove(petId);
         return Mono.empty();
+    }
+
+    @Override
+    public Mono<List<Pet>> createPets(List<Pet> requestBody) {
+        requestBody.forEach(this::savePet);
+        return Mono.just(requestBody);
     }
 
     @Override

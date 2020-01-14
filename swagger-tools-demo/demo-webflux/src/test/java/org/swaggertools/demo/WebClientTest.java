@@ -16,6 +16,7 @@ import org.swaggertools.demo.model.Pet;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -38,7 +39,7 @@ public class WebClientTest {
     public void setUp() {
         String port = this.applicationContext.getEnvironment().getProperty("local.server.port", "8080");
         String baseUrl = "http://localhost:" + port;
-        petsClient = new PetsClient(WebClient.builder().baseUrl(baseUrl).build(), "/v1");
+        petsClient = new PetsClient(WebClient.builder().baseUrl(baseUrl).build(), "/");
 
     }
 
@@ -46,6 +47,13 @@ public class WebClientTest {
     public void create() {
         Long id = postPet();
         assertNotNull(id);
+    }
+
+    @Test
+    public void createBulk() {
+        List<Pet> request = Arrays.asList(createPet(), createPet());
+        List<Pet> response = petsClient.createPets(request).block();
+        assertEquals(request.size(), response.size());
     }
 
     @Test

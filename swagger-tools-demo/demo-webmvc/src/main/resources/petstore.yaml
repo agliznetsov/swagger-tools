@@ -129,6 +129,30 @@ paths:
           description: Deleted
           content: {}
 
+  /pets/bulk:
+    post:
+      tags:
+        - pets
+      summary: Create multiple pets
+      operationId: createPets
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Pet'
+        required: true
+      responses:
+        200:
+          description: An array of pets
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pet'
+
   '/pets/{petId}/events':
     get:
       tags:

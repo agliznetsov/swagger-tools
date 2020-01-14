@@ -109,7 +109,9 @@ public abstract class BaseClient {
         return parameters;
     }
 
-    protected Mono<ClientResponse> invokeAPI(String path, String method, Map<String, String> urlVariables, MultiValueMap<String, String> queryParams, Object body) {
+    protected Mono<ClientResponse> invokeAPI(String path, String method, Map<String, String> urlVariables,
+                                             MultiValueMap<String, String> queryParams, Object body,
+                                             ParameterizedTypeReference requestTypeRef) {
         WebClient.RequestBodySpec request = webClient
                 .method(HttpMethod.resolve(method))
                 .uri(builder -> builder
@@ -119,7 +121,7 @@ public abstract class BaseClient {
                 );
         customizeRequest(request);
         if (body != null) {
-            request.syncBody(body);
+            request.body(Mono.just(body), requestTypeRef);
         }
         return request.exchange();
     }

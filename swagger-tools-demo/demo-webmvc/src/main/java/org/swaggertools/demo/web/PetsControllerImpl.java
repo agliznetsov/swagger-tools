@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.swaggertools.demo.model.Pet;
 
+import javax.validation.Valid;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
@@ -29,9 +30,13 @@ public class PetsControllerImpl implements PetsApi {
 
     @Override
     public Pet createPet(Pet requestBody) {
+        savePet(requestBody);
+        return requestBody;
+    }
+
+    private void savePet(Pet requestBody) {
         requestBody.setId(++counter);
         pets.put(requestBody.getId(), requestBody);
-        return requestBody;
     }
 
     @Override
@@ -48,6 +53,12 @@ public class PetsControllerImpl implements PetsApi {
     public void deletePetById(Long petId) {
         getPet(petId);
         pets.remove(petId);
+    }
+
+    @Override
+    public List<Pet> createPets(@Valid List<Pet> requestBody) {
+        requestBody.forEach(this::savePet);
+        return requestBody;
     }
 
     @Override

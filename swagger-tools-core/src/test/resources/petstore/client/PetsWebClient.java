@@ -29,52 +29,55 @@ public class PetsWebClient extends BaseClient {
     }
 
     public Mono<List<Pet>> listPets(Integer limit, Integer offsetValue) {
-        ParameterizedTypeReference<List<Pet>> typeRef = new ParameterizedTypeReference<List<Pet>>(){};
-        return invokeAPI("/pets", "GET", createUrlVariables(), createQueryParameters("limit", limit, "Offset-Value", offsetValue), null).flatMap(e -> mapResponse(e, typeRef));
+        ParameterizedTypeReference<List<Pet>> responseType = new ParameterizedTypeReference<List<Pet>>(){};
+        return invokeAPI("/pets", "GET", createUrlVariables(), createQueryParameters("limit", limit, "Offset-Value", offsetValue), null, null).flatMap(e -> mapResponse(e, responseType));
     }
 
     public Mono<Pet> createPet(Pet pet) {
-        ParameterizedTypeReference<Pet> typeRef = new ParameterizedTypeReference<Pet>(){};
-        return invokeAPI("/pets", "POST", createUrlVariables(), createQueryParameters(), pet).flatMap(e -> mapResponse(e, typeRef));
+        ParameterizedTypeReference<Pet> requestType = new ParameterizedTypeReference<Pet>(){};
+        ParameterizedTypeReference<Pet> responseType = new ParameterizedTypeReference<Pet>(){};
+        return invokeAPI("/pets", "POST", createUrlVariables(), createQueryParameters(), pet, requestType).flatMap(e -> mapResponse(e, responseType));
     }
 
     public Mono<Pet> getPetById(Long petId, Boolean details) {
-        ParameterizedTypeReference<Pet> typeRef = new ParameterizedTypeReference<Pet>(){};
-        return invokeAPI("/pets/{petId}", "GET", createUrlVariables("petId", petId), createQueryParameters("details", details), null).flatMap(e -> mapResponse(e, typeRef));
+        ParameterizedTypeReference<Pet> responseType = new ParameterizedTypeReference<Pet>(){};
+        return invokeAPI("/pets/{petId}", "GET", createUrlVariables("petId", petId), createQueryParameters("details", details), null, null).flatMap(e -> mapResponse(e, responseType));
     }
 
     public Mono<Void> updatePet(Long petId, Pet requestBody) {
-        ParameterizedTypeReference typeRef = VOID;
-        return invokeAPI("/pets/{petId}", "PUT", createUrlVariables("petId", petId), createQueryParameters(), requestBody).flatMap(e -> mapResponse(e, typeRef));
+        ParameterizedTypeReference<Pet> requestType = new ParameterizedTypeReference<Pet>(){};
+        ParameterizedTypeReference responseType = VOID;
+        return invokeAPI("/pets/{petId}", "PUT", createUrlVariables("petId", petId), createQueryParameters(), requestBody, requestType).flatMap(e -> mapResponse(e, responseType));
     }
 
     public Mono<Void> deletePetById(Long petId) {
-        ParameterizedTypeReference typeRef = VOID;
-        return invokeAPI("/pets/{petId}", "DELETE", createUrlVariables("petId", petId), createQueryParameters(), null).flatMap(e -> mapResponse(e, typeRef));
+        ParameterizedTypeReference responseType = VOID;
+        return invokeAPI("/pets/{petId}", "DELETE", createUrlVariables("petId", petId), createQueryParameters(), null, null).flatMap(e -> mapResponse(e, responseType));
     }
 
     public Mono<Pet> updatePetRefById(Long petId, Pet requestBody) {
-        ParameterizedTypeReference<Pet> typeRef = new ParameterizedTypeReference<Pet>(){};
-        return invokeAPI("/pets-ref/{petId}", "PUT", createUrlVariables("petId", petId), createQueryParameters(), requestBody).flatMap(e -> mapResponse(e, typeRef));
+        ParameterizedTypeReference<Pet> requestType = new ParameterizedTypeReference<Pet>(){};
+        ParameterizedTypeReference<Pet> responseType = new ParameterizedTypeReference<Pet>(){};
+        return invokeAPI("/pets-ref/{petId}", "PUT", createUrlVariables("petId", petId), createQueryParameters(), requestBody, requestType).flatMap(e -> mapResponse(e, responseType));
     }
 
     public Mono<String> getPetBody(Long petId) {
-        ParameterizedTypeReference<String> typeRef = new ParameterizedTypeReference<String>(){};
-        return invokeAPI("/pets/{petId}/body", "GET", createUrlVariables("petId", petId), createQueryParameters(), null).flatMap(e -> mapResponse(e, typeRef));
+        ParameterizedTypeReference<String> responseType = new ParameterizedTypeReference<String>(){};
+        return invokeAPI("/pets/{petId}/body", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, null).flatMap(e -> mapResponse(e, responseType));
     }
 
     public Mono<byte[]> getPetThumbnail(Long petId) {
-        ParameterizedTypeReference<byte[]> typeRef = new ParameterizedTypeReference<byte[]>(){};
-        return invokeAPI("/pets/{petId}/thumbnail", "GET", createUrlVariables("petId", petId), createQueryParameters(), null).flatMap(e -> mapResponse(e, typeRef));
+        ParameterizedTypeReference<byte[]> responseType = new ParameterizedTypeReference<byte[]>(){};
+        return invokeAPI("/pets/{petId}/thumbnail", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, null).flatMap(e -> mapResponse(e, responseType));
     }
 
     public Flux<ServerSentEvent> getPetEvents(Long petId) {
-        ParameterizedTypeReference<ServerSentEvent> typeRef = new ParameterizedTypeReference<ServerSentEvent>(){};
-        return invokeAPI("/pets/{petId}/events", "GET", createUrlVariables("petId", petId), createQueryParameters(), null).flatMapMany(e -> e.bodyToFlux(typeRef));
+        ParameterizedTypeReference<ServerSentEvent> responseType = new ParameterizedTypeReference<ServerSentEvent>(){};
+        return invokeAPI("/pets/{petId}/events", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, null).flatMapMany(e -> e.bodyToFlux(responseType));
     }
 
     public Mono<ClientResponse> getPetDetails(Long petId) {
-        ParameterizedTypeReference<Pet> typeRef = new ParameterizedTypeReference<Pet>(){};
-        return invokeAPI("/pets/{petId}/details", "GET", createUrlVariables("petId", petId), createQueryParameters(), null);
+        ParameterizedTypeReference<Pet> responseType = new ParameterizedTypeReference<Pet>(){};
+        return invokeAPI("/pets/{petId}/details", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, null);
     }
 }

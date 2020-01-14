@@ -27,48 +27,51 @@ public class PetsClient extends BaseClient {
     }
 
     public List<Pet> listPets(Integer limit, Integer offsetValue) {
-        ParameterizedTypeReference<List<Pet>> typeRef = new ParameterizedTypeReference<List<Pet>>(){};
-        ResponseEntity<List<Pet>> response = invokeAPI("/pets", "GET", createUrlVariables(), createQueryParameters("limit", limit, "Offset-Value", offsetValue), null, typeRef);
+        ParameterizedTypeReference<List<Pet>> responseType = new ParameterizedTypeReference<List<Pet>>(){};
+        ResponseEntity<List<Pet>> response = invokeAPI("/pets", "GET", createUrlVariables(), createQueryParameters("limit", limit, "Offset-Value", offsetValue), null, null, responseType);
         return response.getBody();
     }
 
     public Pet createPet(Pet pet) {
-        ParameterizedTypeReference<Pet> typeRef = new ParameterizedTypeReference<Pet>(){};
-        ResponseEntity<Pet> response = invokeAPI("/pets", "POST", createUrlVariables(), createQueryParameters(), pet, typeRef);
+        ParameterizedTypeReference<Pet> requestType = new ParameterizedTypeReference<Pet>(){};
+        ParameterizedTypeReference<Pet> responseType = new ParameterizedTypeReference<Pet>(){};
+        ResponseEntity<Pet> response = invokeAPI("/pets", "POST", createUrlVariables(), createQueryParameters(), pet, requestType, responseType);
         return response.getBody();
     }
 
     public Pet getPetById(Long petId, Boolean details) {
-        ParameterizedTypeReference<Pet> typeRef = new ParameterizedTypeReference<Pet>(){};
-        ResponseEntity<Pet> response = invokeAPI("/pets/{petId}", "GET", createUrlVariables("petId", petId), createQueryParameters("details", details), null, typeRef);
+        ParameterizedTypeReference<Pet> responseType = new ParameterizedTypeReference<Pet>(){};
+        ResponseEntity<Pet> response = invokeAPI("/pets/{petId}", "GET", createUrlVariables("petId", petId), createQueryParameters("details", details), null, null, responseType);
         return response.getBody();
     }
 
     public void updatePet(Long petId, Pet requestBody) {
-        ParameterizedTypeReference typeRef = VOID;
-        invokeAPI("/pets/{petId}", "PUT", createUrlVariables("petId", petId), createQueryParameters(), requestBody, typeRef);
+        ParameterizedTypeReference<Pet> requestType = new ParameterizedTypeReference<Pet>(){};
+        ParameterizedTypeReference responseType = VOID;
+        invokeAPI("/pets/{petId}", "PUT", createUrlVariables("petId", petId), createQueryParameters(), requestBody, requestType, responseType);
     }
 
     public void deletePetById(Long petId) {
-        ParameterizedTypeReference typeRef = VOID;
-        invokeAPI("/pets/{petId}", "DELETE", createUrlVariables("petId", petId), createQueryParameters(), null, typeRef);
+        ParameterizedTypeReference responseType = VOID;
+        invokeAPI("/pets/{petId}", "DELETE", createUrlVariables("petId", petId), createQueryParameters(), null, null, responseType);
     }
 
     public Pet updatePetRefById(Long petId, Pet requestBody) {
-        ParameterizedTypeReference<Pet> typeRef = new ParameterizedTypeReference<Pet>(){};
-        ResponseEntity<Pet> response = invokeAPI("/pets-ref/{petId}", "PUT", createUrlVariables("petId", petId), createQueryParameters(), requestBody, typeRef);
+        ParameterizedTypeReference<Pet> requestType = new ParameterizedTypeReference<Pet>(){};
+        ParameterizedTypeReference<Pet> responseType = new ParameterizedTypeReference<Pet>(){};
+        ResponseEntity<Pet> response = invokeAPI("/pets-ref/{petId}", "PUT", createUrlVariables("petId", petId), createQueryParameters(), requestBody, requestType, responseType);
         return response.getBody();
     }
 
     public String getPetBody(Long petId) {
-        ParameterizedTypeReference<String> typeRef = new ParameterizedTypeReference<String>(){};
-        ResponseEntity<String> response = invokeAPI("/pets/{petId}/body", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, typeRef);
+        ParameterizedTypeReference<String> responseType = new ParameterizedTypeReference<String>(){};
+        ResponseEntity<String> response = invokeAPI("/pets/{petId}/body", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, null, responseType);
         return response.getBody();
     }
 
     public byte[] getPetThumbnail(Long petId) {
-        ParameterizedTypeReference<byte[]> typeRef = new ParameterizedTypeReference<byte[]>(){};
-        ResponseEntity<byte[]> response = invokeAPI("/pets/{petId}/thumbnail", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, typeRef);
+        ParameterizedTypeReference<byte[]> responseType = new ParameterizedTypeReference<byte[]>(){};
+        ResponseEntity<byte[]> response = invokeAPI("/pets/{petId}/thumbnail", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, null, responseType);
         return response.getBody();
     }
 
@@ -77,8 +80,8 @@ public class PetsClient extends BaseClient {
     }
 
     public ResponseEntity<Pet> getPetDetails(Long petId) {
-        ParameterizedTypeReference<Pet> typeRef = new ParameterizedTypeReference<Pet>(){};
-        ResponseEntity<Pet> response = invokeAPI("/pets/{petId}/details", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, typeRef);
+        ParameterizedTypeReference<Pet> responseType = new ParameterizedTypeReference<Pet>(){};
+        ResponseEntity<Pet> response = invokeAPI("/pets/{petId}/details", "GET", createUrlVariables("petId", petId), createQueryParameters(), null, null, responseType);
         return response;
     }
 }

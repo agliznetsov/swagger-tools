@@ -18,6 +18,7 @@ import org.swaggertools.demo.model.Pet;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -43,6 +44,13 @@ public class PetsApiTest {
     public void create() {
         Long id = postPet();
         assertNotNull(id);
+    }
+
+    @Test
+    public void createBulk() {
+        List<Pet> request = Arrays.asList(createPet(), createPet());
+        List<Pet> response = template.pets().createPets(request);
+        assertEquals(request.size(), response.size());
     }
 
     @Test(expected = HttpClientErrorException.class)
