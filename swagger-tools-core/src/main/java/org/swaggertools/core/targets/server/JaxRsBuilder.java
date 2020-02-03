@@ -22,6 +22,7 @@ public class JaxRsBuilder extends ServerBuilder {
     private static final ClassName CONSUMES = ClassName.get(JAX_RS, "Consumes");
     private static final ClassName PRODUCES = ClassName.get(JAX_RS, "Produces");
     private static final ClassName REQUEST_PARAM = ClassName.get(JAX_RS, "QueryParam");
+    private static final ClassName HEADER_PARAM = ClassName.get(JAX_RS, "HeaderParam");
     private static final ClassName PATH_VARIABLE = ClassName.get(JAX_RS, "PathParam");
     private static final ClassName CONTEXT = ClassName.get(JAX_RS_CORE, "Context");
     private static final ClassName SSE_EVENT_SINK = ClassName.get(JAX_SSE, "SseEventSink");
@@ -62,10 +63,22 @@ public class JaxRsBuilder extends ServerBuilder {
     protected void annotateParameter(ParameterSpec.Builder paramBuilder, Parameter parameter) {
         super.annotateParameter(paramBuilder, parameter);
         if (parameter.getKind() != ParameterKind.BODY) {
-            ClassName inType = parameter.getKind() == ParameterKind.PATH ? PATH_VARIABLE : REQUEST_PARAM;
+            ClassName inType = getParameterAnnotationClass(parameter.getKind());
             AnnotationSpec.Builder anno = AnnotationSpec.builder(inType)
                     .addMember("value", "$S", parameter.getName());
             paramBuilder.addAnnotation(anno.build());
+        }
+    }
+
+    private ClassName getParameterAnnotationClass(ParameterKind kind) {
+        if (kind ==  ParameterKind.PATH) {
+            return PATH_VARIABLE;
+        } else if (kind == ParameterKind.QUERY) {
+            return REQUEST_PARAM;
+        } else if (kind == ParameterKind.HEADER) {
+            return HEADER_PARAM;
+        } else {
+            throw new IllegalArgumentException("Unknown parameter kind: " + kind);
         }
     }
 

@@ -109,10 +109,20 @@ public class OpenApiMapper {
         }
         Parameter res = new Parameter();
         res.setName(parameter.getName());
-        res.setKind("path".equals(parameter.getIn()) ? ParameterKind.PATH : ParameterKind.QUERY);
+        res.setKind(getParameterKind(parameter.getIn()));
         res.setRequired(parameter.getRequired() == null ? false : parameter.getRequired());
         res.setSchema(mapSchema(null, parameter.getSchema()));
         return res;
+    }
+
+    private ParameterKind getParameterKind(String in) {
+        if ("path".equals(in)) {
+            return ParameterKind.PATH;
+        } else if ("header".equals(in)) {
+            return ParameterKind.HEADER;
+        } else {
+            return ParameterKind.QUERY;
+        }
     }
 
     private Parameter mapRequestBody(RequestBody requestBody) {

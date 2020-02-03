@@ -71,6 +71,9 @@ public abstract class BaseClient {
     }
 
     protected Map<String, Collection<String>> createQueryParameters(Object... keyValues) {
+        if (keyValues.length == 0) {
+            return EMPTY_MAP;
+        }
         Map<String, Collection<String>> parameters = new HashMap<>();
         for (int i = 0; i < keyValues.length; i += 2) {
             Object key = keyValues[i];
@@ -98,10 +101,21 @@ public abstract class BaseClient {
         return parameters;
     }
 
-    protected <T> T invokeAPI(String path, String method, Map<String, String> urlVariables, Map<String, Collection<String>> queryParams, Object body, TypeReference<T> returnType) {
+    protected <T> T invokeAPI(String path,
+                              String method,
+                              Map<String, String> urlVariables,
+                              Map<String, Collection<String>> queryParams,
+                              Map<String, Collection<String>> headerParams,
+                              Object body,
+                              TypeReference<T> returnType) {
         URI uri = buildUri(path, urlVariables, queryParams);
         RequestBuilder requestBuilder = RequestBuilder.create(method);
         requestBuilder.setUri(uri);
+        for (Map.Entry<String,Collection<String>> e : headerParams.entrySet()) {
+            for (String v : e.getValue()) {
+                requestBuilder.addHeader(e.getKey(), v);
+            }
+        }
         customizeRequest(requestBuilder);
         if (body != null) {
             setBody(requestBuilder, body);

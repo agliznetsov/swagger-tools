@@ -59,16 +59,17 @@ public class WebClientTest {
     @Test
     public void getOne() {
         Long id = postPet();
-        Cat cat = (Cat) petsClient.getPetById(id, true).block();
+        Cat cat = (Cat) petsClient.getPetById(id, true, "123").block();
         assertNotNull(cat);
         assertEquals("cat", cat.getName());
         assertEquals(100, cat.getThumbnail().length);
+        assertEquals("123", cat.getUserId());
     }
 
     @Test
     public void getOneWrongId() {
         try {
-            petsClient.getPetById(666L, false).block();
+            petsClient.getPetById(666L, false, null).block();
             fail("Exception expected");
         } catch (WebClientResponseException e) {
             assertEquals(500, e.getStatusCode().value());
@@ -78,10 +79,10 @@ public class WebClientTest {
     @Test
     public void update() {
         Long id = postPet();
-        Pet pet = petsClient.getPetById(id, true).block();
+        Pet pet = petsClient.getPetById(id, true, null).block();
         pet.setName("new name");
         petsClient.updatePet(id, pet).block();
-        pet = petsClient.getPetById(id, true).block();
+        pet = petsClient.getPetById(id, true, null).block();
         assertEquals("new name", pet.getName());
     }
 
@@ -104,7 +105,7 @@ public class WebClientTest {
 
     @Test
     public void events() throws Exception {
-        Flux<ServerSentEvent> stream = petsClient.getPetEvents(1L);
+        Flux<ServerSentEvent> stream = petsClient.getPetEvents(1L, null);
         List<String> events = new ArrayList<>();
         Disposable disposable = stream.subscribe(e -> {
             events.add(e.data().toString());

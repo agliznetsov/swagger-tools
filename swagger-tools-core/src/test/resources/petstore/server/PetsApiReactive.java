@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -67,7 +68,8 @@ public interface PetsApi {
             value = "/pets/{petId}/events",
             produces = "text/event-stream"
     )
-    Flux<ServerSentEvent> getPetEvents(@PathVariable(name = "petId", required = true) Long petId);
+    Flux<ServerSentEvent> getPetEvents(@PathVariable(name = "petId", required = true) Long petId,
+            @RequestHeader(name = "Last-Event-Id", required = false) String lastEventId);
 
     @GetMapping("/pets/{petId}/details")
     Mono<ResponseEntity<Pet>> getPetDetails(

@@ -68,11 +68,12 @@ public class HttpClientBuilder extends ClientBuilder {
     private void invokeApi(MethodSpec.Builder builder, Operation operation) {
         List<Object> args = new LinkedList<>();
         String ret = operation.getResponseSchema() != null ? "return " : "";
-        String format = ret + "invokeAPI($S, $S, $L, $L, $L, typeRef)";
+        String format = ret + "invokeAPI($S, $S, $L, $L, $L, $L, typeRef)";
         args.add(operation.getPath());
         args.add(operation.getMethod().name());
         args.add(createUrlVariables(operation));
         args.add(createQueryParameters(operation));
+        args.add(createHeaderParameters(operation));
         Optional<Parameter> body = operation.getParameters().stream().filter(it -> it.getKind() == ParameterKind.BODY).findFirst();
         args.add(body.isPresent() ? body.get().getName() : "null");
         builder.addStatement(format, args.toArray());

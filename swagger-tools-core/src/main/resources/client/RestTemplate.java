@@ -1,6 +1,7 @@
 package {{package}};
 
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -102,8 +103,12 @@ public abstract class BaseClient {
         return parameters;
     }
 
-    protected <T, U> ResponseEntity<T> invokeAPI(String path, String method, Map<String, String> urlVariables,
-                                                 MultiValueMap<String, String> queryParams, U body,
+    protected <T, U> ResponseEntity<T> invokeAPI(String path,
+                                                 String method,
+                                                 Map<String, String> urlVariables,
+                                                 MultiValueMap<String, String> queryParams,
+                                                 MultiValueMap<String, String> headerParams,
+                                                 U body,
                                                  ParameterizedTypeReference<U> requestType,
                                                  ParameterizedTypeReference<T> responseType) {
         URI baseUrl = restTemplate.getUriTemplateHandler().expand(basePath);
@@ -114,12 +119,19 @@ public abstract class BaseClient {
                 .buildAndExpand(urlVariables)
                 .toUri();
         RequestEntity.BodyBuilder requestBuilder = RequestEntity.method(HttpMethod.resolve(method), uri);
+        headerParams.forEach((k,v) -> requestBuilder.header(k, v.toArray(new String[0])));
         customizeRequest(requestBuilder);
         RequestEntity<U> requestEntity = requestBuilder.body(body, requestType == null ? null : requestType.getType());
         return restTemplate.exchange(requestEntity, responseType);
     }
 
-    protected <T> T executeAPI(String path, String method, Map<String, String> urlVariables, MultiValueMap<String, String> queryParams, RequestCallback requestCallback, ResponseExtractor<T> responseExtractor) {
+    protected <T> T executeAPI(String path,
+                               String method,
+                               Map<String, String> urlVariables,
+                               MultiValueMap<String, String> queryParams,
+                               MultiValueMap<String, String> headerParams,
+                               RequestCallback requestCallback,
+                               ResponseExtractor<T> responseExtractor) {
         URI baseUrl = restTemplate.getUriTemplateHandler().expand(basePath);
         URI uri = UriComponentsBuilder
                 .fromUri(baseUrl)
@@ -128,6 +140,7 @@ public abstract class BaseClient {
                 .buildAndExpand(urlVariables)
                 .toUri();
         RequestEntity.BodyBuilder requestBuilder = RequestEntity.method(HttpMethod.resolve(method), uri);
+        headerParams.forEach((k,v) -> requestBuilder.header(k, v.toArray(new String[0])));
         customizeRequest(requestBuilder);
         return restTemplate.execute(uri, HttpMethod.resolve(method), requestCallback, responseExtractor);
     }

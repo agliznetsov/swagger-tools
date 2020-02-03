@@ -13,6 +13,7 @@ public class SpringBuilder extends ServerBuilder {
     private static final ClassName REST_CONTROLLER = ClassName.get(SPRING_ANNOTATIONS, "RestController");
     private static final ClassName REQUEST_BODY = ClassName.get(SPRING_ANNOTATIONS, "RequestBody");
     private static final ClassName REQUEST_PARAM = ClassName.get(SPRING_ANNOTATIONS, "RequestParam");
+    private static final ClassName REQUEST_HEADER = ClassName.get(SPRING_ANNOTATIONS, "RequestHeader");
     private static final ClassName REQUEST_MAPPING = ClassName.get(SPRING_ANNOTATIONS, "RequestMapping");
     private static final ClassName PATH_VARIABLE = ClassName.get(SPRING_ANNOTATIONS, "PathVariable");
     private static final ClassName RESPONSE_STATUS = ClassName.get(SPRING_ANNOTATIONS, "ResponseStatus");
@@ -56,7 +57,7 @@ public class SpringBuilder extends ServerBuilder {
         if (parameter.getKind() == ParameterKind.BODY) {
             anno = AnnotationSpec.builder(REQUEST_BODY).addMember("required", "$L", parameter.isRequired());
         } else {
-            ClassName inType = parameter.getKind() == ParameterKind.PATH ? PATH_VARIABLE : REQUEST_PARAM;
+            ClassName inType = getParameterAnnotationClass(parameter.getKind());
             anno = AnnotationSpec.builder(inType)
                     .addMember("name", "$S", parameter.getName())
                     .addMember("required", "$L", parameter.isRequired());
@@ -67,6 +68,18 @@ public class SpringBuilder extends ServerBuilder {
             }
         }
         paramBuilder.addAnnotation(anno.build());
+    }
+
+    private ClassName getParameterAnnotationClass(ParameterKind kind) {
+        if (kind ==  ParameterKind.PATH) {
+            return PATH_VARIABLE;
+        } else if (kind == ParameterKind.QUERY) {
+            return REQUEST_PARAM;
+        } else if (kind == ParameterKind.HEADER) {
+            return REQUEST_HEADER;
+        } else {
+            throw new IllegalArgumentException("Unknown parameter kind: " + kind);
+        }
     }
 
     @Override

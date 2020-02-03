@@ -10,7 +10,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +42,8 @@ public class PetsController implements PetsApi {
     }
 
     @Override
-    public Mono<Pet> getPetById(@PathVariable Long petId, Boolean details) {
-        return Mono.just(getPet(petId));
+    public Mono<Pet> getPetById(@PathVariable Long petId, Boolean details, String userId) {
+        return Mono.just(getPet(petId, userId));
     }
 
     @Override
@@ -55,7 +54,7 @@ public class PetsController implements PetsApi {
 
     @Override
     public Mono<Void> deletePetById(@PathVariable Long petId) {
-        getPet(petId);
+        getPet(petId, null);
         pets.remove(petId);
         return Mono.empty();
     }
@@ -67,7 +66,7 @@ public class PetsController implements PetsApi {
     }
 
     @Override
-    public Flux<ServerSentEvent> getPetEvents(Long petId) {
+    public Flux<ServerSentEvent> getPetEvents(Long petId, String lastEventId) {
         return Flux.interval(Duration.ofMillis(100))
                 .map(sequence -> ServerSentEvent.<String> builder()
                         .id(String.valueOf(sequence))
@@ -75,11 +74,12 @@ public class PetsController implements PetsApi {
                         .build());
     }
 
-    private Pet getPet(Long petId) {
+    private Pet getPet(Long petId, String userId) {
         Pet pet = pets.get(petId);
         if (pet == null) {
             throw new IllegalArgumentException("Pet not found: " + petId);
         }
+        pet.setUserId(userId);
         return pet;
     }
 }

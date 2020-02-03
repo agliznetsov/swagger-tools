@@ -70,6 +70,10 @@ paths:
           description: Include pet details
           type: boolean
           default: false
+        - name: userId
+          in: header
+          required: false
+          type: string
       responses:
         '200':
           description: Expected response to a valid request
@@ -120,6 +124,10 @@ paths:
           required: true
           type: integer
           format: int64
+        - name: Last-Event-Id
+          in: header
+          required: false
+          type: string
       produces:
         - text/event-stream
       responses:
@@ -169,6 +177,8 @@ definitions:
       thumbnail:
         type: string
         format: binary
+      userId:
+        type: string
 
 
   Cat:  ## "Cat" will be used as the discriminator value

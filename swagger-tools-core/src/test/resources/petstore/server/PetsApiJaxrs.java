@@ -9,6 +9,7 @@ import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -61,7 +62,8 @@ public interface PetsApi {
     @GET
     @Path("/pets/{petId}/events")
     @Produces("text/event-stream")
-    void getPetEvents(@PathParam("petId") Long petId, @Context SseEventSink sseEventSink,
+    void getPetEvents(@PathParam("petId") Long petId,
+            @HeaderParam("Last-Event-Id") String lastEventId, @Context SseEventSink sseEventSink,
             @Context Sse sse);
 
     @GET

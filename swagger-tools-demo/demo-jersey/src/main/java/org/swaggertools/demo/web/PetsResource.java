@@ -4,10 +4,6 @@ import org.swaggertools.demo.model.Cat;
 import org.swaggertools.demo.model.Pet;
 
 import javax.inject.Singleton;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.sse.OutboundSseEvent;
 import javax.ws.rs.sse.Sse;
 import javax.ws.rs.sse.SseEventSink;
@@ -44,8 +40,8 @@ public class PetsResource implements PetsApi {
     }
 
     @Override
-    public Pet getPetById(Long petId, Boolean details) {
-        return getPet(petId);
+    public Pet getPetById(Long petId, Boolean details, String userId) {
+        return getPet(petId, userId);
     }
 
     @Override
@@ -55,12 +51,12 @@ public class PetsResource implements PetsApi {
 
     @Override
     public void deletePetById(Long petId) {
-        getPet(petId);
+        getPet(petId, null);
         pets.remove(petId);
     }
 
     @Override
-    public void getPetEvents(Long petId, SseEventSink sseEventSink, Sse sse) {
+    public void getPetEvents(Long petId, String lastEventId, SseEventSink sseEventSink, Sse sse) {
         try(SseEventSink sink = sseEventSink){
             sink.send(sse.newEvent("data"));
             sink.send(sse.newEvent("MyEventName","more data"));
@@ -77,11 +73,12 @@ public class PetsResource implements PetsApi {
         }
     }
 
-    private Pet getPet(Long petId) {
+    private Pet getPet(Long petId, String userId) {
         Pet pet = pets.get(petId);
         if (pet == null) {
             throw new IllegalArgumentException("Pet not found: " + petId);
         }
+        pet.setUserId(userId);
         return pet;
     }
 

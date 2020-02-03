@@ -82,6 +82,11 @@ paths:
           schema:
             type: boolean
             default: false
+        - name: userId
+          in: header
+          required: false
+          schema:
+            type: string
       responses:
         200:
           description: Expected response to a valid request
@@ -278,6 +283,8 @@ components:
         thumbnail:
           type: string
           format: binary
+        userId:
+          type: string
       discriminator:
         propertyName: _type
 

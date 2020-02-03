@@ -104,11 +104,12 @@ public class RestTemplateBuilder extends ClientBuilder {
             format = "$T response = ";
             args.add(typeRef);
         }
-        format += "invokeAPI($S, $S, $L, $L, $L, " + requestType + ", responseType)";
+        format += "invokeAPI($S, $S, $L, $L, $L, $L, " + requestType + ", responseType)";
         args.add(operation.getPath());
         args.add(operation.getMethod().name());
         args.add(createUrlVariables(operation));
-        args.add(createQueryParameters( operation));
+        args.add(createQueryParameters(operation));
+        args.add(createHeaderParameters(operation));
         args.add(body.isPresent() ? body.get().getName() : "null");
 
         builder.addStatement(format, args.toArray());
@@ -127,12 +128,13 @@ public class RestTemplateBuilder extends ClientBuilder {
     }
 
     private void executeApi(MethodSpec.Builder builder, Operation operation) {
-        String format = "executeAPI($S, $S, $L, $L, null, responseExtractor)";
+        String format = "executeAPI($S, $S, $L, $L, $L, null, responseExtractor)";
         List<Object> args = new LinkedList<>();
         args.add(operation.getPath());
         args.add(operation.getMethod().name());
         args.add(createUrlVariables(operation));
         args.add(createQueryParameters( operation));
+        args.add(createHeaderParameters(operation));
         builder.addStatement(format, args.toArray());
     }
 

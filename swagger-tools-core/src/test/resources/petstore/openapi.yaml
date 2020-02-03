@@ -203,6 +203,11 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: Last-Event-Id
+          in: header
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: OK

@@ -2,6 +2,7 @@ package {{package}};
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MimeType;
@@ -109,8 +110,12 @@ public abstract class BaseClient {
         return parameters;
     }
 
-    protected Mono<ClientResponse> invokeAPI(String path, String method, Map<String, String> urlVariables,
-                                             MultiValueMap<String, String> queryParams, Object body,
+    protected Mono<ClientResponse> invokeAPI(String path,
+                                             String method,
+                                             Map<String, String> urlVariables,
+                                             MultiValueMap<String, String> queryParams,
+                                             MultiValueMap<String, String> headerParams,
+                                             Object body,
                                              ParameterizedTypeReference requestTypeRef) {
         WebClient.RequestBodySpec request = webClient
                 .method(HttpMethod.resolve(method))
@@ -119,6 +124,7 @@ public abstract class BaseClient {
                         .queryParams(queryParams)
                         .build(urlVariables)
                 );
+        headerParams.forEach((k,v) -> request.header(k, v.toArray(new String[0])));
         customizeRequest(request);
         if (body != null) {
             request.body(Mono.just(body), requestTypeRef);

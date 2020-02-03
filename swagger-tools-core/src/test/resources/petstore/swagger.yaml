@@ -177,6 +177,10 @@ paths:
           required: true
           type: integer
           format: int64
+        - name: Last-Event-Id
+          in: header
+          required: false
+          type: string
       produces:
         - text/event-stream
       responses:

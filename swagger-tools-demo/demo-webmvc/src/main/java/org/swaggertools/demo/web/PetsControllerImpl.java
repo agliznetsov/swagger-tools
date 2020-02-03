@@ -40,8 +40,8 @@ public class PetsControllerImpl implements PetsApi {
     }
 
     @Override
-    public Pet getPetById(Long petId, Boolean details) {
-        return getPet(petId);
+    public Pet getPetById(Long petId, Boolean details, String userId) {
+        return getPet(petId, userId);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class PetsControllerImpl implements PetsApi {
 
     @Override
     public void deletePetById(Long petId) {
-        getPet(petId);
+        getPet(petId, null);
         pets.remove(petId);
     }
 
@@ -83,11 +83,12 @@ public class PetsControllerImpl implements PetsApi {
         return emitter;
     }
 
-    private Pet getPet(Long petId) {
+    private Pet getPet(Long petId, String userId) {
         Pet pet = pets.get(petId);
         if (pet == null) {
             throw new IllegalArgumentException("Pet not found: " + petId);
         }
+        pet.setUserId(userId);
         return pet;
     }
 

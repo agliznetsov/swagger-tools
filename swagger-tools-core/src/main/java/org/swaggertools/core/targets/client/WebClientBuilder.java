@@ -72,7 +72,7 @@ public class WebClientBuilder extends ClientBuilder {
         List<Object> args = new LinkedList<>();
         Optional<Parameter> body = getBodyParameter(operation);
         String requestType = body.isPresent() ? "requestType" : null;
-        String format = "return invokeAPI($S, $S, $L, $L, $L, " + requestType + ")";
+        String format = "return invokeAPI($S, $S, $L, $L, $L, $L, " + requestType + ")";
         if (EVENT_STREAM.equals(operation.getResponseMediaType())) {
             format += ".flatMapMany(e -> e.bodyToFlux(responseType))";
         } else {
@@ -84,6 +84,7 @@ public class WebClientBuilder extends ClientBuilder {
         args.add(operation.getMethod().name());
         args.add(createUrlVariables(operation));
         args.add(createQueryParameters(operation));
+        args.add(createHeaderParameters(operation));
         args.add(body.isPresent() ? body.get().getName() : "null");
         builder.addStatement(format, args.toArray());
     }

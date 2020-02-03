@@ -93,6 +93,19 @@ abstract class ClientBuilder {
         return CodeBlock.builder().add("createQueryParameters(" + String.join(", ", names) + ")", args.toArray()).build();
     }
 
+    protected CodeBlock createHeaderParameters(Operation operation) {
+        List<String> names = new LinkedList<>();
+        List<Object> args = new LinkedList<>();
+        operation.getParameters().forEach(p -> {
+            if (p.getKind() == ParameterKind.HEADER) {
+                names.add("$S");
+                names.add("$L");
+                args.add(p.getName());
+                args.add(p.getJavaIdentifier());
+            }
+        });
+        return CodeBlock.builder().add("createQueryParameters(" + String.join(", ", names) + ")", args.toArray()).build();
+    }
     protected void addMethodParameters(MethodSpec.Builder builder, Operation operation) {
         operation.getParameters().forEach(p -> {
             ParameterSpec param = ParameterSpec.builder(schemaMapper.getType(p.getSchema(), false), p.getJavaIdentifier()).build();

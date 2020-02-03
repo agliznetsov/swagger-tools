@@ -39,16 +39,17 @@ public class PetsApiTest extends JerseyTest {
     @Test
     public void getOne() {
         Long id = postPet();
-        Cat cat = (Cat) petsClient.getPetById(id, true);
+        Cat cat = (Cat) petsClient.getPetById(id, true, "123");
         assertNotNull(cat);
         assertEquals("cat", cat.getName());
         assertEquals(100, cat.getThumbnail().length);
+        assertEquals("123", cat.getUserId());
     }
 
     @Test
     public void getOneWrongId() {
         try {
-            petsClient.getPetById(666L, false);
+            petsClient.getPetById(666L, false, null);
             fail("Exception expected");
         } catch (HttpStatusException e) {
             assertEquals(500, e.getStatusCode());
@@ -60,10 +61,10 @@ public class PetsApiTest extends JerseyTest {
     @Test
     public void update() {
         Long id = postPet();
-        Pet pet = petsClient.getPetById(id, true);
+        Pet pet = petsClient.getPetById(id, true, null);
         pet.setName("new name");
         petsClient.updatePet(id, pet);
-        pet = petsClient.getPetById(id, true);
+        pet = petsClient.getPetById(id, true, null);
         assertEquals("new name", pet.getName());
     }
 

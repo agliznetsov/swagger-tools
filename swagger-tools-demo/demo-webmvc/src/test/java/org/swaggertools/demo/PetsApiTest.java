@@ -64,16 +64,17 @@ public class PetsApiTest {
     @Test
     public void getOne() {
         Long id = postPet();
-        Cat cat = (Cat) template.pets().getPetById(id, true);
+        Cat cat = (Cat) template.pets().getPetById(id, true, "123");
         assertNotNull(cat);
         assertEquals("cat", cat.getName());
         assertEquals(100, cat.getThumbnail().length);
+        assertEquals("123", cat.getUserId());
     }
 
     @Test
     public void getOneWrongId() {
         try {
-            template.pets().getPetById(666L, false);
+            template.pets().getPetById(666L, false, null);
             fail("Exception expected");
         } catch (HttpServerErrorException e) {
             assertEquals(500, e.getStatusCode().value());
@@ -83,10 +84,10 @@ public class PetsApiTest {
     @Test
     public void update() {
         Long id = postPet();
-        Pet pet = template.pets().getPetById(id, true);
+        Pet pet = template.pets().getPetById(id, true, null);
         pet.setName("new name");
         template.pets().updatePet(id, pet);
-        pet = template.pets().getPetById(id, true);
+        pet = template.pets().getPetById(id, true, null);
         assertEquals("new name", pet.getName());
     }
 
