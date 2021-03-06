@@ -65,17 +65,14 @@
                                 <source.location>${project.basedir}/src/main/resources/petstore.yaml</source.location>
 
                                 <target.model.location>${project.build.directory}/generated-sources/swagger</target.model.location>
-                                <target.model.model-package>org.swaggertools.demo.model</target.model.model-package>
                                 <target.model.lombok>false</target.model.lombok>
                                 <target.model.validation>true</target.model.validation>
 
                                 <target.server.location>${project.build.directory}/generated-sources/swagger</target.server.location>
-                                <target.server.model-package>org.swaggertools.demo.model</target.server.model-package>
                                 <target.server.api-package>org.swaggertools.demo.web</target.server.api-package>
                                 <target.server.validation>true</target.server.validation>
 
                                 <target.client.location>${project.build.directory}/generated-sources/swagger</target.client.location>
-                                <target.client.model-package>org.swaggertools.demo.model</target.client.model-package>
                                 <target.client.client-package>org.swaggertools.demo.client</target.client.client-package>
                                 <target.client.factory-name>PetStore</target.client.factory-name>
                             </options>
