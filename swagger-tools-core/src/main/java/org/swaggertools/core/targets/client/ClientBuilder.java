@@ -39,7 +39,9 @@ abstract class ClientBuilder {
     }
 
     public void generate() {
-        apiDefinition.getOperations().forEach(this::processOperation);
+        apiDefinition.getOperations()
+                .stream().filter(Operation::isGenerateClient)
+                .forEach(this::processOperation);
         writeBaseClient(writer);
         clients.forEach((k, v) -> writer.write(JavaFile.builder(options.clientPackage, v.build()).indent(INDENT).build()));
     }

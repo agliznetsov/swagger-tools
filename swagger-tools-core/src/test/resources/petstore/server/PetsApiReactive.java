@@ -27,6 +27,9 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/v1")
 public interface PetsApi {
+    @GetMapping("/hidden-client")
+    Mono<Void> hiddenClientOp();
+
     @GetMapping("/pets")
     Mono<List<Pet>> listPets(@RequestParam(name = "limit", required = false) Integer limit,
             @RequestParam(name = "Offset-Value", required = false) Integer offsetValue);

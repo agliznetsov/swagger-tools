@@ -25,6 +25,10 @@ import javax.ws.rs.sse.SseEventSink;
 @Produces("application/json")
 public interface PetsApi {
     @GET
+    @Path("/hidden-client")
+    void hiddenClientOp();
+
+    @GET
     @Path("/pets")
     List<Pet> listPets(@QueryParam("limit") Integer limit,
             @QueryParam("Offset-Value") Integer offsetValue);

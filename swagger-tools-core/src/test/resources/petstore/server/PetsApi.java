@@ -24,6 +24,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequestMapping("/v1")
 public interface PetsApi {
+    @GetMapping("/hidden-client")
+    void hiddenClientOp();
+
     @GetMapping("/pets")
     List<Pet> listPets(@RequestParam(name = "limit", required = false) Integer limit,
             @RequestParam(name = "Offset-Value", required = false) Integer offsetValue);

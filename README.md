@@ -12,6 +12,8 @@ This project provide a set of tools to generate java code from API definition.
 - Swagger 2.0 or OpenAPI 3.0 API definition in json/yaml format 
 - Extensions
     - **x-ignore** to exclude operations from the code generation process  
+    - **x-ignore-server** to exclude operations from the server code generation process  
+    - **x-ignore-server-client** to exclude operations from the client code generation process  
     - **x-name** to specify OpenAPI 3 requestBody parameter name
     - **x-base-path** to specify OpenAPI 3 API base path
     - **x-response-entity** to make Client/Server return Spring ResponseEntity object

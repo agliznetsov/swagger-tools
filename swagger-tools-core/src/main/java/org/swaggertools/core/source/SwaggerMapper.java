@@ -17,8 +17,8 @@ import org.swaggertools.core.util.NameUtils;
 import java.util.LinkedList;
 import java.util.Map;
 
-import static org.swaggertools.core.model.Extensions.X_IGNORE;
-import static org.swaggertools.core.model.Extensions.X_RESPONSE_ENTITY;
+import static org.swaggertools.core.model.Extensions.*;
+import static org.swaggertools.core.model.Extensions.X_IGNORE_SERVER;
 import static org.swaggertools.core.util.AssertUtils.notEmpty;
 import static org.swaggertools.core.util.AssertUtils.notNull;
 
@@ -65,6 +65,7 @@ public class SwaggerMapper {
 
         notNull(operation.getOperationId(), "operationId is not set");
         notEmpty(operation.getTags(), "tag is not set");
+
         Operation res = new Operation();
         res.setOperationId(operation.getOperationId());
         res.setTag(operation.getTags().get(0));
@@ -77,6 +78,16 @@ public class SwaggerMapper {
             res.setResponseMediaType(mediaType);
         }
         res.setResponseEntity(isResponseEntity(operation));
+
+        if (operation.getVendorExtensions() != null) {
+            if (operation.getVendorExtensions().get(X_IGNORE_CLIENT) != null) {
+                res.setGenerateClient(false);
+            }
+            if (operation.getVendorExtensions().get(X_IGNORE_SERVER) != null) {
+                res.setGenerateServer(false);
+            }
+        }
+
         return res;
     }
 

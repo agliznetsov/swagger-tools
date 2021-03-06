@@ -28,7 +28,7 @@ public class GeneratorsTest {
 
     @Test
     public void test_openapi() throws Exception {
-        testPetStore("/petstore/openapi.yaml");
+        testPetStore("/petstore/openapi3.yaml");
     }
 
     @Test
@@ -40,7 +40,7 @@ public class GeneratorsTest {
     public void test_server_reactive() throws Exception {
         memoryWriter.files.clear();
         Processor processor = new Processor();
-        processor.setSource(createSource("/petstore/openapi.yaml"));
+        processor.setSource(createSource("/petstore/openapi3.yaml"));
 
         ServerGenerator target = createServerGenerator();
         target.getOptions().setReactive(true);
@@ -53,7 +53,7 @@ public class GeneratorsTest {
     public void test_server_jaxrs() throws Exception {
         memoryWriter.files.clear();
         Processor processor = new Processor();
-        processor.setSource(createSource("/petstore/openapi.yaml"));
+        processor.setSource(createSource("/petstore/openapi3.yaml"));
 
         ServerGenerator target = createServerGenerator();
         target.getOptions().setDialect(ServerDialect.JaxRS);
@@ -66,7 +66,7 @@ public class GeneratorsTest {
     public void test_client_WebClient() throws Exception {
         memoryWriter.files.clear();
         Processor processor = new Processor();
-        processor.setSource(createSource("/petstore/openapi.yaml"));
+        processor.setSource(createSource("/petstore/openapi3.yaml"));
 
         ClientGenerator target = createClientGenerator();
         target.getOptions().setDialect(ClientDialect.WebClient);

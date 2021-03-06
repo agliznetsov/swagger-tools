@@ -28,6 +28,11 @@ public class PetsWebClient extends BaseClient {
         super(webClient, basePath, headers);
     }
 
+    public Mono<Void> hiddenServerOp() {
+        ParameterizedTypeReference responseType = VOID;
+        return invokeAPI("/hidden-server", "GET", createUrlVariables(), createQueryParameters(), createQueryParameters(), null, null).flatMap(e -> mapResponse(e, responseType));
+    }
+
     public Mono<List<Pet>> listPets(Integer limit, Integer offsetValue) {
         ParameterizedTypeReference<List<Pet>> responseType = new ParameterizedTypeReference<List<Pet>>(){};
         return invokeAPI("/pets", "GET", createUrlVariables(), createQueryParameters("limit", limit, "Offset-Value", offsetValue), createQueryParameters(), null, null).flatMap(e -> mapResponse(e, responseType));

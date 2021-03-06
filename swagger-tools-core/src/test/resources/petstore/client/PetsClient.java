@@ -26,6 +26,11 @@ public class PetsClient extends BaseClient {
         super(restTemplate, basePath, headers);
     }
 
+    public void hiddenServerOp() {
+        ParameterizedTypeReference responseType = VOID;
+        invokeAPI("/hidden-server", "GET", createUrlVariables(), createQueryParameters(), createQueryParameters(), null, null, responseType);
+    }
+
     public List<Pet> listPets(Integer limit, Integer offsetValue) {
         ParameterizedTypeReference<List<Pet>> responseType = new ParameterizedTypeReference<List<Pet>>(){};
         ResponseEntity<List<Pet>> response = invokeAPI("/pets", "GET", createUrlVariables(), createQueryParameters("limit", limit, "Offset-Value", offsetValue), createQueryParameters(), null, null, responseType);

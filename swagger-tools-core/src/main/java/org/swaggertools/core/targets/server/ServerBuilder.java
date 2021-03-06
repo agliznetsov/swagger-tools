@@ -39,7 +39,9 @@ abstract class ServerBuilder {
     }
 
     public void generate() {
-        apiDefinition.getOperations().forEach(this::processOperation);
+        apiDefinition.getOperations()
+                .stream().filter(Operation::isGenerateServer)
+                .forEach(this::processOperation);
         apis.forEach((k, v) -> writeApi(v));
     }
 

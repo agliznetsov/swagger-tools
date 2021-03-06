@@ -17,4 +17,6 @@ public class Operation {
     HttpStatus responseStatus;
     String responseMediaType;
     boolean responseEntity;
+    boolean generateClient = true;
+    boolean generateServer = true;
 }

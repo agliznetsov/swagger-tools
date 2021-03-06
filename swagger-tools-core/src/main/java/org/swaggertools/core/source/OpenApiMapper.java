@@ -75,6 +75,7 @@ public class OpenApiMapper {
 
         notNull(operation.getOperationId(), "operationId is not set");
         notEmpty(operation.getTags(), "tag is not set");
+
         Operation res = new Operation();
         res.setOperationId(operation.getOperationId());
         res.setTag(operation.getTags().get(0));
@@ -90,6 +91,16 @@ public class OpenApiMapper {
         }
         addResponse(res, operation.getResponses());
         res.setResponseEntity(isResponseEntity(operation));
+
+        if (operation.getExtensions() != null) {
+            if (operation.getExtensions().get(X_IGNORE_CLIENT) != null) {
+                res.setGenerateClient(false);
+            }
+            if (operation.getExtensions().get(X_IGNORE_SERVER) != null) {
+                res.setGenerateServer(false);
+            }
+        }
+
         return res;
     }
 
