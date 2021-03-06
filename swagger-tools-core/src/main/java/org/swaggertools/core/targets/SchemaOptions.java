@@ -7,8 +7,8 @@ import org.swaggertools.core.config.ConfigurationProperty;
 @Getter
 @Setter
 public class SchemaOptions {
-    @ConfigurationProperty(description = "Models package name", required = true)
+    @ConfigurationProperty(description = "Models package name")
     private String modelPackage;
-    @ConfigurationProperty(description = "String 'date-time' full class name", required = false)
+    @ConfigurationProperty(description = "String 'date-time' full class name")
     private String dateTimeClass;
 }

@@ -42,7 +42,7 @@ public class GeneratorsTest {
         Processor processor = new Processor();
         processor.setSource(createSource("/petstore/openapi3.yaml"));
 
-        ServerGenerator target = createServerGenerator();
+        ServerGenerator target = createServerGenerator(null);
         target.getOptions().setReactive(true);
         processor.setTargets(Collections.singletonList(target));
         processor.process();
@@ -55,7 +55,7 @@ public class GeneratorsTest {
         Processor processor = new Processor();
         processor.setSource(createSource("/petstore/openapi3.yaml"));
 
-        ServerGenerator target = createServerGenerator();
+        ServerGenerator target = createServerGenerator(null);
         target.getOptions().setDialect(ServerDialect.JaxRS);
         processor.setTargets(Collections.singletonList(target));
         processor.process();
@@ -68,7 +68,7 @@ public class GeneratorsTest {
         Processor processor = new Processor();
         processor.setSource(createSource("/petstore/openapi3.yaml"));
 
-        ClientGenerator target = createClientGenerator();
+        ClientGenerator target = createClientGenerator(null);
         target.getOptions().setDialect(ClientDialect.WebClient);
         target.getOptions().setClientSuffix("WebClient");
         processor.setTargets(Collections.singletonList(target));
@@ -82,7 +82,7 @@ public class GeneratorsTest {
         Processor processor = new Processor();
         processor.setSource(createSource("/petstore/openapi2.yaml"));
 
-        ClientGenerator target = createClientGenerator();
+        ClientGenerator target = createClientGenerator("com.example.model");
         target.getOptions().setFactoryName("Petstore");
         processor.setTargets(Collections.singletonList(target));
         processor.process();
@@ -94,7 +94,7 @@ public class GeneratorsTest {
         Processor processor = new Processor();
         processor.setSource(createSource("/validation/openapi.yaml"));
 
-        ModelGenerator modelGenerator = createModelGenerator();
+        ModelGenerator modelGenerator = createModelGenerator("com.example.model");
         modelGenerator.getOptions().setValidation(true);
         modelGenerator.getOptions().setLombokUniqueBuilder(true);
         modelGenerator.getOptions().setLombokSuperBuilder(true);
@@ -104,7 +104,7 @@ public class GeneratorsTest {
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/validation/model/" + k, v));
 
         memoryWriter.files.clear();
-        ServerGenerator serverGenerator = createServerGenerator();
+        ServerGenerator serverGenerator = createServerGenerator("com.example.model");
         serverGenerator.getOptions().setValidation(true);
         processor.setTargets(Collections.singletonList(serverGenerator));
         processor.process();
@@ -117,58 +117,58 @@ public class GeneratorsTest {
         Processor processor = new Processor();
         processor.setSource(createSource(source));
 
-        processor.setTargets(Collections.singletonList(createModelGenerator()));
+        processor.setTargets(Collections.singletonList(createModelGenerator(null)));
         processor.process();
         //assertEquals(10, memoryWriter.files.size());
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/model/" + k, v));
 
         memoryWriter.files.clear();
-        processor.setTargets(Collections.singletonList(createClientGenerator()));
+        processor.setTargets(Collections.singletonList(createClientGenerator(null)));
         processor.process();
         assertEquals(1, memoryWriter.files.size());
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/client/" + k, v));
 
         memoryWriter.files.clear();
-        processor.setTargets(Collections.singletonList(createServerGenerator()));
+        processor.setTargets(Collections.singletonList(createServerGenerator(null)));
         processor.process();
         assertEquals(1, memoryWriter.files.size());
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/server/" + k, v));
     }
 
-    private ModelGenerator createModelGenerator() {
+    private ModelGenerator createModelGenerator(String modelPackage) {
         ModelGenerator generator = new ModelGenerator() {
             @Override
             protected JavaFileWriter createWriter(String target) {
                 return memoryWriter;
             }
         };
-        generator.getOptions().setModelPackage("com.example");
+        generator.getOptions().setModelPackage(modelPackage);
         generator.getOptions().setLocation("/target");
         generator.getOptions().setLombok(true);
         return generator;
     }
 
-    private ServerGenerator createServerGenerator() {
+    private ServerGenerator createServerGenerator(String modelPackage) {
         ServerGenerator generator = new ServerGenerator() {
             @Override
             protected JavaFileWriter createWriter(String target) {
                 return memoryWriter;
             }
         };
-        generator.getOptions().setModelPackage("com.example.model");
+        generator.getOptions().setModelPackage(modelPackage);
         generator.getOptions().setApiPackage("com.example.web");
         generator.getOptions().setLocation("/target");
         return generator;
     }
 
-    private ClientGenerator createClientGenerator() {
+    private ClientGenerator createClientGenerator(String modelPackage) {
         ClientGenerator generator = new ClientGenerator() {
             @Override
             protected JavaFileWriter createWriter(String target) {
                 return memoryWriter;
             }
         };
-        generator.getOptions().setModelPackage("com.example.model");
+        generator.getOptions().setModelPackage(modelPackage);
         generator.getOptions().setClientPackage("com.example.client");
         generator.getOptions().setLocation("/target");
         return generator;

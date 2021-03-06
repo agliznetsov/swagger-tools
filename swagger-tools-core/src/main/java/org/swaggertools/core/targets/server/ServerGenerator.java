@@ -21,6 +21,8 @@ public class ServerGenerator extends JavaFileGenerator<ServerOptions> {
     @Override
     public void accept(ApiDefinition apiDefinition) {
         validateConfiguration();
+        setModelPackage(apiDefinition, options);
+
         log.info("Generating server in {}/{}", options.location, options.apiPackage);
         JavaFileWriter writer = createWriter(options.location);
         ServerBuilder serverBuilder = createServerBuilder(apiDefinition, writer, options);

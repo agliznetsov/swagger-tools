@@ -53,10 +53,12 @@ public class ModelGenerator extends JavaFileGenerator<ModelOptions> implements T
     @Override
     public void accept(ApiDefinition apiDefinition) {
         validateConfiguration();
-        log.info("Generating model in {}/{}", options.location, options.getModelPackage());
+        setModelPackage(apiDefinition, options);
+
+        log.info("Generating model in {}/{}", options.getLocation(), options.getModelPackage());
         apiDefinition.getSchemas().values().forEach(this::createModel);
         apiDefinition.getSchemas().values().forEach(this::setRootClass);
-        JavaFileWriter writer = createWriter(options.location);
+        JavaFileWriter writer = createWriter(options.getLocation());
         models.values().forEach(it -> {
             addSubtypes(it);
             writer.write(JavaFile.builder(options.getModelPackage(), it.typeSpec.build()).indent(INDENT).build());

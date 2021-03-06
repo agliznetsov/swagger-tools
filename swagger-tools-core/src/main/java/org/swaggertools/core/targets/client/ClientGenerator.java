@@ -22,6 +22,8 @@ public class ClientGenerator extends JavaFileGenerator<ClientOptions> {
     @Override
     public void accept(ApiDefinition apiDefinition) {
         validateConfiguration();
+        setModelPackage(apiDefinition, options);
+
         log.info("Generating client in {}/{}", options.location, options.clientPackage);
         JavaFileWriter writer = createWriter(options.location);
         ClientBuilder clientBuilder = createClientBuilder(apiDefinition, writer);

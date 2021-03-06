@@ -34,6 +34,13 @@ public class SwaggerMapper {
         apiDefinition = new ApiDefinition();
         apiDefinition.setBasePath(swagger.getBasePath());
 
+        if (swagger.getVendorExtensions() != null) {
+            Object modelPackage = swagger.getVendorExtensions().get(X_MODEL_PACKAGE);
+            if (modelPackage != null) {
+                apiDefinition.setModelPackage(modelPackage.toString());
+            }
+        }
+
         if (swagger.getPaths() != null) {
             swagger.getPaths().forEach((path, pathItem) -> pathItem.getOperationMap().forEach((k, v) -> processOperation(path, k, v)));
         }

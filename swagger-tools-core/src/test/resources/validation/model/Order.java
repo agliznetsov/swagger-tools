@@ -1,4 +1,4 @@
-package com.example;
+package com.example.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.lang.Integer;

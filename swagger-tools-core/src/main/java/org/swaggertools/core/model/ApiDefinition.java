@@ -10,6 +10,7 @@ import java.util.Map;
 @Data
 public class ApiDefinition {
     String basePath;
+    String modelPackage;
     final Collection<Operation> operations = new LinkedList<>();
     final Map<String, Schema> schemas = new HashMap<>();
 }

@@ -41,6 +41,10 @@ public class OpenApiMapper {
             if (basePath != null) {
                 apiDefinition.setBasePath(basePath.toString());
             }
+            Object modelPackage = openAPI.getExtensions().get(X_MODEL_PACKAGE);
+            if (modelPackage != null) {
+                apiDefinition.setModelPackage(modelPackage.toString());
+            }
         }
 
         if (openAPI.getPaths() != null) {

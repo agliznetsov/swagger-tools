@@ -5,6 +5,7 @@ info:
   license:
     name: MIT
 basePath: /v1
+x-model-package: com.example.model
 paths:
   /hidden:
     get:
