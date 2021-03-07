@@ -1,7 +1,6 @@
 package org.swaggertools.core.config;
 
 import lombok.SneakyThrows;
-import org.swaggertools.core.targets.SchemaOptions;
 import org.swaggertools.core.util.NameUtils;
 
 import java.lang.reflect.Field;

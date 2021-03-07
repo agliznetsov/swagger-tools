@@ -47,9 +47,9 @@ public class ProcessorFactory {
     private Map<String, String> options;
     private Processor processor;
 
-    public Processor create(Map<String, String> options) {
+    public Processor create(String[] sources, Map<String, String> options) {
         this.options = options;
-        this.processor = new Processor();
+        this.processor = new Processor(sources);
         setSource();
         setTargets();
         return processor;

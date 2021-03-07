@@ -5,7 +5,7 @@
 
 ## Overview
 
-This project provide a set of tools to generate java code from API definition.
+This project provides a set of tools to generate java code from API definition.
 
 ### Source
 
@@ -66,9 +66,10 @@ java -jar swagger-tools-cli.jar \
                         <goal>generate</goal>
                     </goals>
                     <configuration>
+                        <sources>
+                            <param>${project.basedir}/src/main/resources/petstore.yaml</param>
+                        </sources>
                         <options>
-                            <source.location>${project.basedir}/src/main/resources/petstore.yaml</source.location>
-
                             <target.model.location>${project.build.directory}/generated-sources/swagger</target.model.location>
                             <target.model.model-package>org.swaggertools.demo.model</target.model.model-package>
 

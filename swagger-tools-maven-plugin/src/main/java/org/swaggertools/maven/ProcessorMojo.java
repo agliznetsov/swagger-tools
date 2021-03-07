@@ -28,6 +28,9 @@ public class ProcessorMojo extends AbstractMojo {
     @Parameter
     private Map<String, String> options;
 
+    @Parameter
+    private String[] sources;
+
     @Parameter(readonly = true, required = true, defaultValue = "${project}")
     private MavenProject project;
 
@@ -40,7 +43,7 @@ public class ProcessorMojo extends AbstractMojo {
         } else {
             getLog().info("Process swagger definition");
             try {
-                new ProcessorFactory().create(options).process();
+                new ProcessorFactory().create(sources, options).process();
                 addCompileSourceRoot();
             } catch (Exception e) {
                 getLog().error(e);

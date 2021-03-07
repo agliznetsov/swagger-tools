@@ -26,7 +26,7 @@ import static org.swaggertools.core.util.AssertUtils.notNull;
 public class OpenApiMapper {
     private static final String JSON = "application/json";
 
-    static final Pattern REF_PATTERN = Pattern.compile("#/components/(.+)/(.+)");
+    static final Pattern REF_PATTERN = Pattern.compile("(.+)?#/components/(.+)/(.+)");
 
     OpenAPI openAPI;
     ApiDefinition apiDefinition;
@@ -303,8 +303,8 @@ public class OpenApiMapper {
     private <T> T resolveRef(String ref) {
         Matcher matcher = REF_PATTERN.matcher(ref);
         if (matcher.matches()) {
-            String type = matcher.group(1);
-            String name = matcher.group(2);
+            String type = matcher.group(matcher.groupCount() - 1);
+            String name = matcher.group(matcher.groupCount());
             switch (type) {
                 case "schemas":
                     return (T) openAPI.getComponents().getSchemas().get(name);
@@ -322,7 +322,7 @@ public class OpenApiMapper {
     private String resolveName(String ref) {
         Matcher matcher = REF_PATTERN.matcher(ref);
         if (matcher.matches()) {
-            return matcher.group(2);
+            return matcher.group(matcher.groupCount());
         }
         throw new IllegalArgumentException("Invalid ref: " + ref);
     }

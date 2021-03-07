@@ -5,7 +5,9 @@ import org.swaggertools.core.config.HelpPrinter;
 import org.swaggertools.core.run.Processor;
 import org.swaggertools.core.run.ProcessorFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -14,13 +16,16 @@ public class Generator {
         new Generator().run(args);
     }
 
+    Map<String, String> options = new HashMap<>();
+    List<String> sources = new ArrayList<>();
+
     public void run(String[] args) {
         try {
-            Map<String, String> options = readOptions(args);
+            readOptions(args);
             if (options.isEmpty() || options.containsKey("help")) {
                 printHelp();
             } else {
-                Processor processor = new ProcessorFactory().create(options);
+                Processor processor = new ProcessorFactory().create(sources.toArray(new String[0]), options);
                 processor.process();
             }
         } catch (IllegalArgumentException e) {
@@ -36,6 +41,7 @@ public class Generator {
         HelpPrinter printer = new HelpPrinter("--");
         printer.print("Usage:");
         printer.print("help", "Print help");
+        printer.print("sources=<value>", "Set source location. Can be used multiple times.");
         printer.print("source.<property>=<value>", "Set source property");
         printer.print("target.<name>.<property>=<value>", "Set target <name> property");
         printer.print("");
@@ -44,14 +50,13 @@ public class Generator {
     }
 
     protected Map<String, String> readOptions(String[] args) {
-        Map<String, String> options = new HashMap<>();
         for(String arg : args) {
-            readOption(arg, options);
+            readOption(arg);
         }
         return options;
     }
 
-    private void readOption(String arg, Map<String, String> options) {
+    private void readOption(String arg) {
         if (arg.startsWith("--")) {
             arg = arg.substring(2);
         }
@@ -59,6 +64,9 @@ public class Generator {
         if (i > 0) {
             String key = arg.substring(0, i).trim();
             String value = arg.substring(i + 1).trim();
+            if ("sources".equals(key)) {
+                sources.add(value);
+            }
             options.put(key, value);
         } else {
             options.put(arg, null);

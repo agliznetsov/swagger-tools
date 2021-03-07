@@ -12,8 +12,6 @@ import org.swaggertools.core.model.ApiDefinition;
 import org.swaggertools.core.run.Source;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 
 public class ApiDefinitionSource extends AutoConfigurable<ApiDefinitionSource.Options> implements Source {
 
@@ -21,35 +19,44 @@ public class ApiDefinitionSource extends AutoConfigurable<ApiDefinitionSource.Op
         super(new Options());
     }
 
+    ObjectMapper jsonMapper = new ObjectMapper(new JsonFactory());
+    ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+
     @Override
     @SneakyThrows
-    public ApiDefinition getApiDefinition() {
+    public ApiDefinition getApiDefinition(String[] sources) {
         validateConfiguration();
-        ObjectMapper mapper = getMapper();
-        try (InputStream inputStream = getInputStream()) {
-            JsonNode node = mapper.readValue(inputStream, JsonNode.class);
-            JsonNode openapi = node.get("openapi");
-            JsonNode swagger = node.get("swagger");
-            if (openapi != null) {
-                return new OpenApiMapper().map(node);
-            } else if (swagger != null) {
-                return new SwaggerMapper().map(node);
-            } else {
-                throw new IllegalArgumentException("Unknown input file format");
-            }
+        JsonNode node = getInput(sources);
+        JsonNode openapi = node.get("openapi");
+        JsonNode swagger = node.get("swagger");
+        if (openapi != null) {
+            return new OpenApiMapper().map(node);
+        } else if (swagger != null) {
+            return new SwaggerMapper().map(node);
+        } else {
+            throw new IllegalArgumentException("Unknown input file format");
         }
     }
 
-    @SneakyThrows
-    protected InputStream getInputStream() {
-        return new FileInputStream(new File(options.location));
+    protected JsonNode getInput(String[] sources) {
+        String fileLocation;
+        if (sources != null && sources.length > 0) {
+            fileLocation = sources[0];
+        } else {
+            fileLocation = options.location;
+        }
+        if (fileLocation == null) {
+            throw new IllegalArgumentException("File source is not set");
+        }
+        return readFile(new File(fileLocation));
     }
 
-    protected ObjectMapper getMapper() {
-        if (options.location.toLowerCase().endsWith(".json")) {
-            return new ObjectMapper(new JsonFactory());
+    @SneakyThrows
+    protected JsonNode readFile(File file) {
+        if (file.getName().toLowerCase().endsWith(".json")) {
+            return jsonMapper.readValue(file, JsonNode.class);
         } else {
-            return new ObjectMapper(new YAMLFactory());
+            return yamlMapper.readValue(file, JsonNode.class);
         }
     }
 
@@ -60,7 +67,7 @@ public class ApiDefinitionSource extends AutoConfigurable<ApiDefinitionSource.Op
 
     @Data
     public static class Options {
-        @ConfigurationProperty(required = true, description = "Api definition location")
+        @ConfigurationProperty(description = "Api definition location")
         String location;
     }
 

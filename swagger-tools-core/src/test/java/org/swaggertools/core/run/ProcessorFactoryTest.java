@@ -30,7 +30,7 @@ public class ProcessorFactoryTest {
         options.put("target.client.client-package", "com.example.client");
 
         ProcessorFactory factory = new ProcessorFactory();
-        Processor processor = factory.create(options);
+        Processor processor = factory.create(null, options);
         ApiDefinitionSource source = (ApiDefinitionSource) processor.getSource();
         assertEquals("/src/file", source.getOptions().getLocation());
 
@@ -51,23 +51,10 @@ public class ProcessorFactoryTest {
         options.put("source.bad-property", "");
         ProcessorFactory factory = new ProcessorFactory();
         try {
-            factory.create(options);
+            factory.create(null, options);
             fail();
         } catch (IllegalArgumentException e) {
             assertEquals("Unknown configuration property: source.bad-property", e.getMessage());
-        }
-    }
-
-    @Test
-    public void test_missing_property() {
-        Map<String, String> options = new HashMap<>();
-        options.put("source.location", "");
-        ProcessorFactory factory = new ProcessorFactory();
-        try {
-            factory.create(options);
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertEquals("Required configuration property is not set: source.location", e.getMessage());
         }
     }
 
