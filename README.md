@@ -102,7 +102,7 @@ configurations {
 }
  
 dependencies {
-   swagger 'com.github.agliznetsov.swagger-tools:swagger-tools-cli:0.2.0'
+   swagger 'com.github.agliznetsov.swagger-tools:swagger-tools-cli:0.6.0'
 }
  
 task "swagger-generate"(type: JavaExec) {

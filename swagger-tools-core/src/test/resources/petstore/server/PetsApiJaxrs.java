@@ -24,34 +24,13 @@ import javax.ws.rs.sse.SseEventSink;
 @Consumes("application/json")
 @Produces("application/json")
 public interface PetsApi {
-    @GET
-    @Path("/hidden-client")
-    void hiddenClientOp();
-
-    @GET
-    @Path("/pets")
-    List<Pet> listPets(@QueryParam("limit") Integer limit,
-            @QueryParam("Offset-Value") Integer offsetValue);
-
     @POST
     @Path("/pets")
     Pet createPet(Pet pet);
 
-    @GET
-    @Path("/pets/{petId}")
-    Pet getPetById(@PathParam("petId") Long petId, @QueryParam("details") Boolean details);
-
-    @PUT
-    @Path("/pets/{petId}")
-    void updatePet(@PathParam("petId") Long petId, Pet requestBody);
-
     @DELETE
     @Path("/pets/{petId}")
     void deletePetById(@PathParam("petId") Long petId);
-
-    @PUT
-    @Path("/pets-ref/{petId}")
-    Pet updatePetRefById(@PathParam("petId") Long petId, Pet requestBody);
 
     @GET
     @Path("/pets/{petId}/body")
@@ -59,9 +38,12 @@ public interface PetsApi {
     String getPetBody(@PathParam("petId") Long petId);
 
     @GET
-    @Path("/pets/{petId}/thumbnail")
-    @Produces("image/jpeg")
-    byte[] getPetThumbnail(@PathParam("petId") Long petId);
+    @Path("/pets/{petId}")
+    Pet getPetById(@PathParam("petId") Long petId, @QueryParam("details") Boolean details);
+
+    @GET
+    @Path("/pets/{petId}/details")
+    Pet getPetDetails(@PathParam("petId") Long petId);
 
     @GET
     @Path("/pets/{petId}/events")
@@ -71,6 +53,24 @@ public interface PetsApi {
             @Context Sse sse);
 
     @GET
-    @Path("/pets/{petId}/details")
-    Pet getPetDetails(@PathParam("petId") Long petId);
+    @Path("/pets/{petId}/thumbnail")
+    @Produces("image/jpeg")
+    byte[] getPetThumbnail(@PathParam("petId") Long petId);
+
+    @GET
+    @Path("/hidden-client")
+    void hiddenClientOp();
+
+    @GET
+    @Path("/pets")
+    List<Pet> listPets(@QueryParam("limit") Integer limit,
+            @QueryParam("Offset-Value") Integer offsetValue);
+
+    @PUT
+    @Path("/pets/{petId}")
+    void updatePet(@PathParam("petId") Long petId, Pet requestBody);
+
+    @PUT
+    @Path("/pets-ref/{petId}")
+    Pet updatePetRefById(@PathParam("petId") Long petId, Pet requestBody);
 }

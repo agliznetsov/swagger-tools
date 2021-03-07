@@ -1,0 +1,117 @@
+openapi: 3.0.1
+
+components:
+  schemas:
+
+    Pets:
+      type: array
+      items:
+        $ref: '#/components/schemas/Pet'
+
+    Owner:
+      type: object
+      properties:
+        name:
+          type: string
+
+    Cat:
+      description: A representation of a cat
+      allOf:
+        - $ref: '#/components/schemas/Pet'
+        - required:
+            - huntingSkill
+          type: object
+          properties:
+            huntingSkill:
+              type: string
+              description: The measured skill for hunting
+              default: lazy
+              enum:
+                - clueless
+                - lazy
+                - adventurous
+                - aggressive
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+      additionalProperties:
+        type: string
+
+    Dog:
+      description: A representation of a dog
+      allOf:
+        - $ref: '#/components/schemas/Pet'
+        - required:
+            - packSize
+          type: object
+          properties:
+            packSize:
+              minimum: 0
+              type: integer
+              description: the size of the pack the dog is from
+              format: int32
+              default: 0
+
+    Pet:
+      required:
+        - id
+        - name
+      type: object
+      properties:
+        _type:
+          type: string
+        id:
+          type: integer
+          format: int64
+          default: 0
+        name:
+          minLength: 3
+          type: string
+          default: noname
+        available:
+          type: boolean
+          default: true
+        price:
+          type: number
+          minimum: 0
+        uid:
+          type: string
+          format: uuid
+        createTime:
+          type: string
+          format: date-time
+        owner:
+          $ref: '#/components/schemas/Owner'
+        color:
+          $ref: '#/components/schemas/Color'
+        details:
+          type: object
+          additionalProperties:
+            type: string
+        thumbnail:
+          type: string
+          format: binary
+        userId:
+          type: string
+      discriminator:
+        propertyName: _type
+
+    PetList:
+      required:
+        - _items
+      type: object
+      properties:
+        _items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pet'
+        _max:
+          type: integer
+        _offset:
+          type: integer

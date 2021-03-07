@@ -27,33 +27,13 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/v1")
 public interface PetsApi {
-    @GetMapping("/hidden-client")
-    Mono<Void> hiddenClientOp();
-
-    @GetMapping("/pets")
-    Mono<List<Pet>> listPets(@RequestParam(name = "limit", required = false) Integer limit,
-            @RequestParam(name = "Offset-Value", required = false) Integer offsetValue);
-
     @PostMapping("/pets")
     @ResponseStatus(HttpStatus.CREATED)
     Mono<Pet> createPet(@RequestBody(required = true) Pet pet);
 
-    @GetMapping("/pets/{petId}")
-    Mono<Pet> getPetById(@PathVariable(name = "petId", required = true) Long petId,
-            @RequestParam(name = "details", required = false, defaultValue = "false") Boolean details);
-
-    @PutMapping("/pets/{petId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    Mono<Void> updatePet(@PathVariable(name = "petId", required = true) Long petId,
-            @RequestBody(required = true) Pet requestBody);
-
     @DeleteMapping("/pets/{petId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     Mono<Void> deletePetById(@PathVariable(name = "petId", required = true) Long petId);
-
-    @PutMapping("/pets-ref/{petId}")
-    Mono<Pet> updatePetRefById(@PathVariable(name = "petId", required = true) Long petId,
-            @RequestBody(required = true) Pet requestBody);
 
     @GetMapping(
             value = "/pets/{petId}/body",
@@ -61,11 +41,13 @@ public interface PetsApi {
     )
     Mono<String> getPetBody(@PathVariable(name = "petId", required = true) Long petId);
 
-    @GetMapping(
-            value = "/pets/{petId}/thumbnail",
-            produces = "image/jpeg"
-    )
-    Mono<byte[]> getPetThumbnail(@PathVariable(name = "petId", required = true) Long petId);
+    @GetMapping("/pets/{petId}")
+    Mono<Pet> getPetById(@PathVariable(name = "petId", required = true) Long petId,
+            @RequestParam(name = "details", required = false, defaultValue = "false") Boolean details);
+
+    @GetMapping("/pets/{petId}/details")
+    Mono<ResponseEntity<Pet>> getPetDetails(
+            @PathVariable(name = "petId", required = true) Long petId);
 
     @GetMapping(
             value = "/pets/{petId}/events",
@@ -74,7 +56,25 @@ public interface PetsApi {
     Flux<ServerSentEvent> getPetEvents(@PathVariable(name = "petId", required = true) Long petId,
             @RequestHeader(name = "Last-Event-Id", required = false) String lastEventId);
 
-    @GetMapping("/pets/{petId}/details")
-    Mono<ResponseEntity<Pet>> getPetDetails(
-            @PathVariable(name = "petId", required = true) Long petId);
+    @GetMapping(
+            value = "/pets/{petId}/thumbnail",
+            produces = "image/jpeg"
+    )
+    Mono<byte[]> getPetThumbnail(@PathVariable(name = "petId", required = true) Long petId);
+
+    @GetMapping("/hidden-client")
+    Mono<Void> hiddenClientOp();
+
+    @GetMapping("/pets")
+    Mono<List<Pet>> listPets(@RequestParam(name = "limit", required = false) Integer limit,
+            @RequestParam(name = "Offset-Value", required = false) Integer offsetValue);
+
+    @PutMapping("/pets/{petId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    Mono<Void> updatePet(@PathVariable(name = "petId", required = true) Long petId,
+            @RequestBody(required = true) Pet requestBody);
+
+    @PutMapping("/pets-ref/{petId}")
+    Mono<Pet> updatePetRefById(@PathVariable(name = "petId", required = true) Long petId,
+            @RequestBody(required = true) Pet requestBody);
 }

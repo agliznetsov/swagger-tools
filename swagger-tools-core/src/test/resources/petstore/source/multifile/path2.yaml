@@ -1,0 +1,33 @@
+openapi: '3.0.1'
+
+paths:
+  /hidden:
+    get:
+      operationId: hiddenOp
+      x-ignore: true
+      tags:
+        - pets
+      responses:
+        '200':
+          description: OK
+
+  /hidden-client:
+    get:
+      operationId: hiddenClientOp
+      x-ignore-client: true
+      tags:
+        - pets
+      responses:
+        '200':
+          description: OK
+
+  /hidden-server:
+    get:
+      operationId: hiddenServerOp
+      x-ignore-server: true
+      tags:
+        - pets
+      responses:
+        '200':
+          description: OK
+

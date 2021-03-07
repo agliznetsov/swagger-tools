@@ -1,0 +1,25 @@
+openapi: '3.0.1'
+
+components:
+  schemas:
+
+    Error:
+      additionalProperties:
+        type: string
+      properties:
+        _type:
+          type: string
+          default: 'Error'
+          readOnly: true
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+        value:
+          type: object
+        details:
+          type: object
+          additionalProperties:
+            type: object
+

@@ -1,7 +1,6 @@
 package org.swaggertools.core.source;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
@@ -17,7 +16,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static org.swaggertools.core.model.Extensions.*;
 import static org.swaggertools.core.util.AssertUtils.notEmpty;
@@ -32,8 +30,11 @@ public class OpenApiMapper {
     ApiDefinition apiDefinition;
 
     public ApiDefinition map(JsonNode node) {
-        ObjectMapper objectMapper = Json.mapper();
-        openAPI = objectMapper.convertValue(node, OpenAPI.class);
+        return map(Json.mapper().convertValue(node, OpenAPI.class));
+    }
+
+    public ApiDefinition map(OpenAPI openAPI) {
+        this.openAPI = openAPI;
         apiDefinition = new ApiDefinition();
 
         if (openAPI.getExtensions() != null) {

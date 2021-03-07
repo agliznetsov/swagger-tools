@@ -1,10 +1,6 @@
 package org.swaggertools.core.targets.server;
 
-import com.squareup.javapoet.AnnotationSpec;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterSpec;
-import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.*;
 import org.swaggertools.core.model.ApiDefinition;
 import org.swaggertools.core.model.Operation;
 import org.swaggertools.core.model.Parameter;
@@ -14,7 +10,7 @@ import org.swaggertools.core.targets.SchemaMapper;
 
 import javax.lang.model.element.Modifier;
 import javax.validation.Valid;
-
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +37,7 @@ abstract class ServerBuilder {
     public void generate() {
         apiDefinition.getOperations()
                 .stream().filter(Operation::isGenerateServer)
+                .sorted(Comparator.comparing(Operation::getJavaIdentifier))
                 .forEach(this::processOperation);
         apis.forEach((k, v) -> writeApi(v));
     }

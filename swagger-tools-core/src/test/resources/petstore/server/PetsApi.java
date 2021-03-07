@@ -24,33 +24,13 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequestMapping("/v1")
 public interface PetsApi {
-    @GetMapping("/hidden-client")
-    void hiddenClientOp();
-
-    @GetMapping("/pets")
-    List<Pet> listPets(@RequestParam(name = "limit", required = false) Integer limit,
-            @RequestParam(name = "Offset-Value", required = false) Integer offsetValue);
-
     @PostMapping("/pets")
     @ResponseStatus(HttpStatus.CREATED)
     Pet createPet(@RequestBody(required = true) Pet pet);
 
-    @GetMapping("/pets/{petId}")
-    Pet getPetById(@PathVariable(name = "petId", required = true) Long petId,
-            @RequestParam(name = "details", required = false, defaultValue = "false") Boolean details);
-
-    @PutMapping("/pets/{petId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    void updatePet(@PathVariable(name = "petId", required = true) Long petId,
-            @RequestBody(required = true) Pet requestBody);
-
     @DeleteMapping("/pets/{petId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deletePetById(@PathVariable(name = "petId", required = true) Long petId);
-
-    @PutMapping("/pets-ref/{petId}")
-    Pet updatePetRefById(@PathVariable(name = "petId", required = true) Long petId,
-            @RequestBody(required = true) Pet requestBody);
 
     @GetMapping(
             value = "/pets/{petId}/body",
@@ -58,11 +38,12 @@ public interface PetsApi {
     )
     String getPetBody(@PathVariable(name = "petId", required = true) Long petId);
 
-    @GetMapping(
-            value = "/pets/{petId}/thumbnail",
-            produces = "image/jpeg"
-    )
-    byte[] getPetThumbnail(@PathVariable(name = "petId", required = true) Long petId);
+    @GetMapping("/pets/{petId}")
+    Pet getPetById(@PathVariable(name = "petId", required = true) Long petId,
+            @RequestParam(name = "details", required = false, defaultValue = "false") Boolean details);
+
+    @GetMapping("/pets/{petId}/details")
+    ResponseEntity<Pet> getPetDetails(@PathVariable(name = "petId", required = true) Long petId);
 
     @GetMapping(
             value = "/pets/{petId}/events",
@@ -71,6 +52,25 @@ public interface PetsApi {
     SseEmitter getPetEvents(@PathVariable(name = "petId", required = true) Long petId,
             @RequestHeader(name = "Last-Event-Id", required = false) String lastEventId);
 
-    @GetMapping("/pets/{petId}/details")
-    ResponseEntity<Pet> getPetDetails(@PathVariable(name = "petId", required = true) Long petId);
+    @GetMapping(
+            value = "/pets/{petId}/thumbnail",
+            produces = "image/jpeg"
+    )
+    byte[] getPetThumbnail(@PathVariable(name = "petId", required = true) Long petId);
+
+    @GetMapping("/hidden-client")
+    void hiddenClientOp();
+
+    @GetMapping("/pets")
+    List<Pet> listPets(@RequestParam(name = "limit", required = false) Integer limit,
+            @RequestParam(name = "Offset-Value", required = false) Integer offsetValue);
+
+    @PutMapping("/pets/{petId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void updatePet(@PathVariable(name = "petId", required = true) Long petId,
+            @RequestBody(required = true) Pet requestBody);
+
+    @PutMapping("/pets-ref/{petId}")
+    Pet updatePetRefById(@PathVariable(name = "petId", required = true) Long petId,
+            @RequestBody(required = true) Pet requestBody);
 }

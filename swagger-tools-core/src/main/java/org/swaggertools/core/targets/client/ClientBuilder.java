@@ -11,10 +11,7 @@ import org.swaggertools.core.util.NameUtils;
 import org.swaggertools.core.util.StreamUtils;
 
 import javax.lang.model.element.Modifier;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.swaggertools.core.targets.JavaFileGenerator.INDENT;
 import static org.swaggertools.core.util.JavaUtils.*;
@@ -41,6 +38,7 @@ abstract class ClientBuilder {
     public void generate() {
         apiDefinition.getOperations()
                 .stream().filter(Operation::isGenerateClient)
+                .sorted(Comparator.comparing(Operation::getJavaIdentifier))
                 .forEach(this::processOperation);
         writeBaseClient(writer);
         clients.forEach((k, v) -> writer.write(JavaFile.builder(options.clientPackage, v.build()).indent(INDENT).build()));

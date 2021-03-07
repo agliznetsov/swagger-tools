@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import org.junit.Test;
 import org.swaggertools.core.run.JavaFileWriter;
 import org.swaggertools.core.run.Processor;
-import org.swaggertools.core.run.Source;
 import org.swaggertools.core.source.ApiDefinitionSource;
 import org.swaggertools.core.targets.client.ClientDialect;
 import org.swaggertools.core.targets.client.ClientGenerator;
@@ -14,12 +13,13 @@ import org.swaggertools.core.targets.server.ServerDialect;
 import org.swaggertools.core.targets.server.ServerGenerator;
 import org.swaggertools.core.util.StreamUtils;
 
-import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class GeneratorsTest {
@@ -36,10 +36,19 @@ public class GeneratorsTest {
     }
 
     @Test
+    public void test_multi_file() throws Exception {
+        testPetStore(
+                "/petstore/source/multifile/path1.yaml",
+                "/petstore/source/multifile/path2.yaml",
+                "/petstore/source/multifile/schema1.yaml",
+                "/petstore/source/multifile/schema2.yaml"
+        );
+    }
+
+    @Test
     public void test_server_reactive() throws Exception {
         memoryWriter.files.clear();
-        Processor processor = new Processor();
-        processor.setSource(createSource("/petstore/source/openapi.yaml"));
+        Processor processor = createProcessor("/petstore/source/openapi.yaml");
 
         ServerGenerator target = createServerGenerator(null);
         target.getOptions().setReactive(true);
@@ -51,8 +60,7 @@ public class GeneratorsTest {
     @Test
     public void test_server_jaxrs() throws Exception {
         memoryWriter.files.clear();
-        Processor processor = new Processor();
-        processor.setSource(createSource("/petstore/source/openapi.yaml"));
+        Processor processor = createProcessor("/petstore/source/openapi.yaml");
 
         ServerGenerator target = createServerGenerator(null);
         target.getOptions().setDialect(ServerDialect.JaxRS);
@@ -64,8 +72,7 @@ public class GeneratorsTest {
     @Test
     public void test_client_WebClient() throws Exception {
         memoryWriter.files.clear();
-        Processor processor = new Processor();
-        processor.setSource(createSource("/petstore/source/openapi.yaml"));
+        Processor processor = createProcessor("/petstore/source/openapi.yaml");
 
         ClientGenerator target = createClientGenerator(null);
         target.getOptions().setDialect(ClientDialect.WebClient);
@@ -78,8 +85,7 @@ public class GeneratorsTest {
     @Test
     public void test_client_factory() throws Exception {
         memoryWriter.files.clear();
-        Processor processor = new Processor();
-        processor.setSource(createSource("/petstore/source/openapi.yaml"));
+        Processor processor = createProcessor("/petstore/source/openapi.yaml");
 
         ClientGenerator target = createClientGenerator("com.example.model");
         target.getOptions().setFactoryName("Petstore");
@@ -90,8 +96,7 @@ public class GeneratorsTest {
 
     @Test
     public void testValidation() throws Exception {
-        Processor processor = new Processor();
-        processor.setSource(createSource("/validation/openapi.yaml"));
+        Processor processor = createProcessor("/validation/openapi.yaml");
 
         ModelGenerator modelGenerator = createModelGenerator("com.example.model");
         modelGenerator.getOptions().setValidation(true);
@@ -111,14 +116,12 @@ public class GeneratorsTest {
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/validation/server/" + k, v));
     }
 
-
-    public void testPetStore(String source) throws Exception {
-        Processor processor = new Processor();
-        processor.setSource(createSource(source));
+    public void testPetStore(String... source) throws Exception {
+        Processor processor = createProcessor(source);
 
         processor.setTargets(Collections.singletonList(createModelGenerator(null)));
         processor.process();
-        //assertEquals(10, memoryWriter.files.size());
+        assertTrue(memoryWriter.files.size() > 0);
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/model/" + k, v));
 
         memoryWriter.files.clear();
@@ -132,6 +135,15 @@ public class GeneratorsTest {
         processor.process();
         assertEquals(1, memoryWriter.files.size());
         memoryWriter.files.forEach((k, v) -> verifyJavaFile("/petstore/server/" + k, v));
+    }
+
+    private Processor createProcessor(String... sources) {
+        String[] paths = Arrays.stream(sources)
+                .map(it -> this.getClass().getResource(it).getPath())
+                .toArray(String[]::new);
+        Processor processor = new Processor(paths);
+        processor.setSource(new ApiDefinitionSource());
+        return processor;
     }
 
     private ModelGenerator createModelGenerator(String modelPackage) {
@@ -173,18 +185,10 @@ public class GeneratorsTest {
         return generator;
     }
 
-    private Source createSource(String location) throws Exception {
-        URL url = this.getClass().getResource(location);
-        String path = url.getPath();
-        ApiDefinitionSource source = new ApiDefinitionSource();
-        source.getOptions().setLocation(path);
-        return source;
-    }
-
     @SneakyThrows
     private void verifyJavaFile(String path, String java) {
-//        String filePath = "swagger-tools-core/src/test/resources" + path + ".java";
-//        FileOutputStream out = new FileOutputStream(new File(filePath));
+//        String filePath = "/swagger-tools/swagger-tools-core/src/test/resources" + path + ".java";
+//        FileOutputStream out = new FileOutputStream(filePath);
 //        out.write(java.getBytes());
 //        out.close();
         String expected = StreamUtils.copyToString(getClass().getResourceAsStream(path + ".java"));
@@ -195,7 +199,7 @@ public class GeneratorsTest {
         return string.replace("\r", "").trim();
     }
 
-    class MemoryWriter implements JavaFileWriter {
+    static class MemoryWriter implements JavaFileWriter {
         final Map<String, String> files = new HashMap<>();
 
         @Override

@@ -61,8 +61,14 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
+                            <sources>
+                                <param>${project.basedir}/src/main/resources/api/common.yaml</param>
+                                <param>${project.basedir}/src/main/resources/api/event.yaml</param>
+                                <param>${project.basedir}/src/main/resources/api/schema.yaml</param>
+                                <param>${project.basedir}/src/main/resources/api/main.yaml</param>
+                            </sources>
                             <options>
-                                <source.location>${project.basedir}/src/main/resources/petstore.yaml</source.location>
+                                <source.merged>${project.basedir}/src/main/resources/petstore.yaml</source.merged>
 
                                 <target.model.location>${project.build.directory}/generated-sources/swagger</target.model.location>
                                 <target.model.lombok>false</target.model.lombok>
