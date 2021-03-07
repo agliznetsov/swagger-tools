@@ -27,19 +27,19 @@ public class GeneratorsTest {
 
     @Test
     public void test_openapi() throws Exception {
-        testPetStore("/petstore/openapi3.yaml");
+        testPetStore("/petstore/source/openapi.yaml");
     }
 
     @Test
     public void test_swagger() throws Exception {
-        testPetStore("/petstore/swagger.yaml");
+        testPetStore("/petstore/source/swagger.yaml");
     }
 
     @Test
     public void test_server_reactive() throws Exception {
         memoryWriter.files.clear();
         Processor processor = new Processor();
-        processor.setSource(createSource("/petstore/openapi3.yaml"));
+        processor.setSource(createSource("/petstore/source/openapi.yaml"));
 
         ServerGenerator target = createServerGenerator(null);
         target.getOptions().setReactive(true);
@@ -52,7 +52,7 @@ public class GeneratorsTest {
     public void test_server_jaxrs() throws Exception {
         memoryWriter.files.clear();
         Processor processor = new Processor();
-        processor.setSource(createSource("/petstore/openapi3.yaml"));
+        processor.setSource(createSource("/petstore/source/openapi.yaml"));
 
         ServerGenerator target = createServerGenerator(null);
         target.getOptions().setDialect(ServerDialect.JaxRS);
@@ -65,7 +65,7 @@ public class GeneratorsTest {
     public void test_client_WebClient() throws Exception {
         memoryWriter.files.clear();
         Processor processor = new Processor();
-        processor.setSource(createSource("/petstore/openapi3.yaml"));
+        processor.setSource(createSource("/petstore/source/openapi.yaml"));
 
         ClientGenerator target = createClientGenerator(null);
         target.getOptions().setDialect(ClientDialect.WebClient);
@@ -79,7 +79,7 @@ public class GeneratorsTest {
     public void test_client_factory() throws Exception {
         memoryWriter.files.clear();
         Processor processor = new Processor();
-        processor.setSource(createSource("/petstore/openapi2.yaml"));
+        processor.setSource(createSource("/petstore/source/openapi.yaml"));
 
         ClientGenerator target = createClientGenerator("com.example.model");
         target.getOptions().setFactoryName("Petstore");

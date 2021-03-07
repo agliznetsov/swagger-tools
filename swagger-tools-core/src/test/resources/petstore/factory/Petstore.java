@@ -15,12 +15,9 @@ public class Petstore {
 
     private final PetsClient pets;
 
-    private final OwnersClient owners;
-
     public Petstore(RestTemplate client, String basePath) {
         this.client = client;
         pets = new PetsClient(client, basePath, headers);
-        owners = new OwnersClient(client, basePath, headers);
     }
 
     public RestTemplate getClient() {
@@ -33,14 +30,9 @@ public class Petstore {
 
     public void setRequestCustomizer(Consumer<BodyBuilder> requestCustomizer) {
         pets.setRequestCustomizer(requestCustomizer);
-        owners.setRequestCustomizer(requestCustomizer);
     }
 
     public PetsClient pets() {
         return pets;
-    }
-
-    public OwnersClient owners() {
-        return owners;
     }
 }
