@@ -36,8 +36,8 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <slf4j.version>1.7.25</slf4j.version>
-        <swagger3.version>2.0.2</swagger3.version>
-        <swagger.version>1.5.20</swagger.version>
+        <swagger3.version>2.1.7</swagger3.version>
+        <swagger.version>1.6.2</swagger.version>
         <junit.version>4.12</junit.version>
     </properties>
 
@@ -187,7 +187,6 @@
         <module>swagger-tools-core</module>
         <module>swagger-tools-cli</module>
         <module>swagger-tools-maven-plugin</module>
-        <module>swagger-tools-demo</module>
     </modules>
 
 </project>
