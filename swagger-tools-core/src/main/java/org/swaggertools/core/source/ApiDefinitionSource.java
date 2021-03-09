@@ -2,10 +2,15 @@ package org.swaggertools.core.source;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.swagger.parser.util.SwaggerDeserializationResult;
+import io.swagger.parser.util.SwaggerDeserializer;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import io.swagger.v3.parser.util.OpenAPIDeserializer;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +56,7 @@ public class ApiDefinitionSource extends AutoConfigurable<ApiDefinitionSource.Op
     }
 
     private ApiDefinition mapJson(JsonNode node) {
+        validate(node);
         JsonNode openapi = node.get("openapi");
         JsonNode swagger = node.get("swagger");
         if (openapi != null) {
@@ -80,20 +86,60 @@ public class ApiDefinitionSource extends AutoConfigurable<ApiDefinitionSource.Op
         }
 
         List<JsonNode> openapiSources = nodes.stream().filter(it -> it.get("openapi") != null).collect(Collectors.toList());
-        OpenAPI openAPI = new OpenApiMerger().merge(openapiSources);
+        JsonNode mergedNode = new OpenApiMerger().merge(openapiSources);
 
+        writeMergedDefinition(mergedNode);
+
+        validate(mergedNode);
+
+        return new OpenApiMapper().map(mergedNode);
+    }
+
+    private void validate(JsonNode jsonNode) {
+        if (options.validate) {
+            if (jsonNode.get("openapi") != null) {
+                validateOpenApi(jsonNode);
+            } else if (jsonNode.get("swagger") != null) {
+                validateSwagger(jsonNode);
+            }
+        }
+    }
+
+    private void validateOpenApi(JsonNode jsonNode)  {
+        SwaggerParseResult result = new OpenAPIDeserializer().deserialize(jsonNode);
+        if (result.getMessages() != null) {
+            for(String msg : result.getMessages()) {
+                log.error(msg);
+            }
+        }
+        if (result.getOpenAPI() == null || !result.getMessages().isEmpty()) {
+            throw new IllegalArgumentException("API validation error");
+        }
+    }
+
+    private void validateSwagger(JsonNode jsonNode)  {
+        SwaggerDeserializationResult result = new SwaggerDeserializer().deserialize(jsonNode);
+        if (result.getMessages() != null) {
+            for(String msg : result.getMessages()) {
+                log.error(msg);
+            }
+        }
+        if (result.getSwagger() == null || !result.getMessages().isEmpty()) {
+            throw new IllegalArgumentException("API validation error");
+        }
+    }
+
+    private void writeMergedDefinition(JsonNode jsonNode) throws IOException {
         if (options.merged != null) {
             log.info("Writing merged API definition to {}", options.merged);
             try (FileOutputStream out = new FileOutputStream(options.merged)) {
                 if (options.merged.toLowerCase().endsWith(".json")) {
-                    jsonMapper.writeValue(out, openAPI);
+                    jsonMapper.writeValue(out, jsonNode);
                 } else {
-                    yamlMapper.writeValue(out, openAPI);
+                    yamlMapper.writeValue(out, jsonNode);
                 }
             }
         }
-
-        return new OpenApiMapper().map(openAPI);
     }
 
     @SneakyThrows
@@ -112,11 +158,14 @@ public class ApiDefinitionSource extends AutoConfigurable<ApiDefinitionSource.Op
 
     @Data
     public static class Options {
-        @ConfigurationProperty(description = "Api definition location")
+        @ConfigurationProperty(description = "API definition location")
         String location;
 
-        @ConfigurationProperty(description = "Merged Api definition location")
+        @ConfigurationProperty(description = "Merged API definition location")
         String merged;
+
+        @ConfigurationProperty(description = "Perform API validation", defaultValue = "true")
+        boolean validate = true;
     }
 
 }

@@ -9,6 +9,13 @@ info:
 x-base-path: /v1
 x-model-package: com.example.model
 
+tags:
+  - name: "pets"
+    description: "Everything about your Pets"
+    externalDocs:
+      description: "Find out more"
+      url: "http://swagger.io"
+
 paths:
 
   /pets:

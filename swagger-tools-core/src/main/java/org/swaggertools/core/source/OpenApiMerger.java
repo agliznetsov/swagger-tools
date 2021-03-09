@@ -1,165 +1,109 @@
 package org.swaggertools.core.source;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.core.util.Json;
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.Paths;
-import io.swagger.v3.oas.models.tags.Tag;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class OpenApiMerger {
-    ObjectMapper objectMapper = Json.mapper();
-    OpenAPI openAPI = new OpenAPI();
+    ObjectNode result;
+    JsonNodeFactory nodeFactory;
 
-    public OpenAPI merge(List<JsonNode> sources) {
-        for (JsonNode node : sources) {
-            OpenAPI part = objectMapper.convertValue(node, OpenAPI.class);
-            merge(part);
+    public JsonNode merge(List<JsonNode> sources) {
+        nodeFactory = JsonNodeFactory.instance;
+        result = new ObjectNode(nodeFactory);
+        for (JsonNode part : sources) {
+            if (part instanceof ObjectNode) {
+                merge((ObjectNode) part);
+            }
         }
-        return openAPI;
+        return result;
     }
 
-    private void merge(OpenAPI part) {
-        mergeInfo(part);
-        mergeExternalDocs(part);
-        mergeServers(part);
-        mergeSecurity(part);
-        mergeTags(part);
-        mergePaths(part);
+    private void merge(ObjectNode part) {
+        result.set("openapi", new TextNode("3.0.1"));
+        copyNode(part, "info");
+        copyNode(part, "externalDocs");
+        copyNode(part, "servers");
+        copyNode(part, "security");
+        copyNode(part, "tags");
+        mergeNode(part, result, "paths");
         mergeComponents(part);
         mergeExtensions(part);
     }
 
-    private void mergeInfo(OpenAPI part) {
-        if (part.getInfo() != null) {
-            if (openAPI.getInfo() == null) {
-                openAPI.setInfo(part.getInfo());
+    private void copyNode(ObjectNode part, String path) {
+        JsonNode node = part.get(path);
+        if (node != null) {
+            if (result.get(path) == null) {
+                result.set(path, node);
             } else {
-                throw new IllegalArgumentException("Duplicate 'info'");
+                throw new IllegalArgumentException("Duplicate '" + path + "'");
             }
         }
     }
 
-    private void mergeExternalDocs(OpenAPI part) {
-        if (part.getExternalDocs() != null) {
-            if (openAPI.getExternalDocs() == null) {
-                openAPI.setExternalDocs(part.getExternalDocs());
-            } else {
-                throw new IllegalArgumentException("Duplicate 'externalDocs'");
-            }
-        }
-    }
-
-    private void mergeServers(OpenAPI part) {
-        if (part.getServers() != null) {
-            if (openAPI.getServers() == null) {
-                openAPI.setServers(new ArrayList<>());
-            }
-            openAPI.getServers().addAll(part.getServers());
-        }
-    }
-
-    private void mergeSecurity(OpenAPI part) {
-        if (part.getSecurity() != null) {
-            if (openAPI.getSecurity() == null) {
-                openAPI.setSecurity(new ArrayList<>());
-            }
-            openAPI.getSecurity().addAll(part.getSecurity());
-        }
-    }
-
-    private void mergeTags(OpenAPI part) {
-        if (part.getTags() != null) {
-            if (openAPI.getTags() == null) {
-                openAPI.setTags(new ArrayList<>());
-            }
-            for (Tag tag : part.getTags()) {
-                if (openAPI.getTags().stream().filter(it -> it.getName().equals(tag.getName())).findAny().isPresent()) {
-                    throw new IllegalArgumentException("Duplicate tag: " + tag.getName());
-                }
-                openAPI.getTags().add(tag);
-            }
-        }
-    }
-
-    private void mergePaths(OpenAPI part) {
-        if (part.getPaths() != null) {
-            if (openAPI.getPaths() == null) {
-                openAPI.setPaths(new Paths());
-            }
-            for (Map.Entry<String, PathItem> e : part.getPaths().entrySet()) {
-                if (openAPI.getPaths().containsKey(e.getKey())) {
-                    throw new IllegalArgumentException("Duplicate path: " + e.getKey());
-                }
-                openAPI.getPaths().put(e.getKey(), e.getValue());
-            }
-        }
-    }
-
-    private void mergeComponents(OpenAPI part) {
-        if (part.getComponents() != null) {
-            if (openAPI.getComponents() == null) {
-                openAPI.setComponents(new Components());
-            }
-
-            mergeComponents(part.getComponents().getSchemas(), openAPI.getComponents()::getSchemas, openAPI.getComponents()::setSchemas);
-            mergeComponents(part.getComponents().getResponses(), openAPI.getComponents()::getResponses, openAPI.getComponents()::setResponses);
-            mergeComponents(part.getComponents().getParameters(), openAPI.getComponents()::getParameters, openAPI.getComponents()::setParameters);
-            mergeComponents(part.getComponents().getExamples(), openAPI.getComponents()::getExamples, openAPI.getComponents()::setExamples);
-            mergeComponents(part.getComponents().getRequestBodies(), openAPI.getComponents()::getRequestBodies, openAPI.getComponents()::setRequestBodies);
-            mergeComponents(part.getComponents().getHeaders(), openAPI.getComponents()::getHeaders, openAPI.getComponents()::setHeaders);
-            mergeComponents(part.getComponents().getSecuritySchemes(), openAPI.getComponents()::getSecuritySchemes, openAPI.getComponents()::setSecuritySchemes);
-            mergeComponents(part.getComponents().getLinks(), openAPI.getComponents()::getLinks, openAPI.getComponents()::setLinks);
-            mergeComponents(part.getComponents().getCallbacks(), openAPI.getComponents()::getCallbacks, openAPI.getComponents()::setCallbacks);
-        }
-    }
-
-    private <T> void mergeComponents(Map<String, T> source, Supplier<Map<String, T>> getter, Consumer<Map<String, T>> setter) {
-        if (source == null) {
+    private void mergeNode(JsonNode source, ObjectNode target, String path) {
+        ObjectNode value = (ObjectNode) source.get(path);
+        if (value == null) {
             return;
         }
 
-        Map<String, T> target = getter.get();
-        if (target == null) {
-            target = new HashMap<>();
-            setter.accept(target);
+        ObjectNode destination = (ObjectNode) target.get(path);
+        if (destination == null) {
+            destination = new ObjectNode(nodeFactory);
+            target.set(path, destination);
         }
 
-        for (Map.Entry<String, T> e : source.entrySet()) {
-            if (target.containsKey(e.getKey())) {
-                throw new IllegalArgumentException("Duplicate component: " + e.getKey());
+        for (Iterator<Map.Entry<String, JsonNode>> it = value.fields(); it.hasNext(); ) {
+            Map.Entry<String, JsonNode> e = it.next();
+            if (destination.has(e.getKey())) {
+                throw new IllegalArgumentException("Duplicate node: " + e.getKey());
             }
-            target.put(e.getKey(), e.getValue());
+            destination.set(e.getKey(), e.getValue());
         }
     }
 
-    private void mergeExtensions(OpenAPI part) {
-        if (part.getExtensions() != null) {
-            if (openAPI.getExtensions() == null) {
-                openAPI.setExtensions(new HashMap<>());
-            }
-            mergeExtensionValues(openAPI.getExtensions(), part.getExtensions());
+    private void mergeComponents(ObjectNode part) {
+        ObjectNode value = (ObjectNode) part.get("components");
+        if (value == null) {
+            return;
         }
+
+        ObjectNode destination = (ObjectNode) result.get("components");
+        if (destination == null) {
+            destination = new ObjectNode(nodeFactory);
+            result.set("components", destination);
+        }
+
+        mergeNode(value, destination, "schemas");
+        mergeNode(value, destination, "responses");
+        mergeNode(value, destination, "parameters");
+        mergeNode(value, destination, "examples");
+        mergeNode(value, destination, "requestBodies");
+        mergeNode(value, destination, "headers");
+        mergeNode(value, destination, "securitySchemes");
+        mergeNode(value, destination, "links");
+        mergeNode(value, destination, "callbacks");
     }
 
-    private static void mergeExtensionValues(Map<String, Object> target, Map<String, Object> source) {
-        for (Map.Entry<String, Object> e : source.entrySet()) {
-            Object existingValue = target.get(e.getKey());
-            if (existingValue == null) {
-                target.put(e.getKey(), e.getValue());
-            } else if (existingValue.equals(e.getValue())) {
-                //value is already set
-            } else {
-                throw new IllegalArgumentException("Conflict extension: " + e.getKey());
+
+    private void mergeExtensions(ObjectNode part) {
+        for (Iterator<Map.Entry<String, JsonNode>> it = part.fields(); it.hasNext(); ) {
+            Map.Entry<String, JsonNode> e = it.next();
+            if (e.getKey().startsWith("x-")) {
+                Object existingValue = result.get(e.getKey());
+                if (existingValue == null) {
+                    result.set(e.getKey(), e.getValue());
+                } else if (existingValue.equals(e.getValue())) {
+                    //value is already set
+                } else {
+                    throw new IllegalArgumentException("Conflict extension: " + e.getKey());
+                }
             }
         }
     }
