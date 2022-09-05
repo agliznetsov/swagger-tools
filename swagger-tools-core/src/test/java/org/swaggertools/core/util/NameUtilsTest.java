@@ -22,7 +22,8 @@ public class NameUtilsTest {
 
     @Test
     public void java_identifier() {
-        assertEquals("TheName", javaIdentifier("-The Name!"));
-        assertEquals("Name2", javaIdentifier("1Name2"));
+        assertEquals("name", javaIdentifier("name"));
+        assertEquals("_TheName", javaIdentifier("-The Name!"));
+        assertEquals("_1Name2", javaIdentifier("1Name2"));
     }
 }

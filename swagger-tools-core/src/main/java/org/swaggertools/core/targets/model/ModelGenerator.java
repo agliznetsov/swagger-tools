@@ -167,7 +167,7 @@ public class ModelGenerator extends JavaFileGenerator<ModelOptions> implements T
     private TypeSpec.Builder createEnum(String name, PrimitiveSchema schema) {
         TypeSpec.Builder model = TypeSpec.enumBuilder(name).addModifiers(Modifier.PUBLIC);
         for (String value : schema.getEnumValues()) {
-            String valueName = NameUtils.upperCase(value);
+            String valueName = NameUtils.upperCase(javaIdentifier(value));
             model.addEnumConstant(valueName, TypeSpec.anonymousClassBuilder("")
                     .addAnnotation(AnnotationSpec.builder(JsonProperty.class)
                             .addMember("value", "$S", value)

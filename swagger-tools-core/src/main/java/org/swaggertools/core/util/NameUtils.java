@@ -16,6 +16,11 @@ public class NameUtils {
             if (sb.length() == 0) {
                 if (Character.isJavaIdentifierStart(ch)) {
                     sb.append(ch);
+                } else {
+                    sb.append("_");
+                    if (Character.isJavaIdentifierPart(ch)) {
+                        sb.append(ch);
+                    }
                 }
             } else {
                 if (Character.isJavaIdentifierPart(ch)) {
