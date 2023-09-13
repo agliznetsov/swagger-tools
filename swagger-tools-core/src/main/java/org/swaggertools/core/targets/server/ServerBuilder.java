@@ -9,7 +9,7 @@ import org.swaggertools.core.run.JavaFileWriter;
 import org.swaggertools.core.targets.SchemaMapper;
 
 import javax.lang.model.element.Modifier;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;

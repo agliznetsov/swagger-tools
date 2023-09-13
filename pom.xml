@@ -6,7 +6,7 @@
 
     <groupId>com.github.agliznetsov.swagger-tools</groupId>
     <artifactId>swagger-tools</artifactId>
-    <version>0.7.0</version>
+    <version>0.8.0</version>
     <packaging>pom</packaging>
 
     <name>swagger-tools</name>
@@ -44,6 +44,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>3.0.2</version>
+            </dependency>
+            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
@@ -75,7 +80,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.10</version>
+            <version>1.18.28</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

@@ -160,13 +160,13 @@ public abstract class BaseClient {
                 .defaultIfEmpty(new byte[0])
                 .flatMap(bodyBytes -> {
                     String msg = String.format("ClientResponse has erroneous status code: %d %s", response.statusCode().value(),
-                            response.statusCode().getReasonPhrase());
+                            response.statusCode().toString());
                     Charset charset = response.headers().contentType()
                             .map(MimeType::getCharset)
                             .orElse(StandardCharsets.ISO_8859_1);
                     return Mono.error(new WebClientResponseException(msg,
                             response.statusCode().value(),
-                            response.statusCode().getReasonPhrase(),
+                            response.statusCode().toString(),
                             response.headers().asHttpHeaders(),
                             bodyBytes,
                             charset));

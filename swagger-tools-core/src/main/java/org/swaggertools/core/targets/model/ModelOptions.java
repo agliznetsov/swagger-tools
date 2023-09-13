@@ -16,6 +16,6 @@ public class ModelOptions extends SchemaOptions {
     boolean lombokUniqueBuilder = false;
     @ConfigurationProperty(description = "Use @SuperBuilder annotation", defaultValue = "false")
     boolean lombokSuperBuilder = false;
-    @ConfigurationProperty(description = "Annotate model properties with javax.validation.constraints.*", defaultValue = "false")
+    @ConfigurationProperty(description = "Annotate model properties with jakarta.validation.constraints.*", defaultValue = "false")
     boolean validation = false;
 }

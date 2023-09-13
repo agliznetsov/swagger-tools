@@ -3,10 +3,10 @@ package org.swaggertools.demo.web;
 import org.swaggertools.demo.model.Cat;
 import org.swaggertools.demo.model.Pet;
 
-import javax.inject.Singleton;
-import javax.ws.rs.sse.OutboundSseEvent;
-import javax.ws.rs.sse.Sse;
-import javax.ws.rs.sse.SseEventSink;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.sse.OutboundSseEvent;
+import jakarta.ws.rs.sse.Sse;
+import jakarta.ws.rs.sse.SseEventSink;
 
 import java.util.HashMap;
 import java.util.List;

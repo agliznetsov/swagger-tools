@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.swaggertools.demo.model.Pet;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;

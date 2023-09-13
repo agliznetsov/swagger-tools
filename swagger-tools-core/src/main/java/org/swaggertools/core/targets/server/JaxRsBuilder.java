@@ -15,9 +15,9 @@ import com.squareup.javapoet.TypeSpec;
 
 public class JaxRsBuilder extends ServerBuilder {
 
-    private static final String JAX_RS = "javax.ws.rs";
-    private static final String JAX_RS_CORE = "javax.ws.rs.core";
-    private static final String JAX_SSE = "javax.ws.rs.sse";
+    private static final String JAX_RS = "jakarta.ws.rs";
+    private static final String JAX_RS_CORE = "jakarta.ws.rs.core";
+    private static final String JAX_SSE = "jakarta.ws.rs.sse";
     private static final ClassName PATH = ClassName.get(JAX_RS, "Path");
     private static final ClassName CONSUMES = ClassName.get(JAX_RS, "Consumes");
     private static final ClassName PRODUCES = ClassName.get(JAX_RS, "Produces");
