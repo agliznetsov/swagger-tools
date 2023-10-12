@@ -79,7 +79,7 @@ public abstract class BaseClient {
             Object value = keyValues[i + 1];
             if (value != null) {
                 if (value instanceof Collection) {
-                    parameters.put(key.toString(), value);
+                    parameters.put(key.toString(), new ArrayList((Collection) value));
                 } else {
                     parameters.put(key.toString(), Collections.singletonList(value.toString()));
                 }

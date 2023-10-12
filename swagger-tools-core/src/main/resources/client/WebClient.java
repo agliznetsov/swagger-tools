@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -87,7 +88,7 @@ public abstract class BaseClient {
             Object value = keyValues[i + 1];
             if (value != null) {
                 if (value instanceof Collection) {
-                    parameters.put(key.toString(), value);
+                    parameters.put(key.toString(), new ArrayList((Collection) value));
                 } else {
                     parameters.put(key.toString(), Collections.singletonList(value.toString()));
                 }
