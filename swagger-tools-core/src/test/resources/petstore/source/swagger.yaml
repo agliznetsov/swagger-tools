@@ -37,6 +37,27 @@ paths:
         '200':
           description: OK
 
+  /xmlTest:
+    post:
+      operationId: xmlOperation
+      tags:
+        - pets
+      parameters:
+        - name: pet
+          in: body
+          required: true
+          schema:
+            type: string
+      produces:
+        - application/xml
+      consumes:
+        - application/xml
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+
   /pets:
     get:
       summary: List all pets

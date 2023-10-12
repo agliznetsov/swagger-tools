@@ -18,6 +18,25 @@ tags:
 
 paths:
 
+  /xmlTest:
+    post:
+      operationId: xmlOperation
+      tags:
+        - pets
+      requestBody:
+        x-name: pet
+        content:
+          application/xml:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/xml:
+              schema:
+                type: string
+
   /pets:
     get:
       summary: List all pets

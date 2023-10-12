@@ -89,4 +89,11 @@ public class PetsClient extends BaseClient {
         ResponseEntity<Pet> response = invokeAPI("/pets-ref/{petId}", "PUT", createUrlVariables("petId", petId), createQueryParameters(), createQueryParameters(), requestBody, requestType, responseType);
         return response.getBody();
     }
+
+    public String xmlOperation(String pet) {
+        ParameterizedTypeReference<String> requestType = new ParameterizedTypeReference<String>(){};
+        ParameterizedTypeReference<String> responseType = new ParameterizedTypeReference<String>(){};
+        ResponseEntity<String> response = invokeAPI("/xmlTest", "POST", createUrlVariables(), createQueryParameters(), createQueryParameters(), pet, requestType, responseType);
+        return response.getBody();
+    }
 }

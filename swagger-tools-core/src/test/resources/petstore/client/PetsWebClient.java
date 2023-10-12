@@ -85,4 +85,10 @@ public class PetsWebClient extends BaseClient {
         ParameterizedTypeReference<Pet> responseType = new ParameterizedTypeReference<Pet>(){};
         return invokeAPI("/pets-ref/{petId}", "PUT", createUrlVariables("petId", petId), createQueryParameters(), createQueryParameters(), requestBody, requestType).flatMap(e -> mapResponse(e, responseType));
     }
+
+    public Mono<String> xmlOperation(String pet) {
+        ParameterizedTypeReference<String> requestType = new ParameterizedTypeReference<String>(){};
+        ParameterizedTypeReference<String> responseType = new ParameterizedTypeReference<String>(){};
+        return invokeAPI("/xmlTest", "POST", createUrlVariables(), createQueryParameters(), createQueryParameters(), pet, requestType).flatMap(e -> mapResponse(e, responseType));
+    }
 }

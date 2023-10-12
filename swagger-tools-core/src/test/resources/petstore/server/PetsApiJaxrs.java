@@ -73,4 +73,9 @@ public interface PetsApi {
     @PUT
     @Path("/pets-ref/{petId}")
     Pet updatePetRefById(@PathParam("petId") Long petId, Pet requestBody);
+
+    @POST
+    @Path("/xmlTest")
+    @Produces("application/xml")
+    String xmlOperation(String pet);
 }

@@ -13,6 +13,7 @@ import org.swaggertools.core.targets.server.ServerDialect;
 import org.swaggertools.core.targets.server.ServerGenerator;
 import org.swaggertools.core.util.StreamUtils;
 
+import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -187,10 +188,11 @@ public class GeneratorsTest {
 
     @SneakyThrows
     private void verifyJavaFile(String path, String java) {
-//        String filePath = "/swagger-tools/swagger-tools-core/src/test/resources" + path + ".java";
+//        String filePath = "/Users/andrey.gliznetsov/work/neton/swagger-tools/swagger-tools-core/src/test/resources" + path + ".java";
 //        FileOutputStream out = new FileOutputStream(filePath);
 //        out.write(java.getBytes());
 //        out.close();
+
         String expected = StreamUtils.copyToString(getClass().getResourceAsStream(path + ".java"));
         assertEquals(normalize(expected), normalize(java));
     }

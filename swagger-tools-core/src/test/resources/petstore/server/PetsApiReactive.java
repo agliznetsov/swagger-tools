@@ -77,4 +77,10 @@ public interface PetsApi {
     @PutMapping("/pets-ref/{petId}")
     Mono<Pet> updatePetRefById(@PathVariable(name = "petId", required = true) Long petId,
             @RequestBody(required = true) Pet requestBody);
+
+    @PostMapping(
+            value = "/xmlTest",
+            produces = "application/xml"
+    )
+    Mono<String> xmlOperation(@RequestBody(required = true) String pet);
 }

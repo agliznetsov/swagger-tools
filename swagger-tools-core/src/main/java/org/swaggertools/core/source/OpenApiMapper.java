@@ -147,22 +147,35 @@ public class OpenApiMapper {
                 requestBody = resolveRef(requestBody.get$ref());
             }
             if (requestBody.getContent() != null) {
+                //First try to use JSON response
                 MediaType mediaType = requestBody.getContent().get(JSON);
                 if (mediaType != null && mediaType.getSchema() != null) {
-                    Parameter res = new Parameter();
-                    if (requestBody.getExtensions() != null && requestBody.getExtensions().get(X_NAME) != null) {
-                        res.setName(requestBody.getExtensions().get(X_NAME).toString());
-                    } else {
-                        res.setName("requestBody");
+                    return createRequestBodyParameter(requestBody, mediaType);
+                } else {
+                    //Otherwise take the first defined content
+                    mediaType = requestBody.getContent().values().stream()
+                            .filter(it -> it != null && it.getSchema() != null)
+                            .findFirst().orElse(null);
+                    if (mediaType != null) {
+                        return createRequestBodyParameter(requestBody, mediaType);
                     }
-                    res.setKind(ParameterKind.BODY);
-                    res.setRequired(requestBody.getRequired() == null ? true : requestBody.getRequired());
-                    res.setSchema(mapSchema(null, mediaType.getSchema()));
-                    return res;
                 }
             }
         }
         return null;
+    }
+
+    private Parameter createRequestBodyParameter(RequestBody requestBody, MediaType mediaType) {
+        Parameter res = new Parameter();
+        if (requestBody.getExtensions() != null && requestBody.getExtensions().get(X_NAME) != null) {
+            res.setName(requestBody.getExtensions().get(X_NAME).toString());
+        } else {
+            res.setName("requestBody");
+        }
+        res.setKind(ParameterKind.BODY);
+        res.setRequired(requestBody.getRequired() == null || requestBody.getRequired());
+        res.setSchema(mapSchema(null, mediaType.getSchema()));
+        return res;
     }
 
     private void addResponse(Operation info, ApiResponses responses) {

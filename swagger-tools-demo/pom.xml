@@ -9,7 +9,7 @@
     <parent>
         <artifactId>swagger-tools</artifactId>
         <groupId>com.github.agliznetsov.swagger-tools</groupId>
-        <version>0.8.0</version>
+        <version>0.8.1</version>
     </parent>
 
     <modules>
