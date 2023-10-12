@@ -188,7 +188,7 @@ public class GeneratorsTest {
 
     @SneakyThrows
     private void verifyJavaFile(String path, String java) {
-//        String filePath = "/Users/andrey.gliznetsov/work/neton/swagger-tools/swagger-tools-core/src/test/resources" + path + ".java";
+//        String filePath = "/src/test/resources" + path + ".java";
 //        FileOutputStream out = new FileOutputStream(filePath);
 //        out.write(java.getBytes());
 //        out.close();
