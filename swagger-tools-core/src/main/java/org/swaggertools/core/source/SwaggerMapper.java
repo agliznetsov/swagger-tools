@@ -84,6 +84,10 @@ public class SwaggerMapper {
             String mediaType = operation.getProduces().get(0);
             res.setResponseMediaType(mediaType);
         }
+        if (operation.getConsumes() != null && !operation.getConsumes().isEmpty()) {
+            String mediaType = operation.getConsumes().get(0);
+            res.setRequestMediaType(mediaType);
+        }
         res.setResponseEntity(isResponseEntity(operation));
 
         if (operation.getVendorExtensions() != null) {

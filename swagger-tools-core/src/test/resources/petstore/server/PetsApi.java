@@ -24,7 +24,10 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequestMapping("/v1")
 public interface PetsApi {
-    @PostMapping("/pets")
+    @PostMapping(
+            value = "/pets",
+            consumes = "application/json"
+    )
     @ResponseStatus(HttpStatus.CREATED)
     Pet createPet(@RequestBody(required = true) Pet pet);
 
@@ -65,18 +68,25 @@ public interface PetsApi {
     List<Pet> listPets(@RequestParam(name = "limit", required = false) Integer limit,
             @RequestParam(name = "Offset-Value", required = false) Integer offsetValue);
 
-    @PutMapping("/pets/{petId}")
+    @PutMapping(
+            value = "/pets/{petId}",
+            consumes = "application/json"
+    )
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void updatePet(@PathVariable(name = "petId", required = true) Long petId,
             @RequestBody(required = true) Pet requestBody);
 
-    @PutMapping("/pets-ref/{petId}")
+    @PutMapping(
+            value = "/pets-ref/{petId}",
+            consumes = "application/json"
+    )
     Pet updatePetRefById(@PathVariable(name = "petId", required = true) Long petId,
             @RequestBody(required = true) Pet requestBody);
 
     @PostMapping(
             value = "/xmlTest",
-            produces = "application/xml"
+            produces = "application/xml",
+            consumes = "application/xml"
     )
     String xmlOperation(@RequestBody(required = true) String pet);
 }

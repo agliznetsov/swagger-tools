@@ -47,6 +47,9 @@ public class SpringBuilder extends ServerBuilder {
         if (operation.getResponseMediaType() != null) {
             ab.addMember("produces", "$S", operation.getResponseMediaType());
         }
+        if (operation.getRequestMediaType() != null) {
+            ab.addMember("consumes", "$S", operation.getRequestMediaType());
+        }
         builder.addAnnotation(ab.build());
     }
 

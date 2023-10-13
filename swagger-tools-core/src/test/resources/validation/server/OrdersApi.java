@@ -12,7 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1")
 public interface OrdersApi {
-    @PostMapping("/orders")
+    @PostMapping(
+            value = "/orders",
+            consumes = "application/json"
+    )
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void createOrder(@Valid @RequestBody(required = false) Order requestBody);
 }

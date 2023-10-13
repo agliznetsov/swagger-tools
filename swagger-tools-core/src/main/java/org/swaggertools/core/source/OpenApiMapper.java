@@ -90,7 +90,7 @@ public class OpenApiMapper {
         if (operation.getParameters() != null) {
             operation.getParameters().forEach(it -> res.getParameters().add(mapParameter(it)));
         }
-        Parameter body = mapRequestBody(operation.getRequestBody());
+        Parameter body = mapRequestBody(res, operation.getRequestBody());
         if (body != null) {
             res.getParameters().add(body);
         }
@@ -141,7 +141,7 @@ public class OpenApiMapper {
         }
     }
 
-    private Parameter mapRequestBody(RequestBody requestBody) {
+    private Parameter mapRequestBody(Operation operation, RequestBody requestBody) {
         if (requestBody != null) {
             if (requestBody.get$ref() != null) {
                 requestBody = resolveRef(requestBody.get$ref());
@@ -150,14 +150,16 @@ public class OpenApiMapper {
                 //First try to use JSON response
                 MediaType mediaType = requestBody.getContent().get(JSON);
                 if (mediaType != null && mediaType.getSchema() != null) {
+                    operation.setRequestMediaType(JSON);
                     return createRequestBodyParameter(requestBody, mediaType);
                 } else {
                     //Otherwise take the first defined content
-                    mediaType = requestBody.getContent().values().stream()
-                            .filter(it -> it != null && it.getSchema() != null)
+                    Map.Entry<String,MediaType> requestType = requestBody.getContent().entrySet().stream()
+                            .filter(it -> it.getValue() != null && it.getValue().getSchema() != null)
                             .findFirst().orElse(null);
-                    if (mediaType != null) {
-                        return createRequestBodyParameter(requestBody, mediaType);
+                    if (requestType != null) {
+                        operation.setRequestMediaType(requestType.getKey());
+                        return createRequestBodyParameter(requestBody, requestType.getValue());
                     }
                 }
             }

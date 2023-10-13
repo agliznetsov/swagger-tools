@@ -19,6 +19,7 @@ public class Operation {
     Schema responseSchema;
     HttpStatus responseStatus;
     String responseMediaType;
+    String requestMediaType;
     boolean responseEntity;
     boolean generateClient = true;
     boolean generateServer = true;

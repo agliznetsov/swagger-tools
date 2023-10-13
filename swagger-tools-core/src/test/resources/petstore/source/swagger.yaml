@@ -94,6 +94,8 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/Pet-'
+      consumes:
+        - application/json
       responses:
         '201':
           description: Created
@@ -141,6 +143,8 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/Pet-'
+      consumes:
+        - application/json
       responses:
         '204':
           description: OK
@@ -167,6 +171,8 @@ paths:
       parameters:
         - $ref: '#/parameters/petId'
         - $ref: '#/parameters/Pet'
+      consumes:
+        - application/json
       responses:
         '200':
           $ref: '#/responses/PetResponse'

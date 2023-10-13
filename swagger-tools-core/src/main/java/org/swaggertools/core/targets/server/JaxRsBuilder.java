@@ -57,6 +57,12 @@ public class JaxRsBuilder extends ServerBuilder {
                     .build()
             );
         }
+        if (operation.getRequestMediaType() != null) {
+            builder.addAnnotation(AnnotationSpec.builder(CONSUMES)
+                    .addMember("value", "$S", operation.getRequestMediaType())
+                    .build()
+            );
+        }
     }
 
     @Override

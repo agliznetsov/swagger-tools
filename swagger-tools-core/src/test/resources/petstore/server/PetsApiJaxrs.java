@@ -26,6 +26,7 @@ import java.util.List;
 public interface PetsApi {
     @POST
     @Path("/pets")
+    @Consumes("application/json")
     Pet createPet(Pet pet);
 
     @DELETE
@@ -68,14 +69,17 @@ public interface PetsApi {
 
     @PUT
     @Path("/pets/{petId}")
+    @Consumes("application/json")
     void updatePet(@PathParam("petId") Long petId, Pet requestBody);
 
     @PUT
     @Path("/pets-ref/{petId}")
+    @Consumes("application/json")
     Pet updatePetRefById(@PathParam("petId") Long petId, Pet requestBody);
 
     @POST
     @Path("/xmlTest")
     @Produces("application/xml")
+    @Consumes("application/xml")
     String xmlOperation(String pet);
 }
