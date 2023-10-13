@@ -21,7 +21,6 @@ import java.lang.String;
 import java.util.List;
 
 @Path("/v1")
-@Consumes("application/json")
 @Produces("application/json")
 public interface PetsApi {
     @POST

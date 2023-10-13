@@ -39,7 +39,8 @@ public class JaxRsBuilder extends ServerBuilder {
                     .addMember("value", "$S", apiDefinition.getBasePath())
                     .build()
             );
-            builder.addAnnotation(AnnotationSpec.builder(CONSUMES).addMember("value", "$S", "application/json").build());
+//             disabled for now, because client code does not support custom media type yet
+//            builder.addAnnotation(AnnotationSpec.builder(CONSUMES).addMember("value", "$S", "application/json").build());
             builder.addAnnotation(AnnotationSpec.builder(PRODUCES).addMember("value", "$S", "application/json").build());
         }
     }

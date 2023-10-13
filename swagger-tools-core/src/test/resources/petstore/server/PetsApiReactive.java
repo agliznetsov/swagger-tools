@@ -27,10 +27,7 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/v1")
 public interface PetsApi {
-    @PostMapping(
-            value = "/pets",
-            consumes = "application/json"
-    )
+    @PostMapping("/pets")
     @ResponseStatus(HttpStatus.CREATED)
     Mono<Pet> createPet(@RequestBody(required = true) Pet pet);
 
@@ -72,25 +69,18 @@ public interface PetsApi {
     Mono<List<Pet>> listPets(@RequestParam(name = "limit", required = false) Integer limit,
             @RequestParam(name = "Offset-Value", required = false) Integer offsetValue);
 
-    @PutMapping(
-            value = "/pets/{petId}",
-            consumes = "application/json"
-    )
+    @PutMapping("/pets/{petId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     Mono<Void> updatePet(@PathVariable(name = "petId", required = true) Long petId,
             @RequestBody(required = true) Pet requestBody);
 
-    @PutMapping(
-            value = "/pets-ref/{petId}",
-            consumes = "application/json"
-    )
+    @PutMapping("/pets-ref/{petId}")
     Mono<Pet> updatePetRefById(@PathVariable(name = "petId", required = true) Long petId,
             @RequestBody(required = true) Pet requestBody);
 
     @PostMapping(
             value = "/xmlTest",
-            produces = "application/xml",
-            consumes = "application/xml"
+            produces = "application/xml"
     )
     Mono<String> xmlOperation(@RequestBody(required = true) String pet);
 }

@@ -47,9 +47,10 @@ public class SpringBuilder extends ServerBuilder {
         if (operation.getResponseMediaType() != null) {
             ab.addMember("produces", "$S", operation.getResponseMediaType());
         }
-        if (operation.getRequestMediaType() != null) {
-            ab.addMember("consumes", "$S", operation.getRequestMediaType());
-        }
+//        disabled for now, because client code does not support custom media type yet
+//        if (operation.getRequestMediaType() != null) {
+//            ab.addMember("consumes", "$S", operation.getRequestMediaType());
+//        }
         builder.addAnnotation(ab.build());
     }
 
