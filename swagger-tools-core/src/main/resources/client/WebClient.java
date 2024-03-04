@@ -120,7 +120,7 @@ public abstract class BaseClient {
                                              Object body,
                                              ParameterizedTypeReference requestTypeRef) {
         WebClient.RequestBodySpec request = webClient
-                .method(HttpMethod.resolve(method))
+                .method(HttpMethod.valueOf(method))
                 .uri(builder -> builder
                         .path(basePath + path)
                         .queryParams(queryParams)

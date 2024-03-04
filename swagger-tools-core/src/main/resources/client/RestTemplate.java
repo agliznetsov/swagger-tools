@@ -118,7 +118,7 @@ public abstract class BaseClient {
                 .queryParams(queryParams)
                 .buildAndExpand(urlVariables)
                 .toUri();
-        RequestEntity.BodyBuilder requestBuilder = RequestEntity.method(HttpMethod.resolve(method), uri);
+        RequestEntity.BodyBuilder requestBuilder = RequestEntity.method(HttpMethod.valueOf(method), uri);
         headerParams.forEach((k,v) -> requestBuilder.header(k, v.toArray(new String[0])));
         customizeRequest(requestBuilder);
         RequestEntity<U> requestEntity = requestBuilder.body(body, requestType == null ? null : requestType.getType());
@@ -139,10 +139,10 @@ public abstract class BaseClient {
                 .queryParams(queryParams)
                 .buildAndExpand(urlVariables)
                 .toUri();
-        RequestEntity.BodyBuilder requestBuilder = RequestEntity.method(HttpMethod.resolve(method), uri);
+        RequestEntity.BodyBuilder requestBuilder = RequestEntity.method(HttpMethod.valueOf(method), uri);
         headerParams.forEach((k,v) -> requestBuilder.header(k, v.toArray(new String[0])));
         customizeRequest(requestBuilder);
-        return restTemplate.execute(uri, HttpMethod.resolve(method), requestCallback, responseExtractor);
+        return restTemplate.execute(uri, HttpMethod.valueOf(method), requestCallback, responseExtractor);
     }
 
     protected void customizeRequest(RequestEntity.BodyBuilder requestBuilder) {
