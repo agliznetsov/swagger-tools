@@ -19,7 +19,7 @@ import static org.swaggertools.core.util.NameUtils.*;
 
 abstract class ClientBuilder {
 
-    private static final TypeName HEADERS = ParameterizedTypeName.get(MAP, STRING, ParameterizedTypeName.get(LIST, STRING));
+    protected static final TypeName HEADERS = ParameterizedTypeName.get(MAP, STRING, ParameterizedTypeName.get(LIST, STRING));
     protected static final String EVENT_STREAM = "text/event-stream";
 
     protected SchemaMapper schemaMapper;
