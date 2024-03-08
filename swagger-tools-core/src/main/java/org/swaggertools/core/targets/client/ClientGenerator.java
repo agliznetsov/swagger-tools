@@ -29,7 +29,8 @@ public class ClientGenerator extends JavaFileGenerator<ClientOptions> {
         ClientBuilder clientBuilder = createClientBuilder(apiDefinition, writer);
         clientBuilder.generate();
         if (options.factoryName != null && !options.factoryName.isEmpty()) {
-            new FactoryBuilder(apiDefinition, writer, options, clientBuilder.getClientClassName(), clientBuilder.getRequestBuilderClassName()).generate();
+            FactoryBuilder factoryBuilder = createFactoryBuilder(apiDefinition, writer, clientBuilder);
+            factoryBuilder.generate();
         }
     }
 
@@ -41,6 +42,20 @@ public class ClientGenerator extends JavaFileGenerator<ClientOptions> {
                 return new WebClientBuilder(apiDefinition, writer, options);
             case HttpClient:
                 return new HttpClientBuilder(apiDefinition, writer, options);
+            case GatlingClient:
+                return new GatlingClientBuilder(apiDefinition, writer, options);
+        }
+        throw new IllegalArgumentException("Unknown dialect: " + options.dialect);
+    }
+
+    private FactoryBuilder createFactoryBuilder(ApiDefinition apiDefinition, JavaFileWriter writer, ClientBuilder clientBuilder) {
+        switch (options.dialect) {
+            case RestTemplate:
+            case WebClient:
+            case HttpClient:
+                return new FactoryBuilder(apiDefinition, writer, options, clientBuilder.getClientClassName(), clientBuilder.getRequestBuilderClassName());
+            case GatlingClient:
+                return new GatlingFactoryBuilder(apiDefinition, writer, options, clientBuilder.getClientClassName(), clientBuilder.getRequestBuilderClassName());
         }
         throw new IllegalArgumentException("Unknown dialect: " + options.dialect);
     }

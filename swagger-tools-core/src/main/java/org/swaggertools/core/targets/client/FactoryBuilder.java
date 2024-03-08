@@ -20,11 +20,11 @@ class FactoryBuilder {
 
     private final ApiDefinition apiDefinition;
     private final JavaFileWriter writer;
-    private final ClientOptions options;
+    protected final ClientOptions options;
     private final TypeName clientType;
     private final TypeName requestBuilderType;
-    private Set<String> clientNames;
-    private TypeSpec.Builder builder;
+    protected Set<String> clientNames;
+    protected TypeSpec.Builder builder;
 
     public FactoryBuilder(ApiDefinition apiDefinition, JavaFileWriter writer, ClientOptions options, TypeName clientType, TypeName requestBuilderType) {
         this.apiDefinition = apiDefinition;
@@ -40,9 +40,8 @@ class FactoryBuilder {
         writer.write(JavaFile.builder(options.clientPackage, builder.build()).indent(INDENT).build());
     }
 
-    private void createFactoryBuilder() {
-        builder = TypeSpec.classBuilder(options.factoryName)
-                .addModifiers(PUBLIC);
+    protected void createFactoryBuilder() {
+        builder = TypeSpec.classBuilder(options.factoryName).addModifiers(PUBLIC);
         createConstructor(builder);
         addProperty(clientType, "client");
         addHeaders();
@@ -50,7 +49,7 @@ class FactoryBuilder {
         addProperties();
     }
 
-    private void addRequestCustomizer() {
+    protected void addRequestCustomizer() {
         MethodSpec.Builder method = MethodSpec.methodBuilder("setRequestCustomizer")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(requestBuilderType, "requestCustomizer");
@@ -60,7 +59,7 @@ class FactoryBuilder {
         builder.addMethod(method.build());
     }
 
-    private void addProperties() {
+    protected void addProperties() {
         for (String name : clientNames) {
             TypeName type = ClassName.get(options.clientPackage, name + options.clientSuffix);
             FieldSpec f = FieldSpec.builder(type, camelCase(name), FINAL, PRIVATE).build();
@@ -69,7 +68,7 @@ class FactoryBuilder {
         }
     }
 
-    private void addHeaders() {
+    protected void addHeaders() {
         FieldSpec field = FieldSpec.builder(HEADERS, "headers")
                 .addModifiers(PRIVATE, FINAL)
                 .initializer("new $T()", HEADERS_IMPL)
@@ -78,13 +77,13 @@ class FactoryBuilder {
         builder.addMethod(getter(field));
     }
 
-    private void addProperty(TypeName type, String name) {
+    protected void addProperty(TypeName type, String name) {
         FieldSpec field = FieldSpec.builder(type, name, FINAL, PRIVATE).build();
         builder.addField(field);
         builder.addMethod(getter(field));
     }
 
-    private void createConstructor(TypeSpec.Builder builder) {
+    protected void createConstructor(TypeSpec.Builder builder) {
         MethodSpec.Builder mb = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(clientType, "client")
