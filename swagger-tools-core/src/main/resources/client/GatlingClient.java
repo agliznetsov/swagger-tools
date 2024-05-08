@@ -97,9 +97,9 @@ public abstract class BaseClient {
                                                  Map<String, Collection<String>> queryParams,
                                                  Map<String, Collection<String>> headerParams,
                                                  Object body) {
-        URI url = buildUri(path, urlVariables, queryParams);
+        String uri = buildUri(path, urlVariables, queryParams);
         var builder = HttpDsl.http(name)
-                .httpRequest(method, url.toString())
+                .httpRequest(method, uri)
                 .asJson();
         for (Map.Entry<String, Collection<String>> e : headerParams.entrySet()) {
             for (String v : e.getValue()) {
@@ -113,30 +113,25 @@ public abstract class BaseClient {
         return builder;
     }
 
-    private URI buildUri(String path, Map<String, String> urlVariables, Map<String, Collection<String>> queryParams) {
+    private String buildUri(String path, Map<String, String> urlVariables, Map<String, Collection<String>> queryParams) {
         for (Map.Entry<String, String> e : urlVariables.entrySet()) {
             String key = "\\{" + e.getKey() + "\\}";
             path = path.replaceAll(key, e.getValue());
         }
-        try {
-            URI baseUri = new URI(basePath + path);
-            if(!queryParams.isEmpty()) {
-                StringBuilder sb = new StringBuilder(baseUri.getQuery() == null ? "" : baseUri.getQuery());
-                for (Map.Entry<String, Collection<String>> e : queryParams.entrySet()) {
-                    for (String v : e.getValue()) {
-                        sb.append(URLEncoder.encode(e.getKey(), StandardCharsets.UTF_8));
-                        sb.append('=');
-                        sb.append(URLEncoder.encode(v, StandardCharsets.UTF_8));
-                        sb.append("&");
-                    }
+        if(!queryParams.isEmpty()) {
+            StringBuilder sb = new StringBuilder(path.contains("?") ? path.substring(path.indexOf("?")) : "?");
+            for (Map.Entry<String, Collection<String>> e : queryParams.entrySet()) {
+                for (String v : e.getValue()) {
+                    sb.append(URLEncoder.encode(e.getKey(), StandardCharsets.UTF_8));
+                    sb.append('=');
+                    sb.append(URLEncoder.encode(v, StandardCharsets.UTF_8));
+                    sb.append("&");
                 }
-                sb.delete(sb.length()-1, sb.length()); // remove the last '&'
-                return new URI(baseUri.getScheme(), baseUri.getAuthority(), baseUri.getPath(), sb.toString(), baseUri.getFragment());
-            } else {
-                return baseUri;
             }
-        } catch(URISyntaxException e){
-            throw new RuntimeException(e);
+            sb.delete(sb.length()-1, sb.length()); // remove the last '&'
+            return basePath + path + sb.toString();
+        } else {
+            return basePath + path;
         }
     }
 
