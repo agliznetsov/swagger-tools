@@ -2,6 +2,7 @@ package {{package}};
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gatling.javaapi.core.Body;
+import io.gatling.javaapi.core.Session;
 import io.gatling.javaapi.http.HttpDsl;
 import io.gatling.javaapi.http.HttpRequestActionBuilder;
 import lombok.SneakyThrows;
@@ -13,6 +14,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static io.gatling.javaapi.core.CoreDsl.StringBody;
 
@@ -97,6 +99,35 @@ public abstract class BaseClient {
                                                  Map<String, Collection<String>> queryParams,
                                                  Map<String, Collection<String>> headerParams,
                                                  Object body) {
+        var builder = invokeAPIInternal(name, path, method, urlVariables, queryParams, headerParams);
+        if(body != null) {
+            builder = builder.body(toBody(body));
+        }
+        customizeRequest(builder);
+        return builder;
+    }
+
+    protected <T extends Object> HttpRequestActionBuilder invokeAPI2(String name,
+                                                                     String path,
+                                                                     String method,
+                                                                     Map<String, String> urlVariables,
+                                                                     Map<String, Collection<String>> queryParams,
+                                                                     Map<String, Collection<String>> headerParams,
+                                                                     Function<Session, T> bodyFunction) {
+        var builder = invokeAPIInternal(name, path, method, urlVariables, queryParams, headerParams);
+        if(bodyFunction != null) {
+            builder = builder.body(toBodyFunction(bodyFunction));
+        }
+        customizeRequest(builder);
+        return builder;
+    }
+
+    protected HttpRequestActionBuilder invokeAPIInternal(String name,
+                                                         String path,
+                                                         String method,
+                                                         Map<String, String> urlVariables,
+                                                         Map<String, Collection<String>> queryParams,
+                                                         Map<String, Collection<String>> headerParams) {
         String uri = buildUri(path, urlVariables, queryParams);
         var builder = HttpDsl.http(name)
                 .httpRequest(method, uri)
@@ -106,10 +137,6 @@ public abstract class BaseClient {
                 builder.header(e.getKey(), v);
             }
         }
-        if(body != null) {
-            builder = builder.body(toBody(body));
-        }
-        customizeRequest(builder);
         return builder;
     }
 
@@ -124,7 +151,11 @@ public abstract class BaseClient {
                 for (String v : e.getValue()) {
                     sb.append(URLEncoder.encode(e.getKey(), StandardCharsets.UTF_8));
                     sb.append('=');
-                    sb.append(URLEncoder.encode(v, StandardCharsets.UTF_8));
+                    if(v.contains("#{")) {
+                        sb.append(v);
+                    } else {
+                        sb.append(URLEncoder.encode(v, StandardCharsets.UTF_8));
+                    }
                     sb.append("&");
                 }
             }
@@ -148,8 +179,16 @@ public abstract class BaseClient {
         }
     }
 
-    @SneakyThrows(IOException.class)
+    private <T extends Object> Body.WithString toBodyFunction(Function<Session, T> f) {
+        return StringBody(session -> objToJson(f.apply(session)));
+    }
+
     private Body.WithString toBody(Object o) {
-        return StringBody(objectMapper.writeValueAsString(o));
+        return StringBody(objToJson(o));
+    }
+
+    @SneakyThrows(IOException.class)
+    private String objToJson(Object o) {
+        return objectMapper.writeValueAsString(o);
     }
 }
