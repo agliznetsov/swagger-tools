@@ -46,18 +46,32 @@ public class GatlingClientBuilder extends ClientBuilder {
         String methodName = camelCase(javaIdentifier(operation.getOperationId()));
 
         MethodSpec.Builder builder1 = MethodSpec.methodBuilder(methodName).addModifiers(Modifier.PUBLIC);
+        builder1.addParameter(ParameterSpec.builder(STRING, camelCase(javaIdentifier("refName"))).build());
         addMethodParameters(builder1, operation, false);
         addMethodResponse(builder1, operation);
-        addMethodBody(builder1, operation);
+        invokeApi(builder1, operation, false, true);
         getClient(operation.getTag()).addMethod(builder1.build());
+
+        MethodSpec.Builder builder2 = MethodSpec.methodBuilder(methodName).addModifiers(Modifier.PUBLIC);
+        addMethodParameters(builder2, operation, false);
+        addMethodResponse(builder2, operation);
+        invokeApi(builder2, operation, false, false);
+        getClient(operation.getTag()).addMethod(builder2.build());
 
         Optional<Parameter> body = operation.getParameters().stream().filter(it -> it.getKind() == ParameterKind.BODY).findFirst();
         if(body.isPresent()) {
-            MethodSpec.Builder builder2 = MethodSpec.methodBuilder(methodName).addModifiers(Modifier.PUBLIC);
-            addMethodParameters(builder2, operation, true);
-            addMethodResponse(builder2, operation);
-            invokeApi(builder2, operation, true);
-            getClient(operation.getTag()).addMethod(builder2.build());
+            MethodSpec.Builder builder3 = MethodSpec.methodBuilder(methodName).addModifiers(Modifier.PUBLIC);
+            builder3.addParameter(ParameterSpec.builder(STRING, camelCase(javaIdentifier("refName"))).build());
+            addMethodParameters(builder3, operation, true);
+            addMethodResponse(builder3, operation);
+            invokeApi(builder3, operation, true, true);
+            getClient(operation.getTag()).addMethod(builder3.build());
+
+            MethodSpec.Builder builder4 = MethodSpec.methodBuilder(methodName).addModifiers(Modifier.PUBLIC);
+            addMethodParameters(builder4, operation, true);
+            addMethodResponse(builder4, operation);
+            invokeApi(builder4, operation, true, false);
+            getClient(operation.getTag()).addMethod(builder4.build());
         }
     }
 
@@ -79,7 +93,7 @@ public class GatlingClientBuilder extends ClientBuilder {
 
     @Override
     protected void addMethodBody(MethodSpec.Builder builder, Operation operation) {
-        invokeApi(builder, operation, false);
+        invokeApi(builder, operation, false, false);
     }
 
     @Override
@@ -120,11 +134,13 @@ public class GatlingClientBuilder extends ClientBuilder {
                 );
     }
 
-    private void invokeApi(MethodSpec.Builder builder, Operation operation, boolean bodyFunction) {
+    private void invokeApi(MethodSpec.Builder builder, Operation operation, boolean bodyFunction, boolean customName) {
         List<Object> args = new LinkedList<>();
         String method = bodyFunction ? "invokeAPI2" : "invokeAPI";
-        String format = "return " + method + "($S, $S, $S, $L, $L, $L, $L)";
-        args.add(operation.getOperationId());
+        String format = "return " + method + "(" + (customName ? "refName" : "$S") + ", $S, $S, $L, $L, $L, $L)";
+        if(!customName) {
+            args.add(operation.getOperationId());
+        }
         args.add(operation.getPath());
         args.add(operation.getMethod().name());
         args.add(createUrlVariables(operation));
