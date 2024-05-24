@@ -17,7 +17,7 @@ public class ConfigTest {
         printer.printProperties(configurations);
         String help = printer.getHelp();
         assertEquals(
-                "  dialect                                 Client implementation dialect [RestTemplate,WebClient,HttpClient] (default: 'RestTemplate')\n" +
+                "  dialect                                 Client implementation dialect [RestTemplate,WebClient,HttpClient,GatlingClient] (default: 'RestTemplate')\n" +
                 "  date-time-class                         String 'date-time' full class name\n" +
                 "  location                                Server classes target directory\n" +
                 "  client-suffix                           Client classes name suffix (default: 'Client')\n" +
