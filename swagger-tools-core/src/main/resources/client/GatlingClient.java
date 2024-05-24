@@ -2,6 +2,7 @@ package {{package}};
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gatling.javaapi.core.Body;
+import io.gatling.javaapi.core.Session;
 import io.gatling.javaapi.http.HttpDsl;
 import io.gatling.javaapi.http.HttpRequestActionBuilder;
 import lombok.SneakyThrows;
@@ -13,6 +14,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static io.gatling.javaapi.core.CoreDsl.StringBody;
 
@@ -97,15 +99,7 @@ public abstract class BaseClient {
                                                  Map<String, Collection<String>> queryParams,
                                                  Map<String, Collection<String>> headerParams,
                                                  Object body) {
-        URI url = buildUri(path, urlVariables, queryParams);
-        var builder = HttpDsl.http(name)
-                .httpRequest(method, url.toString())
-                .asJson();
-        for (Map.Entry<String, Collection<String>> e : headerParams.entrySet()) {
-            for (String v : e.getValue()) {
-                builder.header(e.getKey(), v);
-            }
-        }
+        var builder = invokeAPIInternal(name, path, method, urlVariables, queryParams, headerParams);
         if(body != null) {
             builder = builder.body(toBody(body));
         }
@@ -113,30 +107,62 @@ public abstract class BaseClient {
         return builder;
     }
 
-    private URI buildUri(String path, Map<String, String> urlVariables, Map<String, Collection<String>> queryParams) {
+    protected <T extends Object> HttpRequestActionBuilder invokeAPI2(String name,
+                                                                     String path,
+                                                                     String method,
+                                                                     Map<String, String> urlVariables,
+                                                                     Map<String, Collection<String>> queryParams,
+                                                                     Map<String, Collection<String>> headerParams,
+                                                                     Function<Session, T> bodyFunction) {
+        var builder = invokeAPIInternal(name, path, method, urlVariables, queryParams, headerParams);
+        if(bodyFunction != null) {
+            builder = builder.body(toBodyFunction(bodyFunction));
+        }
+        customizeRequest(builder);
+        return builder;
+    }
+
+    protected HttpRequestActionBuilder invokeAPIInternal(String name,
+                                                         String path,
+                                                         String method,
+                                                         Map<String, String> urlVariables,
+                                                         Map<String, Collection<String>> queryParams,
+                                                         Map<String, Collection<String>> headerParams) {
+        String uri = buildUri(path, urlVariables, queryParams);
+        var builder = HttpDsl.http(name)
+                .httpRequest(method, uri)
+                .asJson();
+        for (Map.Entry<String, Collection<String>> e : headerParams.entrySet()) {
+            for (String v : e.getValue()) {
+                builder.header(e.getKey(), v);
+            }
+        }
+        return builder;
+    }
+
+    private String buildUri(String path, Map<String, String> urlVariables, Map<String, Collection<String>> queryParams) {
         for (Map.Entry<String, String> e : urlVariables.entrySet()) {
             String key = "\\{" + e.getKey() + "\\}";
             path = path.replaceAll(key, e.getValue());
         }
-        try {
-            URI baseUri = new URI(basePath + path);
-            if(!queryParams.isEmpty()) {
-                StringBuilder sb = new StringBuilder(baseUri.getQuery() == null ? "" : baseUri.getQuery());
-                for (Map.Entry<String, Collection<String>> e : queryParams.entrySet()) {
-                    for (String v : e.getValue()) {
-                        sb.append(URLEncoder.encode(e.getKey(), StandardCharsets.UTF_8));
-                        sb.append('=');
+        if(!queryParams.isEmpty()) {
+            StringBuilder sb = new StringBuilder(path.contains("?") ? path.substring(path.indexOf("?")) : "?");
+            for (Map.Entry<String, Collection<String>> e : queryParams.entrySet()) {
+                for (String v : e.getValue()) {
+                    sb.append(URLEncoder.encode(e.getKey(), StandardCharsets.UTF_8));
+                    sb.append('=');
+                    if(v.contains("#{")) {
+                        sb.append(v);
+                    } else {
                         sb.append(URLEncoder.encode(v, StandardCharsets.UTF_8));
-                        sb.append("&");
                     }
+                    sb.append("&");
                 }
-                sb.delete(sb.length()-1, sb.length()); // remove the last '&'
-                return new URI(baseUri.getScheme(), baseUri.getAuthority(), baseUri.getPath(), sb.toString(), baseUri.getFragment());
-            } else {
-                return baseUri;
             }
-        } catch(URISyntaxException e){
-            throw new RuntimeException(e);
+            sb.delete(sb.length()-1, sb.length()); // remove the last '&'
+            return basePath + path + sb.toString();
+        } else {
+            return basePath + path;
         }
     }
 
@@ -153,8 +179,16 @@ public abstract class BaseClient {
         }
     }
 
-    @SneakyThrows(IOException.class)
+    private <T extends Object> Body.WithString toBodyFunction(Function<Session, T> f) {
+        return StringBody(session -> objToJson(f.apply(session)));
+    }
+
     private Body.WithString toBody(Object o) {
-        return StringBody(objectMapper.writeValueAsString(o));
+        return StringBody(objToJson(o));
+    }
+
+    @SneakyThrows(IOException.class)
+    private String objToJson(Object o) {
+        return objectMapper.writeValueAsString(o);
     }
 }
