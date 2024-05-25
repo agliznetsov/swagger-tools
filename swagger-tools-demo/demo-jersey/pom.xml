@@ -9,7 +9,7 @@
     <parent>
         <artifactId>swagger-tools-demo</artifactId>
         <groupId>com.github.agliznetsov.swagger-tools</groupId>
-        <version>0.8.2</version>
+        <version>0.8.3</version>
     </parent>
 
     <properties>
@@ -83,7 +83,7 @@
             <plugin>
                 <groupId>com.github.agliznetsov.swagger-tools</groupId>
                 <artifactId>swagger-tools-maven-plugin</artifactId>
-                <version>0.8.2</version>
+                <version>0.8.3</version>
                 <executions>
                     <execution>
                         <id>petstore</id>
