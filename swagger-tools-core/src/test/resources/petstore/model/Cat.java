@@ -7,8 +7,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@ToString
-@EqualsAndHashCode
+@ToString(
+        callSuper = true
+)
+@EqualsAndHashCode(
+        callSuper = true
+)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

@@ -126,18 +126,18 @@ public class ModelGenerator extends JavaFileGenerator<ModelOptions> implements T
             typeSpec.superclass(ParameterizedTypeName.get(HASH_MAP, STRING, valueType));
         }
         if (options.lombok) {
-            typeSpec.addAnnotation(NO_ARGS_CONSTRUCTOR);
             if(schema.getSuperSchema() != null) {
-                typeSpec.addAnnotation(AnnotationSpec.builder(EQUALS)
-                        .addMember("callSuper", "$L", true)
-                        .build());
                 typeSpec.addAnnotation(AnnotationSpec.builder(TO_STRING)
                         .addMember("callSuper", "$L", true)
                         .build());
+                typeSpec.addAnnotation(AnnotationSpec.builder(EQUALS)
+                        .addMember("callSuper", "$L", true)
+                        .build());
             } else {
-                typeSpec.addAnnotation(EQUALS);
                 typeSpec.addAnnotation(TO_STRING);
+                typeSpec.addAnnotation(EQUALS);
             }
+            typeSpec.addAnnotation(NO_ARGS_CONSTRUCTOR);
             if (schema.getProperties() != null) {
                 long propsCount = schema.getProperties().stream().filter(it -> !it.getName().equals(schema.getDiscriminator())).count();
                 if (propsCount > 0) {
